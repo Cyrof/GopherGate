@@ -3,11 +3,6 @@ name: Lint
 on: 
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - '**/*.go'
-      - 'go.mod'
-      - 'go.sum'
-      - '.golangci.*'
   workflow_dispatch:
 
 permissions:
@@ -16,19 +11,33 @@ permissions:
 jobs:
   golangci-lint:
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('**/*.go', 'go.mod', 'go.work') != '' }}
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Detect Go Code
+        id: detect
+        run: |
+          if git ls-files '*.go' 'go.mod' 'go.work' | grep -q .; then
+            echo "has_go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_go=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set Up Go
+        if: steps.detect.outputs.has_go == 'true'
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
 
       - name: Run golangci-lint
+        if: steps.detect.outputs.has_go == 'true'
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.1
           args: --timeout=5m
+
+      - name: No Go code - skipping lint
+        if: steps.detect.outputs.has_go == 'false'
+        run: echo "No Go files or module found, skipping golangci-lint."
