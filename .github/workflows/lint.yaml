@@ -11,37 +11,37 @@ permissions:
 jobs:
   golangci-lint:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find modules
+        id: mods
+        run: |
+          mods=$(git ls-files '**/go.mod' | sed 's#/go.mod##' | jq -R . | jq -s .)
+          echo "list=$mods" >> $GITHUB_OUTPUT
+
+      - name: Lint each module
+        uses: actions/github-script@v7
+        with:
+          scrip: |
+            const mods = JSON.parse(process.env.MODS);
+            core.info(`Modules: ${mods.join(', ')}`);
+        env:
+          MODS: ${{ steps.mods.outputs.list }}
+
+  lint-module:
+    needs: golangci-lint
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        module:
-          - gophergate-wg-agent
-
+        module: ${{ fromJson(needs.golangci-lint.outputs.list) }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Detect Go Code
-        id: detect
-        run: |
-          if git ls-files '*.go' 'go.mod' 'go.work' | grep -q .; then
-            echo "has_go=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_go=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set Up Go
-        if: steps.detect.outputs.has_go == 'true'
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
-
-      - name: Run golangci-lint
-        if: steps.detect.outputs.has_go == 'true'
-        uses: golangci/golangci-lint-action@v8
+          go-version-file: ${{ matrix.module }}/go.mod
+      - uses: golangci/golangci-lint-action@v6
         with:
-          version: v2.1
-          args: --timeout=5m
-
-      - name: No Go code - skipping lint
-        if: steps.detect.outputs.has_go == 'false'
-        run: echo "No Go files or module found, skipping golangci-lint."
+          working-directory: ${{ matrix.module }}
+          version: v1.59.1
+          args: ./... --timeout=5m
