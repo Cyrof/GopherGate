@@ -3,6 +3,11 @@ name: Lint
 on: 
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.golangci.*'
   workflow_dispatch:
 
 permissions:
@@ -11,6 +16,7 @@ permissions:
 jobs:
   golangci-lint:
     runs-on: ubuntu-latest
+    if: ${{ hashFiles('**/*.go', 'go.mod', 'go.work') != '' }}
 
     steps:
       - name: Checkout Code
