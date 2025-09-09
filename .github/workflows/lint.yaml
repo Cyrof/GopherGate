@@ -1,6 +1,6 @@
 name: Lint
 
-on: 
+on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
@@ -9,35 +9,51 @@ permissions:
   contents: read
 
 jobs:
-  golangci-lint:
+  discover-modules:
     runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.mods.outputs.modules }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Find modules
         id: mods
+        shell: bash
         run: |
-          mods=$(git ls-files '**/go.mod' | sed 's#/go.mod##')
-          arr="["
-          for m in $mods; do
-            arr="$arr\"$m\","
+          set -euo pipefail
+          # list module dirs (strip /go.mod)
+          mapfile -t mods < <(git ls-files '**/go.mod' | sed 's#/go.mod##')
+          if [ ${#mods[@]} -eq 0 ]; then
+            echo "modules=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # build JSON array: ["dir1","dir2",...]
+          json='['
+          for m in "${mods[@]}"; do
+            json="$json\"$m\","
           done
-          arr="${arr%,}]"
-          echo "modules=$arr" >> $GITHUB_OUTPUT
+          json="${json%,}]"
+          echo "modules=$json" >> "$GITHUB_OUTPUT"
 
   lint-module:
-    needs: golangci-lint
+    needs: discover-modules
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        module: ${{ fromJson(needs.golangci-lint.outputs.modules) }}
+        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+
+      - name: Set up Go from module
+        uses: actions/setup-go@v5
         with:
           go-version-file: ${{ matrix.module }}/go.mod
-      - uses: golangci/golangci-lint-action@v6
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
         with:
           working-directory: ${{ matrix.module }}
-          version: v1.59.1
+          version: v1.59.1          # golangci-lint version
           args: ./... --timeout=5m
+
