@@ -11,6 +11,10 @@ permissions:
 jobs:
   golangci-lint:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - gophergate-wg-agent
 
     steps:
       - name: Checkout Code
