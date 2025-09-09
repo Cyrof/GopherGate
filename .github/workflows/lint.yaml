@@ -45,17 +45,12 @@ jobs:
         id: mods
         run: |
           mods=$(git ls-files '**/go.mod' | sed 's#/go.mod##')
-          json=$(printf '%s\n' $mods | jq -R . | jq -s .)
-          echo "list=$json" >> $GITHUB_OUTPUT
-
-      - name: Lint each module
-        uses: actions/github-script@v7
-        with:
-          scrip: |
-            const mods = JSON.parse(process.env.MODS);
-            core.info(`Modules: ${mods.join(', ')}`);
-        env:
-          MODS: ${{ steps.mods.outputs.list }}
+          arr="["
+          for m in $mods; do
+            arr="$arr\"$m\","
+          done
+          arr="${arr%,}]"
+          echo "modules=$arr" >> $GITHUB_OUTPUT
 
   lint-module:
     needs: golangci-lint
