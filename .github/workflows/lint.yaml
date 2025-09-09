@@ -17,8 +17,9 @@ jobs:
       - name: Find modules
         id: mods
         run: |
-          mods=$(git ls-files '**/go.mod' | sed 's#/go.mod##' | jq -R . | jq -s .)
-          echo "list=$mods" >> $GITHUB_OUTPUT
+          mods=$(git ls-files '**/go.mod' | sed 's#/go.mod##')
+          json=$(printf '%s\n' $mods | jq -R . | jq -s .)
+          echo "list=$json" >> $GITHUB_OUTPUT
 
       - name: Lint each module
         uses: actions/github-script@v7
