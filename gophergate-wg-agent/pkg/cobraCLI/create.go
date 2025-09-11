@@ -13,15 +13,15 @@ for a user, including generating keys and configuration. At present, this
 command is only a placeholder - the WireGuard service integration is not
 yet implemented, so running it will not create any peers.`,
 	Example: `
-  # Create a new peer with default settings
-  gophergate-wg-agent create
+	# Create a new peer with default settings
+	gophergate-wg-agent create
 
-  # Create a peer with a specific name
-  gophergate-wg-agent create --name alice
+	# Create a peer with a specific name
+	gophergate-wg-agent create --name alice
 
-  # Create a peer and specify an IP address
-  gophergate-wg-agent create --name bob --ip 10.0.0.2
-  `,
+	# Create a peer and specify an IP address
+  	gophergate-wg-agent create --name bob --ip 10.0.0.2
+  	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Println("create command is not yet implemented")
 	},
