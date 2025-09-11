@@ -4,11 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	name string
-	ip   string
-)
-
 var createCmd = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"c"},
