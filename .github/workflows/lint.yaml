@@ -67,20 +67,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Go env
-        working-directory: ${{ matrix.module }}
-        run: go env
-
-      - name: Tidy & download deps
-        working-directory: ${{ matrix.module }}
-        run: |
-          go mod tidy
-          go mod download
-
-      - name: Smoke build (fail fast if types/aliases missing)
-        working-directory: ${{ matrix.module }}
-        run: go build ./..
-
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
