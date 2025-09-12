@@ -7,7 +7,7 @@ services:
       - SYS_MODULE
     environment:
       - PUID=1000
-      - PGIDY=1000
+      - PGID=1000
       - TZ=Asia/Singapore
       - SERVERURL=127.0.0.1     # local-only
       - SERVERPORT=51820
