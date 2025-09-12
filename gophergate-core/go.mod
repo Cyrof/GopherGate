@@ -1,6 +1,6 @@
 module github.com/Cyrof/GopherGate/gophergate-core
 
-go 1.24.5
+go 1.22
 
 require (
 	go.uber.org/zap v1.27.0
