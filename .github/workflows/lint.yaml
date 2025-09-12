@@ -72,5 +72,4 @@ jobs:
         with:
           working-directory: ${{ matrix.module }}
           version: v1.59.1 # golangci-lint version
-          args: >
-            run ./... --timeout=5m
+          args: --timeout=5m
