@@ -85,7 +85,7 @@ func Init(cfg Config) *zap.SugaredLogger {
 			MaxAge:     cfg.FileRotate.MaxAgeDays,
 			Compress:   cfg.FileRotate.Compress,
 		})
-		core = zapcore.NewCore(zapcore.NewConsoleEncoder(encCfg), zapcore.AddSync(w), cfg.Level)
+		core = zapcore.NewCore(zapcore.NewConsoleEncoder(encCfg), w, cfg.Level)
 	}
 
 	z := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
