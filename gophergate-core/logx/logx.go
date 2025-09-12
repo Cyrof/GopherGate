@@ -1,0 +1,93 @@
+package logx
+
+import (
+	"os"
+	"time"
+
+	"github.com/Cyrof/GopherGate/gophergate-core/paths"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
+)
+
+type Mode int
+
+const (
+	Auto Mode = iota // dev -> console, else file
+	Console
+	File
+)
+
+type Config struct {
+	App        string
+	Mode       Mode
+	Level      zapcore.Level
+	FileRotate Rotate
+}
+
+type Rotate struct {
+	MaxSizeMB  int  // 5
+	MaxBackups int  // 3
+	MaxAgeDays int  // 28
+	Compress   bool // true
+}
+
+func Default(app string) Config {
+	return Config{
+		App:        app,
+		Mode:       Auto,
+		Level:      zap.InfoLevel,
+		FileRotate: Rotate{MaxSizeMB: 5, MaxBackups: 3, MaxAgeDays: 28, Compress: true},
+	}
+}
+
+func Init(cfg Config) *zap.SugaredLogger {
+	// decide mode
+	mode := cfg.Mode
+	if mode == Auto {
+		if os.Getenv("GOPHERGATE_ENV") == "dev" {
+			mode = Console
+		} else {
+			mode = File
+		}
+	}
+
+	encCfg := zapcore.EncoderConfig{
+		TimeKey:      "ts",
+		LevelKey:     "level",
+		CallerKey:    "caller",
+		MessageKey:   "msg",
+		EncodeLevel:  zapcore.CapitalLevelEncoder,
+		EncodeTime:   zapcore.TimeEncoderOfLayout(time.RFC3339),
+		EncodeCaller: zapcore.ShortCallerEncoder,
+	}
+
+	var core zapcore.Core
+
+	switch mode {
+	case Console:
+		dev := zap.NewDevelopmentEncoderConfig()
+		dev.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		dev.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
+		core = zapcore.NewCore(zapcore.NewConsoleEncoder(dev), zapcore.AddSync(os.Stdout), cfg.Level)
+
+	case File:
+		d := paths.ForApp(cfg.App)
+		if err := d.Ensure(); err != nil {
+			// fallback to stdout if file path not writable
+			core = zapcore.NewCore(zapcore.NewJSONEncoder(encCfg), zapcore.AddSync(os.Stdout), cfg.Level)
+			break
+		}
+		w := &lumberjack.Logger{
+			Filename:   d.LogFile,
+			MaxSize:    cfg.FileRotate.MaxSizeMB,
+			MaxBackups: cfg.FileRotate.MaxBackups,
+			MaxAge:     cfg.FileRotate.MaxAgeDays,
+			Compress:   cfg.FileRotate.Compress,
+		}
+		core = zapcore.NewCore(zapcore.NewConsoleEncoder(encCfg), zapcore.AddSync(w), cfg.Level)
+	}
+
+	z := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	return z.Sugar()
+}
