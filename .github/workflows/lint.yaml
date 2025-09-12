@@ -45,6 +45,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug matrix value
+        run: |
+          echo "MODULE=${{ matrix.module }}"
+          ls -la
+          ls -la "${{ matrix.module }}"
+
       - name: Set up Go from module
         uses: actions/setup-go@v5
         with:
