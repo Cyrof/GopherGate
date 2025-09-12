@@ -1,6 +1,6 @@
 name: Lint
 
-on: 
+on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
@@ -9,39 +9,51 @@ permissions:
   contents: read
 
 jobs:
-  golangci-lint:
+  discover-modules:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.mods.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find modules
+        id: mods
+        shell: bash
+        run: |
+          set -euo pipefail
+          # list module dirs (strip /go.mod)
+          mapfile -t mods < <(git ls-files '**/go.mod' | sed 's#/go.mod##')
+          if [ ${#mods[@]} -eq 0 ]; then
+            echo "modules=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # build JSON array: ["dir1","dir2",...]
+          json='['
+          for m in "${mods[@]}"; do
+            json="$json\"$m\","
+          done
+          json="${json%,}]"
+          echo "modules=$json" >> "$GITHUB_OUTPUT"
+
+  lint-module:
+    needs: discover-modules
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        module:
-          - gophergate-wg-agent
-
+        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Detect Go Code
-        id: detect
-        run: |
-          if git ls-files '*.go' 'go.mod' 'go.work' | grep -q .; then
-            echo "has_go=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_go=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set Up Go
-        if: steps.detect.outputs.has_go == 'true'
+      - name: Set up Go from module
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version-file: ${{ matrix.module }}/go.mod
 
-      - name: Run golangci-lint
-        if: steps.detect.outputs.has_go == 'true'
-        uses: golangci/golangci-lint-action@v8
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v2.1
-          args: --timeout=5m
+          working-directory: ${{ matrix.module }}
+          version: v1.59.1          # golangci-lint version
+          args: ./... --timeout=5m
 
-      - name: No Go code - skipping lint
-        if: steps.detect.outputs.has_go == 'false'
-        run: echo "No Go files or module found, skipping golangci-lint."
