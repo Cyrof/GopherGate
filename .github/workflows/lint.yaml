@@ -45,15 +45,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug matrix value
+        run: |
+          echo "MODULE=${{ matrix.module }}"
+          ls -la
+          ls -la "${{ matrix.module }}"
+
       - name: Set up Go from module
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ matrix.module }}/go.mod
+          cache: false
+
+      - name: Cache Go build & mod
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles(format('{0}/go.sum', matrix.module)) }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           working-directory: ${{ matrix.module }}
-          version: v1.59.1          # golangci-lint version
-          args: ./... --timeout=5m
-
+          version: v1.59.1 # golangci-lint version
+          args: --timeout=5m

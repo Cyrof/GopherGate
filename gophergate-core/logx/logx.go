@@ -78,14 +78,14 @@ func Init(cfg Config) *zap.SugaredLogger {
 			core = zapcore.NewCore(zapcore.NewJSONEncoder(encCfg), zapcore.AddSync(os.Stdout), cfg.Level)
 			break
 		}
-		w := &lumberjack.Logger{
+		w := zapcore.AddSync(&lumberjack.Logger{
 			Filename:   d.LogFile,
 			MaxSize:    cfg.FileRotate.MaxSizeMB,
 			MaxBackups: cfg.FileRotate.MaxBackups,
 			MaxAge:     cfg.FileRotate.MaxAgeDays,
 			Compress:   cfg.FileRotate.Compress,
-		}
-		core = zapcore.NewCore(zapcore.NewConsoleEncoder(encCfg), zapcore.AddSync(w), cfg.Level)
+		})
+		core = zapcore.NewCore(zapcore.NewConsoleEncoder(encCfg), w, cfg.Level)
 	}
 
 	z := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
