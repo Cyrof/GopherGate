@@ -42,9 +42,6 @@ jobs:
       fail-fast: false
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
-    defaults:
-      run:
-        working-directory: ${{ matrix.module }}
     steps:
       - uses: actions/checkout@v4
 
@@ -65,14 +62,17 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Go env
+        working-directory: ${{ matrix.module }}
         run: go env
 
       - name: Tidy & download deps
+        working-directory: ${{ matrix.module }}
         run: |
           go mod tidy
           go mod download
 
       - name: Smoke build (fail fast if types/aliases missing)
+        working-directory: ${{ matrix.module }}
         run: go build ./..
 
       - name: golangci-lint
