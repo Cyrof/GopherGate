@@ -41,5 +41,5 @@ jobs:
       module_path: gophergate-wg-agent
       module_label: gophergate-wg-agent
       bump_override: ${{ github.event.inputs.bump_override }}
-      dry_run: ${{ github.evnet.inputs.dry_run == 'true' }}
+      dry_run: ${{ github.event.inputs.dry_run == 'true' }}
     secrets: inherit
