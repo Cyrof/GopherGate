@@ -43,7 +43,7 @@ jobs:
           if [ -n "${{ steps.last.outputs.last_tag }}" ]; then
             echo "range=${{ steps.last.outputs.last_tag }}..HEAD" >> $GITHUB_OUTPUT
           else
-            FIRST="$(git rev-list --max-parents=0 HEAD | tail -n1)"
+            FIRST="$(git rev-list --max-parents=0 HEAD | head -n1)"
             echo "range=$FIRST..HEAD" >> $GITHUB_OUTPUT
           fi
 
@@ -81,7 +81,7 @@ jobs:
             BUMP="minor" 
           fi
 
-          # manual orride 
+          # manual override 
           if [ -n "${{ inputs.bump_override }}" ]; then
             BUMP="${{ inputs.bump_override}}"
           fi
@@ -181,7 +181,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh pr create \
-          -- title "chore(${{ inputs.module_label }}): v${{ steps.bump.outputs.next }} changelog" \
+          --title "chore(${{ inputs.module_label }}): v${{ steps.bump.outputs.next }} changelog" \
           --body "Adds the changelog template for the upcoming release." \
           --head "${{ steps.branch.outputs.name }}" \
           --base "dev"
