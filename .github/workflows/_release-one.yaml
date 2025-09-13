@@ -1,0 +1,187 @@
+name: _release-one
+on:
+  workflow_call:
+    inputs:
+      module_path:
+        required: true
+        type: string
+      module_label:
+        required: true
+        type: string
+      bump_override:
+        required: false
+        type: string
+      dry_run:
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-one:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0, persist-credentials: false }
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Last tag for module
+        id: last
+        run: |
+          TAG_PREFIX="${{ inputs.module_path }}/v"
+          LAST_TAG="$(git tag --list "${TAG_PREFIX}*" | sort -V | tail -n1 || true)"
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Commit range
+        id: range
+        run: |
+          if [ -n "${{ steps.last.outputs.last_tag }}" ]; then
+            echo "range=${{ steps.last.outputs.last_tag }}..HEAD" >> $GITHUB_OUTPUT
+          else
+            FIRST="$(git rev-list --max-parents=0 HEAD | tail -n1)"
+            echo "range=$FIRST..HEAD" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Collect messages (module scope)
+        id: msgs
+        run: |
+          MPATH="${{ inputs.module_path }}"
+          RANGE="${{ steps.range.outputs.range }}"
+          git log --pretty=format:%s --no-merges "$RANGE" -- "$MPATH" > /tmp/msgs.txt || true
+          COUNT="$(wc -l < /tmp/msgs.txt | xargs || true)"
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+          echo "Affected commits: $COUNT"
+
+      - name: Skip if no changes
+        if: ${{ steps.msgs.outputs.count == '0' && inputs.bump_override == '' }}
+        run: echo "No changes & no override; skipping." && exit 0
+
+      - name: Compute next version
+        id: bump
+        run: |
+          # base version
+          if [ -n "${{ steps.last.outputs.last_tag }}" ]; then
+            BASE="${{ steps.last.outputs.last_tag }}"
+            BASE="${BASE##*/v}"
+          else
+            BASE="0.1.0"
+          fi
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
+
+          # default bump via conventional commits
+          BUMP="patch"
+          if grep -Eiq 'BREAKING CHANGE' /tmp/msgs.txt || grep -Eq '^[a-z]+(\([^)]*\))?!:' /tmp/msgs.txt; then
+            BUMP="major"
+          elif grep -Eq '^feat(\([^)]*\))?:' /tmp/msgs.txt; then
+            BUMP="minor" 
+          fi
+
+          # manual orride 
+          if [ -n "${{ inputs.bump_override }}" ]; then
+            BUMP="${{ inputs.bump_override}}"
+          fi
+
+          case "$BUMP" in 
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0;;
+            minor) MINOR=$((MINOR+1)); PATCH=0;;
+            patch) PATCH=$((PATCH+1));;
+            *) echo "Invalid bump: $BUMP"; exit 1;;
+          esac
+
+          NEXT="${MAJOR}.${MINOR}.${PATCH}"
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
+          echo "Next: $NEXT ($BUMP)"
+
+      - name: Create release branch (local)
+        id: branch
+        env:
+          NEXT: ${{ steps.bump.outputs.next }}
+        run: |
+          BR="release/${{ inputs.module_path }}/v${NEXT}"
+          git checkout -b "$BR"
+          echo "name=$BR" >> $GITHUB_OUTPUT
+
+      - name: Ensure CHANGELOG & prepend template
+        env:
+          NEXT: ${{ steps.bump.outputs.next }}
+        run: |
+          MOD="${{ inputs.module_path }}"
+          FILE="$MOD/CHANGELOG.md"
+          DATE="$(date +'%Y-%m-%d')"
+
+          if [ ! -f "$FILE" ]; then 
+            {
+              echo "# Changelog - $MOD"
+              echo
+              echo "---"
+              echo
+            } > "$FILE"
+          fi
+
+          cat > /tmp/entry.md <<'EOF'
+          ## [v__NEXT__] - __DATE__
+
+          ### Added
+          - (fill)
+
+          ### Changed
+          - (fill)
+
+          ### Fixed
+          - (fill)
+
+          ### Removed
+          - (fill)
+          EOF
+          sed -i "s/__NEXT__/${NEXT}/g; s/__DATE__/${DATE}/g" /tmp/entry.md
+
+          # If the file contains a line that's exactly '---', insert AFTER that line; else prepend below title
+          if grep -qx '---' "$FILE"; then
+            awk 'NR==FNR{e[n++]=$0; next}
+                 {print}
+                 !ins && $0=="---"{print ""; for(i=0;i<n;i++) print e[i]; ins=1}
+                 END{if(!ins){print ""; for(i=0;i<n;i++) print e[i]; print ""}}
+                ' /tmp/entry.md "$FILE" > /tmp/new && mv /tmp/new "$FILE"
+          else
+            { head -n1 "$FILE"; echo; cat /tmp/entry.md; tail -n +2 "$FILE"; } > /tmp/new && mv /tmp/new "$FILE"
+          fi
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "chore(${{ inputs.module_label }}): prepare v${{ steps.bump.outputs.next }} changelog"
+
+      - name: Tag & push (skip on dry-run)
+        if: ${{ inputs.dry_run == false }}
+        shell: bash
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          NEXT: ${{ steps.bump.outputs.next }}
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.module_path }}/v${NEXT}"
+          git tag -a "$TAG" -m "release $TAG"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}"
+          git push origin "${{ steps.branch.outputs.name }}"
+          git push origin "$TAG"
+
+      - name: Open PR to dev (skip on dry-run)
+        if: ${{ inputs.dry_run == false}}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh pr create \
+          -- title "chore(${{ inputs.module_label }}): v${{ steps.bump.outputs.next }} changelog" \
+          --body "Adds the changelog template for the upcoming release." \
+          --head "${{ steps.branch.outputs.name }}" \
+          --base "dev"
