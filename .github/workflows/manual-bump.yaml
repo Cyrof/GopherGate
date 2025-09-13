@@ -1,0 +1,45 @@
+name: manual-bump
+on:
+  workflow_dispatch:
+    inputs:
+      module:
+        description: "Module to bump"
+        type: choice
+        required: true
+        options:
+          - gophergate-core
+          - gophergate-wg-agent
+      bump_override:
+        description: "Force bump (major|minor|patch). Leave empty to auto-detect."
+        required: false
+        type: string
+      dry_run:
+        description: "Don't push tag/PR; just run steps"
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  core:
+    if: ${{ github.event.inputs.module == 'gophergate-core' }}
+    uses: ./.github/workflows/_release-one.yaml
+    with:
+      module_path: gophergate-core
+      module_label: gophergate-core
+      bump_override: ${{ github.event.inputs.bump_override }}
+      dry_run: ${{ github.event.inputs.dry_run == 'true' }}
+    secrets: inherit
+
+  wg_agent:
+    if: ${{ github.event.inputs.module == 'gophergate-wg-agent' }}
+    uses: ./.github/workflows/_release-one.yaml
+    with:
+      module_path: gophergate-wg-agent
+      module_label: gophergate-wg-agent
+      bump_override: ${{ github.event.inputs.bump_override }}
+      dry_run: ${{ github.evnet.inputs.dry_run == 'true' }}
+    secrets: inherit
