@@ -1,0 +1,45 @@
+name: release
+on:
+  pull_request:
+    branches: [dev]
+    types: [closed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.chk.outputs.ok }}
+    steps:
+      - id: chk
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+
+  core:
+    needs: guard
+    if: ${{ needs.guard.outputs.ok == 'true' }}
+    uses: ./.github/workflows/_release-one.yaml
+    with:
+      module_path: gophergate-core
+      module_label: gophergate-core
+      dry_run: false
+    secrets: inherit
+
+  wg_agent:
+    needs: guard
+    if: ${{ needs.guard.output.ok == 'true' }}
+    uses: ./.github/workflows/_release-one.yaml
+    with:
+      module_path: gophergate-wg-agent
+      module_label: gophergate-wg-agent
+      dry_run: false
+    secrets: inherit
