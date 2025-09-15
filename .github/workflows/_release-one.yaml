@@ -142,7 +142,7 @@ jobs:
           sed -i "s/__NEXT__/${NEXT}/g; s/__DATE__/${DATE}/g" /tmp/entry.md
 
           # If the file contains a line that's exactly '---', insert AFTER that line; else prepend below title
-          if grep -qx '---' "$FILE"; then
+          if grep -qx -- '---' "$FILE"; then
             awk 'NR==FNR{e[n++]=$0; next}
                  {print}
                  !ins && $0=="---"{print ""; for(i=0;i<n;i++) print e[i]; ins=1}
