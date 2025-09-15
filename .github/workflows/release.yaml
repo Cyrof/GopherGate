@@ -23,6 +23,7 @@ jobs:
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
 
   core:
     needs: guard
@@ -34,12 +35,12 @@ jobs:
       dry_run: false
     secrets: inherit
 
-  wg_agent:
-    needs: guard
-    if: ${{ needs.guard.output.ok == 'true' }}
-    uses: ./.github/workflows/_release-one.yaml
-    with:
-      module_path: gophergate-wg-agent
-      module_label: gophergate-wg-agent
-      dry_run: false
-    secrets: inherit
+  # wg_agent:
+  #   needs: guard
+  #   if: ${{ needs.guard.outputs.ok == 'true' }}
+  #   uses: ./.github/workflows/_release-one.yaml
+  #   with:
+  #     module_path: gophergate-wg-agent
+  #     module_label: gophergate-wg-agent
+  #     dry_run: false
+  #   secrets: inherit
