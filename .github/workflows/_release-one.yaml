@@ -30,6 +30,12 @@ jobs:
       - name: Fetch tags
         run: git fetch --tags --force
 
+      - name: Skip if release PR
+        if: startsWith(github.head_ref, 'release/')
+        run: |
+          echo "Skipping because this is a release PR"
+          exit 0
+
       - name: Last tag for module
         id: last
         run: |
