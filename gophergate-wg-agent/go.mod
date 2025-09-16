@@ -1,6 +1,8 @@
 module github.com/Cyrof/GopherGate/gophergate-wg-agent
 
-go 1.21.7
+go 1.22
+
+toolchain go1.24.5
 
 require github.com/spf13/cobra v1.10.1
 
