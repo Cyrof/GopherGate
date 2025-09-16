@@ -20,6 +20,20 @@ import (
 
 ---
 
+## [v0.2.2] - 2025-09-16
+
+### Added
+- (fill)
+
+### Changed
+- (fill)
+
+### Fixed
+- (fill)
+
+### Removed
+- (fill)
+
 ## [v0.2.1] - 2025-09-16
 
 ### Added
