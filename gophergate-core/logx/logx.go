@@ -1,10 +1,14 @@
 package logx
 
 import (
+	"errors"
 	"os"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -41,7 +45,12 @@ func Default(app string) Config {
 	}
 }
 
-func Init(cfg Config) *zap.SugaredLogger {
+func Init(cfg Config) (*zap.SugaredLogger, func()) {
+	// try to access .env file (dev only)
+	if err := godotenv.Load(); err != nil {
+		_, _ = os.Stdout.WriteString("no .env file found, falling back to system environment variables" + "\n")
+	}
+
 	// decide mode
 	mode := cfg.Mode
 	if mode == Auto {
@@ -70,7 +79,6 @@ func Init(cfg Config) *zap.SugaredLogger {
 		dev.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		dev.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
 		core = zapcore.NewCore(zapcore.NewConsoleEncoder(dev), zapcore.AddSync(os.Stdout), cfg.Level)
-
 	case File:
 		d := paths.ForApp(cfg.App)
 		if err := d.Ensure(); err != nil {
@@ -89,5 +97,28 @@ func Init(cfg Config) *zap.SugaredLogger {
 	}
 
 	z := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
-	return z.Sugar()
+
+	flush := func() {
+		if err := z.Sync(); err != nil && !ignorableSyncErr(err) {
+			_, _ = os.Stderr.WriteString("logger sync error: " + err.Error() + "\n")
+		}
+	}
+	return z.Sugar(), flush
+}
+
+func ignorableSyncErr(err error) bool {
+	if err == nil {
+		return true
+	}
+
+	// There is a common error where "invalid argument" is return when syncing stdout/stderr
+	if runtime.GOOS == "windows" && strings.Contains(strings.ToLower(err.Error()), "invalid argument") {
+		return true
+	}
+	// some writer may wrap EOF/closed pipe
+	if errors.Is(err, os.ErrClosed) {
+		return true
+	}
+
+	return false
 }
