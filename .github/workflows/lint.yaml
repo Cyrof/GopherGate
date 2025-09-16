@@ -34,7 +34,6 @@ jobs:
           done
           json="${json%,}]"
           echo "modules=$json" >> "$GITHUB_OUTPUT"
-  
   lint-module:
     needs: discover-modules
     runs-on: ubuntu-latest
