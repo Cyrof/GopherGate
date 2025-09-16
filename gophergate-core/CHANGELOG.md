@@ -20,6 +20,22 @@ import (
 
 ---
 
+## [v0.2.1] - 2025-09-16
+
+### Added
+- Implemented `Sync` support in the logger, providing a flush function that can be deferred by individual modules to ensure buffered logs are properly written.
+
+### Changed
+- Updated logger initialisation to:
+    - Ignore known/benign errors returned during `Sync`.
+    - Integrate with **godotenv** to automatically load variables from a `.env` file, allowing the initialisation process to correctly detect development mode from environment configuration.
+
+### Fixed
+- No fixes in this release.
+
+### Removed
+- No removals in this release.
+
 ## [v0.2.0] - 2025-09-16
 
 ### Added
