@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	stdlog "log"
 
 	"github.com/Cyrof/GopherGate/gophergate-core/logx"
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
@@ -9,17 +9,21 @@ import (
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/pkg/cobraCLI"
 )
 
+var Version = "0.1.0"
+
 func main() {
 	p := paths.ForApp("gophergate-wg-agent")
 	if err := p.Ensure(); err != nil {
-		log.Fatalf("failed to ensure paths: %v", err)
+		stdlog.Fatalf("failed to ensure paths: %v", err)
 	}
 
-	log, flush := logx.Init(logx.Default(paths.AppAgent))
+	logger, flush := logx.Init(logx.Default(paths.AppAgent))
 
 	defer flush()
 
-	log.Infow("agent started", "version", "0.1.0")
+	logger.Infow("agent started", "version", Version)
+
+	cobraCLI.SetLogger(logger)
 
 	cobraCLI.Execute()
 }
