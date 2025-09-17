@@ -2,6 +2,7 @@ services:
   wireguard-dev:
     image: lscr.io/linuxserver/wireguard:latest
     container_name: wireguard-dev
+    network_mode: "host"
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -9,15 +10,12 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Singapore
-      - SERVERURL=127.0.0.1     # local-only
+      - SERVERURL=127.0.0.1     
       - SERVERPORT=51820
-      - PEERS=devpeer           # force server mode; generates configs
+      - PEERS=devpeer           
       - PEERDNS=auto
       - LOG_CONFS=true
     volumes:
       - ./wireguard/config:/config
-    ports:
-      - 51820:51820/udp
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
+      - /dev/net/tun:/dev/net/run
     restart: unless-stopped
