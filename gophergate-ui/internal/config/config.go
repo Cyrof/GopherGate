@@ -1,6 +1,6 @@
 package config
 
-// this file should hold config setup for dev and prod 
+// this file should hold config setup for dev and prod
 
 import (
 	"os"
@@ -10,15 +10,15 @@ import (
 )
 
 type Config struct {
-	Env			string
-	HTTPAddr	string
-	GRPCAddr	string
-	TLS			bool
+	Env      string
+	HTTPAddr string
+	GRPCAddr string
+	TLS      bool
 }
 
 func Load(logger *zap.SugaredLogger) (*Config, error) {
 	c := &Config{
-		Env:      getenv(logger, "APP_ENV", "dev"),
+		Env:      getenv(logger, "GOPHERGATE_ENV", "dev"),
 		HTTPAddr: getenv(logger, "HTTP_ADDR", ":8080"),
 		GRPCAddr: getenv(logger, "GRPC_ADDR", "127.0.0.1:5051"),
 		TLS:      getbool(logger, "GRPC_TLS_ENABLE", false),
@@ -48,3 +48,4 @@ func getbool(log *zap.SugaredLogger, key string, def bool) bool {
 	log.Infow("config getbool", "key", key, "value", def, "source", "default")
 	return def
 }
+
