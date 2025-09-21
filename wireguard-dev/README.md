@@ -139,7 +139,7 @@ To ensure packets always source correctly (and `ping` works reliably), edit the 
 # ./wireguard/config/wg_confs/wg0.conf
 
 [Interface]
-Address = 10.13.13.1
+Address = 10.13.13.1/24
 ListenPort = 51820
 PrivateKey = <redacted>
 Table = off # stop wg-quick from auto-adding routes
