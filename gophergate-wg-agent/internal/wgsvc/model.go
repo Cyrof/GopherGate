@@ -17,3 +17,18 @@ type PeerStatus struct {
 	TxBytes    uint64   `json:"tx_bytes"`
 	Keepalive  string   `json:"keepalive"`
 }
+
+type CreatePeerRequest struct {
+	Iface             string
+	PublicKey         string
+	AllowedCIDRs      []string
+	Endpoint          string
+	KeepaliveSeconds  int
+	ReplaceAllowedIPs bool
+}
+
+type CreatePeerResponse struct {
+	Iface         string `json:"iface"`
+	PublicKey     string `json:"public_key"`
+	ConfigApplied bool   `json:"config_applied"`
+}

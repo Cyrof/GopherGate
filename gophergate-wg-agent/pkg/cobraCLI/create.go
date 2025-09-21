@@ -1,7 +1,23 @@
 package cobraCLI
 
 import (
+	"context"
+	"encoding/json"
+	"strings"
+	"time"
+
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
 	"github.com/spf13/cobra"
+)
+
+var (
+	createIface      string
+	createPubKey     string
+	createAllowed    []string
+	createEndpoint   string
+	createKeepalive  int
+	createReplaceIPs bool
+	createAsJSON     bool
 )
 
 var createCmd = &cobra.Command{
@@ -22,14 +38,47 @@ yet implemented, so running it will not create any peers.`,
 	# Create a peer and specify an IP address
   	gophergate-wg-agent create --name bob --ip 10.0.0.2
   	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("create command is not yet implemented")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		req := wgsvc.CreatePeerRequest{
+			Iface:             createIface,
+			PublicKey:         createPubKey,
+			AllowedCIDRs:      createAllowed,
+			Endpoint:          createEndpoint,
+			KeepaliveSeconds:  createKeepalive,
+			ReplaceAllowedIPs: createReplaceIPs,
+		}
+
+		ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Second)
+		defer cancel()
+
+		resp, err := wgsvc.CreatePeer(ctx, req)
+		if err != nil {
+			if strings.Contains(strings.ToLower(err.Error()), "operation not permitted") {
+				Log.Errorw("permission error: need CAP_NET_ADMIN (sudo or setcap cap_net_admin=ep)")
+			} else {
+				Log.Errorw("create peer failed", "iface", createIface, "err", err)
+			}
+			return err
+		}
+
+		if createAsJSON {
+			enc := json.NewEncoder(cmd.OutOrStdout())
+			enc.SetIndent("", " ")
+			return enc.Encode(resp)
+		}
+
+		Log.Infow("peer added", "iface", resp.Iface, "pubKey", resp.PublicKey, "configApplied", resp.ConfigApplied)
+		return nil
 	},
 }
 
 func init() {
-	createCmd.Flags().StringVar(&name, "name", "", "Name of user")
-	createCmd.Flags().StringVar(&ip, "ip", "", "IP address of the user connection")
+	createCmd.Flags().StringVarP(&createIface, "iface", "i", "wg0", "WireGuard interface name")
+	createCmd.Flags().StringVarP(&createPubKey, "pubkey", "p", "", "Peer public key (base64, required)")
+	createCmd.Flags().StringSliceVarP(&createAllowed, "allowed", "a", nil, "Allowed IPs (CIDR). Repeatable (required)")
+	createCmd.Flags().IntVarP(&createKeepalive, "keepalive", "k", 0, "Persistent keepalive in second (0 = disabled)")
+	createCmd.Flags().BoolVarP(&createReplaceIPs, "replace-ips", "r", true, "Replace existing AllowedIPs for this peer")
+	createCmd.Flags().BoolVarP(&createAsJSON, "json", "j", false, "Output JSON response")
 
 	rootCmd.AddCommand(createCmd)
 }
