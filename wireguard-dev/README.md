@@ -21,7 +21,9 @@ sudo modprobe wireguard || true # ok if built-in; no output is fine
 ```
 
 ## One-time host sysctl (required)
+
 When using host networking, set this on the **host**:
+
 ```bash
 # set now
 sudo sysctl -w net.ipv4.conf.all.src_valid_mark=1
@@ -57,14 +59,17 @@ docker logs wireguard-dev
 You should see startup information and confirmation that the WireGuard server is active.
 
 ### 3. Verify WireGuard status (via container &mdash; no host install)
+
 ```bash
 # show device, peers, handshakes, tx/rx, etc.
-docker exec -it wireguard-dev wg show 
+docker exec -it wireguard-dev wg show
 
 # show the server config currently applied
 docker exec -it wireguard-dev wg showconf wg0
 ```
+
 (Optionally on the host)
+
 ```bash
 ip -d link show wg0 # wg0 should exist since we use host networking
 ```
@@ -106,11 +111,11 @@ The compose file includes the following environment variables:
 - `./wireguard/config:/config` → stores keys, configs, and peer files persistently
 - `/dev/net/tun:/dev/net/tun` → allows WireGuard to create/manage the tunnel device.
 
-
 **Ports:**
+
 - **Host networking**: _No port mapping needed_. WireGuard listens on `UDP/51820` on the host automatically.
 - **If you disable host networking (not recommended for this dev flow)**: expose the port explicitly:
-    - `51820:51820/udp` → forwards host UDP 51820 to the container. 
+  - `51820:51820/udp` → forwards host UDP 51820 to the container.
 
 **Capabilities:**
 
@@ -121,13 +126,54 @@ The compose file includes the following environment variables:
 
 - `net.ipv4.conf.all.src_valid_mark=1` is required for proper packet marking with WireGuard.
 - With **host networking**, Docker cannot set this inside the container. Set it on the **host** instead
+- **Also note**: when using host networking, `wg0` comes up in the host namespace.
+- Make sure your `wg0.conf` includes a proper subnet route (`10.13.13.0/24`) as shown below in [wg0.conf Routing Notes](#wg0conf-routing-notes-important).
 
-## How this ties to the agent 
+## wg0.conf Routing Notes (Important)
+
+When using host networking, `wg0` comes up in the host namespace.
+
+To ensure packets always source correctly (and `ping` works reliably), edit the generated server config:
+
+```ini
+# ./wireguard/config/wg_confs/wg0.conf
+
+[Interface]
+Address = 10.13.13.1
+ListenPort = 51820
+PrivateKey = <redacted>
+Table = off # stop wg-quick from auto-adding routes
+
+PostUp = ip -4 route replace 10.13.13.0/24 dev %i proto static src 10.13.13.1; iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth+ -j MASQUERADE
+
+PostDown = ip -4 route del 10.13.13.0/24 dev %i || true; iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth+ -j MASQUERADE
+```
+
+> If you don't need NAT/forwarding (pure dev peer-to-peer testing), you can drop the `iptables` lines and keep only the `ip route` PostUp/PostDown.
+
+### Quick Verficiation
+
+After editing and restarting:
+
+```bash
+ip addr show wg0 | grep 10.13.13.1/24
+ip -4 route show 10.13.13.0/24
+# Expect: 10.13.13.0/24 dev wg0 proto static src 10.13.13.1
+
+ip -4 route get 10.13.13.2
+# Expect: dev wg0 ... src 10.13.13.1
+
+ping -c 3 10.13.13.2
+```
+
+## How this ties to the agent
+
 - In **dev**, the agent runs locally (host terminal) and manages `wg0` directly with `wgctrl-go`.
 - There is **no TCP "endpoint"** for the agent; it talks to the kernal via netlink.
 - For **Prod (k3s)** later, run the agent as a DaemonSet with `hostNetwork: true` (and typically `CAP_NET_ADMIN`) on the node that has WireGuard.
 
 ## Troubleshooting
+
 - `wg show` via `docker exec` **fails**: Ensure the container is running: `docker ps`, check logs: `docker logs wireguard-dev`.
 - **No** `wg0` **on host**: Confirm `/dev/net/tun` is presen and mounted, `sudo modprobe wireguard`, and that the host sysctl was applied (`sysctl net.ipv4.conf.all.src_valid_mark`).
 - **Can't connect a local WG client**: Ensure UDP/51820 is free and your firewall allows it. Import `peer_devpeer.conf` into a client and connect to `127.0.0.1:51820`.
@@ -136,4 +182,3 @@ The compose file includes the following environment variables:
 
 - [LinuxServer.io WireGuard Image](https://docs.linuxserver.io/images/docker-wireguard)
 - [WireGuard Documentation](https://www.wireguard.com)
-
