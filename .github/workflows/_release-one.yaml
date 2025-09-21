@@ -15,6 +15,13 @@ on:
         required: false
         type: boolean
         default: false
+    outputs:
+      should_release:
+        value: ${{ jobs.release-one.outputs.should_release }}
+      next_version:
+        value: ${{ jobs.release-one.outputs.next }}
+      bump_kind:
+        value: ${{ jobs.release-one.outputs.bump }}
 
 permissions:
   contents: write
@@ -23,6 +30,10 @@ permissions:
 jobs:
   release-one:
     runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.decide.outputs.should_release }}
+      next: ${{ steps.bump.outputs.next }}
+      bump: ${{ steps.bump.outputs.bump }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0, persist-credentials: false }
@@ -34,7 +45,7 @@ jobs:
         if: startsWith(github.head_ref, 'release/')
         run: |
           echo "Skipping because this is a release PR"
-          exit 0
+          echo "should_release=false" >> $GITHUB_OUTPUT
 
       - name: Last tag for module
         id: last
@@ -63,12 +74,25 @@ jobs:
           echo "count=$COUNT" >> $GITHUB_OUTPUT
           echo "Affected commits: $COUNT"
 
-      - name: Skip if no changes
-        if: ${{ steps.msgs.outputs.count == '0' && inputs.bump_override == '' }}
-        run: echo "No changes & no override; skipping." && exit 0
+      - name: Decide whether to release
+        id: decide
+        run: |
+          COUNT="${{ steps.msgs.outputs.count }}"
+          OVERRIDE="${{ inputs.bump_override }}"
+          if [ "$COUNT" = "0" ] && [ -z "$OVERRIDE" ]; then
+            echo "No changes in '${{ inputs.module_path }}' and no bump override. Skipping release."
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected or bump override present. Proceeding."
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          fi
+      # - name: Skip if no changes
+      #   if: ${{ steps.msgs.outputs.count == '0' && inputs.bump_override == '' }}
+      #   run: echo "No changes & no override; skipping." && exit 0
 
       - name: Compute next version
         id: bump
+        if: ${{ steps.decide.outputs.should_release == 'true' }}
         run: |
           # base version
           if [ -n "${{ steps.last.outputs.last_tag }}" ]; then
@@ -106,6 +130,7 @@ jobs:
 
       - name: Create release branch (local)
         id: branch
+        if: ${{ steps.decide.outputs.should_release == 'true' }}
         env:
           NEXT: ${{ steps.bump.outputs.next }}
         run: |
@@ -114,6 +139,7 @@ jobs:
           echo "name=$BR" >> $GITHUB_OUTPUT
 
       - name: Ensure CHANGELOG & prepend template
+        if: ${{ steps.decide.outputs.should_release == 'true' }}
         env:
           NEXT: ${{ steps.bump.outputs.next }}
         run: |
@@ -159,6 +185,7 @@ jobs:
           fi
 
       - name: Commit changes
+        if: ${{ steps.decide.outputs.should_release == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -168,7 +195,7 @@ jobs:
           git diff --cached --quiet || git commit -m "chore(${{ inputs.module_label }}): prepare v${{ steps.bump.outputs.next }} changelog"
 
       - name: Tag & push (skip on dry-run)
-        if: ${{ inputs.dry_run == false }}
+        if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false }}
         shell: bash
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
@@ -182,7 +209,7 @@ jobs:
           git push origin "$TAG"
 
       - name: Open PR to dev (skip on dry-run)
-        if: ${{ inputs.dry_run == false}}
+        if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
