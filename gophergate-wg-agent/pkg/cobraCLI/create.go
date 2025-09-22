@@ -3,6 +3,7 @@ package cobraCLI
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 
 var (
 	createIface      string
+	createName       string
 	createPubKey     string
 	createAllowed    []string
 	createEndpoint   string
@@ -38,9 +40,19 @@ yet implemented, so running it will not create any peers.`,
 	# Create a peer and specify an IP address
   	gophergate-wg-agent create --name bob --ip 10.0.0.2
   	`,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if createPubKey == "" {
+			return fmt.Errorf("--pubkey is required")
+		}
+		if len(createAllowed) == 0 {
+			return fmt.Errorf("at least one --allowed CIDR is required")
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		req := wgsvc.CreatePeerRequest{
 			Iface:             createIface,
+			Name:              createName,
 			PublicKey:         createPubKey,
 			AllowedCIDRs:      createAllowed,
 			Endpoint:          createEndpoint,
@@ -67,13 +79,14 @@ yet implemented, so running it will not create any peers.`,
 			return enc.Encode(resp)
 		}
 
-		Log.Infow("peer added", "iface", resp.Iface, "pubKey", resp.PublicKey, "configApplied", resp.ConfigApplied)
+		Log.Infow("peer added", "name", resp.Name, "iface", resp.Iface, "pubKey", resp.PublicKey, "configApplied", resp.ConfigApplied)
 		return nil
 	},
 }
 
 func init() {
 	createCmd.Flags().StringVarP(&createIface, "iface", "i", "wg0", "WireGuard interface name")
+	createCmd.Flags().StringVarP(&createName, "name", "n", "", "Friendly name for this peer (optional)")
 	createCmd.Flags().StringVarP(&createPubKey, "pubkey", "p", "", "Peer public key (base64, required)")
 	createCmd.Flags().StringSliceVarP(&createAllowed, "allowed", "a", nil, "Allowed IPs (CIDR). Repeatable (required)")
 	createCmd.Flags().IntVarP(&createKeepalive, "keepalive", "k", 0, "Persistent keepalive in second (0 = disabled)")

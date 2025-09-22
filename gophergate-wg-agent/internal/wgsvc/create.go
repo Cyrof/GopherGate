@@ -63,7 +63,7 @@ func CreatePeer(ctx context.Context, req CreatePeerRequest) (CreatePeerResponse,
 	// build the peer and apply to device
 	pc := wgtypes.PeerConfig{
 		PublicKey:                   pub,
-		ReplaceAllowedIPs:           req.ReplaceAllowedIPs || true,
+		ReplaceAllowedIPs:           req.ReplaceAllowedIPs,
 		AllowedIPs:                  allowed,
 		Endpoint:                    ep,
 		PersistentKeepaliveInterval: ka,
@@ -77,6 +77,7 @@ func CreatePeer(ctx context.Context, req CreatePeerRequest) (CreatePeerResponse,
 
 	return CreatePeerResponse{
 		Iface:         req.Iface,
+		Name:          req.Name,
 		PublicKey:     pub.String(),
 		ConfigApplied: true,
 	}, nil
