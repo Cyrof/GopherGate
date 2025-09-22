@@ -20,6 +20,7 @@ type PeerStatus struct {
 
 type CreatePeerRequest struct {
 	Iface             string
+	Name              string
 	PublicKey         string
 	AllowedCIDRs      []string
 	Endpoint          string
@@ -29,6 +30,8 @@ type CreatePeerRequest struct {
 
 type CreatePeerResponse struct {
 	Iface         string `json:"iface"`
+	Name          string `json:"name,omitempty"`
 	PublicKey     string `json:"public_key"`
 	ConfigApplied bool   `json:"config_applied"`
 }
+
