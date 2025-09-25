@@ -22,6 +22,7 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) error {
 
 	peer := handlers.NewPeers(log)
 	r.GET("/peers", peer.List)
+	r.POST("/peers", peer.Create)
 
 	r.GET("/api/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})

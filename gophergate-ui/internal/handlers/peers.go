@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"sync"
@@ -26,10 +27,7 @@ type Peers struct {
 func NewPeers(log *zap.SugaredLogger) *Peers {
 	return &Peers{
 		log: log,
-		data: map[string]peer{
-			"peer-001": {ID: "peer-001", Name:"alice", IP: "10.8.0.2/32", Note: "seed"},
-			"peer-002": {ID: "peer-002", Name:"bob", IP: "10.8.0.3/32", Note: "seed"},
-		},
+		data: map[string]peer{},
 	}
 }
 
@@ -42,9 +40,26 @@ func (p *Peers) List(c *gin.Context) {
 	p.mu.Unlock()
 
 	sort.Slice(rows, func(i, j int) bool { return rows[i].ID < rows[j].ID })
-	
+
 	c.HTML(http.StatusOK, "peers.tmpl", gin.H{
 		"title": "Peers",
 		"peers": rows,
 	})
+}
+
+func (p *Peers) Create(c *gin.Context) {
+	name := c.PostForm("name")
+	ip := c.PostForm("ip")
+	note := c.PostForm("note")
+
+	p.mu.Lock()
+	p.seq++
+	id := fmt.Sprintf("peer-%03d", p.seq)
+	rec := peer{ID: id, Name: name, IP: ip, Note: note}
+	p.data[id] = rec
+	p.mu.Unlock()
+
+	p.log.Infow("peer.create", "id", id, "name", name, "ip", ip, "note", note)
+	// TODO: later call gRPC CreatePeer
+	c.Redirect(http.StatusSeeOther, "/peers")
 }
