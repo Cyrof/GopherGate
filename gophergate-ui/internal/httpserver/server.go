@@ -19,6 +19,10 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) error {
 	r.LoadHTMLGlob("web/templates/*.tmpl")
 
 	r.GET("/", handlers.Home())
+
+	peer := handlers.NewPeers(log)
+	r.GET("/peers", peer.List)
+
 	r.GET("/api/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 	})
