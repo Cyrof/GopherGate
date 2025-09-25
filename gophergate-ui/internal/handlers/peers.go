@@ -63,3 +63,15 @@ func (p *Peers) Create(c *gin.Context) {
 	// TODO: later call gRPC CreatePeer
 	c.Redirect(http.StatusSeeOther, "/peers")
 }
+
+func (p *Peers) Delete(c *gin.Context) {
+	id := c.Param("id")
+
+	p.mu.Lock()
+	delete(p.data, id)
+	p.mu.Unlock()
+
+	p.log.Infow("peer.delete", "id", id)
+	// TODO: later call gRPC DeletePeer
+	c.Redirect(http.StatusSeeOther, "/peers")
+}

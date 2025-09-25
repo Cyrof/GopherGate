@@ -17,13 +17,19 @@
 
   <h2>Peers</h2>
   <table border="1" cellpadding="6">
-    <tr><th>ID</th><th>Name</th><th>IP</th><th>Note</th></tr>
+    <tr><th>ID</th><th>Name</th><th>IP</th><th>Note</th><th>Actions</th></tr>
     {{ range .peers }}
     <tr>
       <td>{{ .ID }}</td>
       <td>{{ .Name }}</td>
       <td>{{ .IP }}</td>
       <td>{{ .Note }}</td>
+      <td>
+        <form method="post" action="/peers/{{ .ID }}/delete" style="display:inline"
+              onsubmit="return confirm('Delete {{ .ID }}?')">
+          <button>Delete</button>
+        </form>
+      </td>
     </tr>
     {{ end }}
   </table>
