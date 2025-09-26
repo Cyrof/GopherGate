@@ -25,6 +25,7 @@
       <td>{{ .IP }}</td>
       <td>{{ .Note }}</td>
       <td>
+        <a href="/peers/{{ .ID }}/edit"><button>Edit</button></a>
         <form method="post" action="/peers/{{ .ID }}/delete" style="display:inline"
               onsubmit="return confirm('Delete {{ .ID }}?')">
           <button>Delete</button>

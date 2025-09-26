@@ -64,6 +64,46 @@ func (p *Peers) Create(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/peers")
 }
 
+func (p *Peers) EditForm(c *gin.Context) {
+	id := c.Param("id")
+
+	p.mu.Lock()
+	rec, ok := p.data[id]
+	p.mu.Unlock()
+
+	if !ok {
+		c.String(http.StatusNotFound, "peer not found")
+		return
+	}
+
+	c.HTML(http.StatusOK, "peers_edit.tmpl", gin.H{
+		"title": "Edit Peer",
+		"peer": rec,
+	})
+
+}
+
+func (p *Peers) Edit(c *gin.Context) {
+	id := c.Param("id")
+	name := c.PostForm("name")
+	ip := c.PostForm("ip")
+	note := c.PostForm("note")
+
+	p.mu.Lock()
+	if rec, ok := p.data[id]; ok {
+		rec.Name, rec.IP, rec.Note = name, ip, note
+		p.data[ip] = rec
+		p.mu.Unlock()
+		p.log.Infow("peer.update", "id", id, "name", name, "ip", ip)
+	} else {
+		p.mu.Unlock()
+		p.log.Warnw("peer.update.missing", "id", id)
+	}
+
+	// TODO: later call gRPC UpdatePeer
+	c.Redirect(http.StatusSeeOther, "/peers")
+}
+
 func (p *Peers) Delete(c *gin.Context) {
 	id := c.Param("id")
 

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>{{ .title }}</title>
+</head>
+<body>
+  <h1>{{ .title }}</h1>
+
+  <form method="post" action="/peers/{{ .peer.ID }}/edit">
+    <p>ID: {{ .peer.ID }}</p>
+    <p>
+      Name: <input name="name" value="{{ .peer.Name }}" />
+    </p>
+    <p>
+      IP: <input name="ip" value="{{ .peer.IP }}" />
+    </p>
+    <p>
+      Note: <input name="note" value="{{ .peer.Note }}" />
+    </p>
+    <p>
+      <button type="submit">Save</button>
+      <a href="/peers"><button>Cancel</button></a>
+    </p>
+  </form>
+</body>
+</html>
