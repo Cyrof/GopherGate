@@ -4,6 +4,8 @@ frontend service for **GopherGate**.
 Currently provides:
 - **Index page**
 - **Health check endpoint**
+- **Peer CRUD pages (Create, Read, Update, Delete)**
+  > ⚠️ Update currently has issues.
 
 ---
 
@@ -30,13 +32,14 @@ Currently provides:
 3. **Access the UI**
     - http://localhost:3000 -> index page
     - http://localhost:3000/healthz -> health check
+    - http://localhost:3000/peers -> peers CRUD pages
 
 ---
 
 ## Development Checklist
 - [x] Index page
 - [x] Health check endpoint
-- [ ] Peer CRUD UI scaffolding (placeholder only; no gRPC calls yet)
+- [x] Peer CRUD UI scaffolding (placeholder only; no gRPC calls yet)
 - [ ] Integration with gophergate-wg-agent (separate PR)
 - [ ] Minimal CSS for readability (keep styling light)
 - [ ] Basic routing/navigation (e.g., Home, Peers placeholder)
@@ -47,6 +50,7 @@ Currently provides:
 - [ ] Makefile (run / test / lint)
 - [ ] Dockerfile (local dev image)
 - [ ] README updates for new endpoints and flags
+- [ ] Fix Update functionality
 
 
 
