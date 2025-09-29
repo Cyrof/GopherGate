@@ -54,3 +54,14 @@ type UpdatePeerResponse struct {
 		Keepalive  bool `json:"keepalive"`
 	} `json:"changed"`
 }
+
+type DeletePeerRequest struct { 
+	Iface string
+	PublicKey string
+}
+
+type DeletePeerResponse struct {
+	Iface string `json:"iface"`
+	PublicKey string `json:"public_key"`
+	Removed bool `json:"removed"`
+}
