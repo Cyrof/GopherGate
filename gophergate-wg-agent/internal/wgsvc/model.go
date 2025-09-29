@@ -35,3 +35,22 @@ type CreatePeerResponse struct {
 	ConfigApplied bool   `json:"config_applied"`
 }
 
+type UpdatePeerRequest struct {
+	Iface              string
+	PublicKey          string
+	SetAllowedCIDRs    []string
+	AppendAllowedCIDRs []string
+	Endpoint           string
+	KeepaliveSeconds   *int
+}
+
+type UpdatePeerResponse struct {
+	Iface     string `json:"iface"`
+	PublicKey string `json:"public_key"`
+
+	Changed struct {
+		AllowedIPs bool `json:"allowed_ips"`
+		Endpoint   bool `json:"endpoint"`
+		Keepalive  bool `json:"keepalive"`
+	} `json:"changed"`
+}
