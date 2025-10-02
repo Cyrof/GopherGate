@@ -10,9 +10,9 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Singapore
-      - SERVERURL=127.0.0.1     
+      - SERVERURL=127.0.0.1
       - SERVERPORT=51820
-      - PEERS=devpeer           
+      - PEERS=devpeer
       - PEERDNS=auto
       - LOG_CONFS=true
     volumes:
@@ -21,20 +21,25 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: gg-postgres-dev
-    env_file: .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
-    volumes:
-      - ./dev/db_data:/var/lib/postgresql/data
+    restart: unless-stopped
     ports:
       - "127.0.0.1:5432:5432"
-    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gg_admin
+      POSTGRES_DB: gophergate
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    volumes:
+      - ./dev/db_data:/var/lib/postgresql/data
+    secrets:
+      - pg_password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U gg_admin -d gophergate"]
       interval: 5s
       timeout: 3s
       retries: 15
+
+secrets:
+  pg_password:
+    file: ./secrets/pg_password.txt
