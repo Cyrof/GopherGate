@@ -80,9 +80,6 @@ jobs:
             echo "Changes detected or bump override present. Proceeding."
             echo "should_release=true" >> $GITHUB_OUTPUT
           fi
-      # - name: Skip if no changes
-      #   if: ${{ steps.msgs.outputs.count == '0' && inputs.bump_override == '' }}
-      #   run: echo "No changes & no override; skipping." && exit 0
 
       - name: Compute next version
         id: bump

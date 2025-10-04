@@ -42,42 +42,64 @@ jobs:
 
           echo "ok=false" >> "$GITHUB_OUTPUT"
 
-  release-modules:
+  detect-changes:
     needs: guard
     if: ${{ needs.guard.outputs.ok == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.mk.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Set diff range
+        id: range
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "ref=${{ github.event.pull_request.merge_commit_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=HEAD~1" >> "$GITHUB_OUTPUT"
+            echo "ref=HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: dorny/paths-filter@v3
+        id: pf
+        with:
+          base: ${{ steps.range.outputs.base }}
+          ref: ${{ steps.range.outputs.ref }}
+          filters: |
+            core:
+              - 'gophergate-core/**'
+            wg_agent:
+              - 'gophergate-wg-agent/**'
+            wg_ui:
+              - 'gophergate-ui/**'
+
+      - id: mk
+        shell: bash
+        run: |
+          entries=()
+          [ "${{ steps.pf.outputs.core }}" = "true" ] && entries+=('{"module_path":"gophergate-core","module_label":"gophergate-core"}')
+          [ "${{ steps.pf.outputs.wg_agent }}" = "true" ] && entries+=('{"module_path":"gophergate-wg-agent","module_label":"gophergate-wg-agent"}')
+          [ "${{ steps.pf.outputs.wg_ui }}" = "true" ] && entries+=('{"module_path":"gophergate-ui","module_label":"gophergate-ui"}')
+
+          if [ ${#entries[@]} -eq 0 ]; then 
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          else 
+            printf 'matrix={"include":[%s]}\n' "$(IFS=,; echo "${entries[*]}")" >> "$GITHUB_OUTPUT"
+          fi
+
+  release-modules:
+    needs: [guard, detect-changes]
+    if: ${{ needs.guard.outputs.ok == 'true' && fromJSON(needs.detect-changes.outputs.matrix).include != null && length(fromJSON(needs.detect-changes.outputs.matrix).include) > 0}}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - module_path: gophergate-core
-            module_label: gophergate-core
-          - module_path: gophergate-wg-agent
-            module_label: gophergate-wg-agent
-          - module_path: gophergate-ui
-            module_label: gophergate-ui
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
     uses: ./.github/workflows/_release-one.yaml
     with:
       module_path: ${{ matrix.module_path }}
       module_label: ${{ matrix.module_label }}
       dry_run: false
     secrets: inherit
-  # core:
-  #   needs: guard
-  #   if: ${{ needs.guard.outputs.ok == 'true' }}
-  #   uses: ./.github/workflows/_release-one.yaml
-  #   with:
-  #     module_path: gophergate-core
-  #     module_label: gophergate-core
-  #     dry_run: false
-  #   secrets: inherit
-
-  # wg_agent:
-  #   needs: guard
-  #   if: ${{ needs.guard.outputs.ok == 'true' }}
-  #   uses: ./.github/workflows/_release-one.yaml
-  #   with:
-  #     module_path: gophergate-wg-agent
-  #     module_label: gophergate-wg-agent
-  #     dry_run: false
-  #   secrets: inherit
-
