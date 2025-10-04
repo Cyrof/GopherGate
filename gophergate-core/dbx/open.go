@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func Open(ctx context.Context, cfg Config) (*pgxpool.Pool, func(), error) {
@@ -23,7 +23,7 @@ func Open(ctx context.Context, cfg Config) (*pgxpool.Pool, func(), error) {
 	pc.MaxConns = pickI32(cfg.MaxConns, 4)
 	pc.MinConns = pickI32(cfg.MinConns, 0)
 	pc.MaxConnLifetime = pickDur(cfg.MaxConnLifetime, 30*time.Minute)
-	pc.MaxConnIdelTime = pickDur(cfg.MaxConnIdleTime, 5*time.Minute)
+	pc.MaxConnIdleTime = pickDur(cfg.MaxConnIdleTime, 5*time.Minute)
 	pc.HealthCheckPeriod = pickDur(cfg.HealthCheckFreq, 30*time.Second)
 
 	cctx, cancel := context.WithTimeout(ctx, pickDur(cfg.ConnectTimeout, 5*time.Second))
