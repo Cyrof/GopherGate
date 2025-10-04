@@ -35,4 +35,6 @@ go.work.sum
 # .vscode/
 
 # Ignore Wireguard Config Packet
-wireguard-dev/wireguard
+dev-sim/wireguard
+dev-sim/secrets
+dev-sim/dev

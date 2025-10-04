@@ -94,6 +94,78 @@ To stop and remove the container + network:
 docker compose -f wireguard-env.yaml down
 ```
 
+# PostgreSQL Dev DataBase (for Agent + UI)
+
+Along side the WireGuard container, we run a lightweight Postgres (`postgres:16-alpine`) instance for development.
+
+This DB is used by both the **agent** (peers, keys, configs) and the **UI** (accounts, sessions, cache).
+
+## Usage
+
+### 1. Create secrets
+
+We use Docker secrets instead of a plain `.env` file for passwords. Run this once:
+
+```bash
+mkdir -p ./dev-sim/secrets
+openssl rand -base64 32 > ./dev-sim/secrets/pg_password.txt
+```
+
+This generates a strong random password in `./secrets/pg_password.txt`.
+
+> This should already be included in the `.gitignore` but do check to make sure its never commited.
+
+### 2. Start Postgres
+
+Bring up the dev DB:
+
+```bash
+docker compose -f dev-sim.yaml up -d
+```
+
+This will:
+
+- Launch the `gg-postgres-dev` container.
+- Mount data under `./dev/db_data/` (persistent between restarts).
+- Load the password from `secrets/pg_password.txt`.
+- Expose Postgres locally on `127.0.0.1:5432`.
+
+### 3. Test Postgres
+
+You can verify the DB is running in a few ways
+
+**Check container health**:
+
+```bash
+docker ps --filter name=gg-postgres-dev
+```
+
+Status should show `healthy`.
+
+**Check logs**:
+
+```bash
+docker logs gg-postgres-dev
+```
+
+**Exec into container and check version**:
+
+```bash
+docker exec -it gg-postgres-dev psql -U gg_admin -d gophergate -c "SELECT version();"
+```
+
+**Healthcheck directly**:
+
+```bash
+docker exec gg-postgres-dev pg_isready -U gg_admin -d gophergate
+```
+
+**Expected output**:
+
+```makefile
+gophergate:5432 - accepting connections
+```
+
 ## Configuration Explained
 
 The compose file includes the following environment variables:
