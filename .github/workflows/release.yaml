@@ -48,6 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.mk.outputs.matrix }}
+      has_changes: ${{ steps.mk.outputs.has_changes }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -87,13 +88,15 @@ jobs:
 
           if [ ${#entries[@]} -eq 0 ]; then 
             echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
           else 
             printf 'matrix={"include":[%s]}\n' "$(IFS=,; echo "${entries[*]}")" >> "$GITHUB_OUTPUT"
+            echo 'has_changes=true' >> "$GITHUB_OUTPUT"
           fi
 
   release-modules:
     needs: [guard, detect-changes]
-    if: ${{ needs.guard.outputs.ok == 'true' && fromJSON(needs.detect-changes.outputs.matrix).include != null && length(fromJSON(needs.detect-changes.outputs.matrix).include) > 0}}
+    if: ${{ needs.guard.outputs.ok == 'true' && needs.detect-changes.outputs.has_changes == 'true' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
