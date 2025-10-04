@@ -16,14 +16,31 @@ jobs:
       ok: ${{ steps.chk.outputs.ok }}
     steps:
       - id: chk
+        shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # Manual trigger always allowed
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then 
             echo "ok=true" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.pull_request.merged }}" = "true" ]; then
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            if [ "${{ github.event.pull_request.merged }}" != "true" ]; then 
+              echo "ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [[ "${{ github.event.pull_request.base.ref }}" = "dev" && "${{ github.event.pull_request.head.ref }}" == release/* ]]; then
+              echo "This was a release/* PR merged to dev; skipping downstream release."
+              echo "ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "ok=false" >> "$GITHUB_OUTPUT"
 
   core:
     needs: guard
@@ -44,3 +61,4 @@ jobs:
   #     module_label: gophergate-wg-agent
   #     dry_run: false
   #   secrets: inherit
+
