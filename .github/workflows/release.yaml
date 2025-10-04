@@ -42,15 +42,34 @@ jobs:
 
           echo "ok=false" >> "$GITHUB_OUTPUT"
 
-  core:
+  release-modules:
     needs: guard
     if: ${{ needs.guard.outputs.ok == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - module_path: gophergate-core
+            module_label: gophergate-core
+          - module_path: gophergate-wg-agent
+            module_label: gophergate-wg-agent
+          - module_path: gophergate-ui
+            module_label: gophergate-ui
     uses: ./.github/workflows/_release-one.yaml
     with:
-      module_path: gophergate-core
-      module_label: gophergate-core
+      module_path: ${{ matrix.module_path }}
+      module_label: ${{ matrix.module_label }}
       dry_run: false
     secrets: inherit
+  # core:
+  #   needs: guard
+  #   if: ${{ needs.guard.outputs.ok == 'true' }}
+  #   uses: ./.github/workflows/_release-one.yaml
+  #   with:
+  #     module_path: gophergate-core
+  #     module_label: gophergate-core
+  #     dry_run: false
+  #   secrets: inherit
 
   # wg_agent:
   #   needs: guard
