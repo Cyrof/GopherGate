@@ -23,16 +23,17 @@ import (
 ## [v0.3.0] - 2025-10-04
 
 ### Added
-- (fill)
+- Introduced **envx** package, a centralised environment loader that manages `.env` configuration and detects development mode settings.
+- Added **dbx** package, providing a standardised PostgreSQL connection interface for both local development (via Docker Compose) and production (via containersed deployment on k3s).
 
 ### Changed
-- (fill)
+- Updated **logger** package to utilise the new **envx** module for consistent environment handling and mode detection during initialisation.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No fixes in this release.
 
 ## [v0.2.1] - 2025-09-16
 
