@@ -37,3 +37,4 @@ go.work.sum
 # Ignore Wireguard Config Packet
 dev-sim/wireguard
 dev-sim/secrets
+dev-sim/dev
