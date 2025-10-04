@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Cyrof/GopherGate/gophergate-core/envx"
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
-	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -46,15 +46,11 @@ func Default(app string) Config {
 }
 
 func Init(cfg Config) (*zap.SugaredLogger, func()) {
-	// try to access .env file (dev only)
-	if err := godotenv.Load(); err != nil {
-		_, _ = os.Stdout.WriteString("no .env file found, falling back to system environment variables" + "\n")
-	}
 
 	// decide mode
 	mode := cfg.Mode
 	if mode == Auto {
-		if os.Getenv("GOPHERGATE_ENV") == "dev" {
+		if envx.IsDev() {
 			mode = Console
 		} else {
 			mode = File
