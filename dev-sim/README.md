@@ -120,7 +120,7 @@ This generates a strong random password in `./secrets/pg_password.txt`.
 Bring up the dev DB:
 
 ```bash
-docker compose -f dev-sim.yaml up -d db
+docker compose -f dev-sim.yaml up -d
 ```
 
 This will:
