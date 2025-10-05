@@ -27,16 +27,16 @@ import (
 ## [v0.3.1] - 2025-10-05
 
 ### Added
-- (fill)
+- Expanded **README.md** documentation to include detailed usage guides for the new **envx** and **dbx** packages.
 
 ### Changed
-- (fill)
+- No functional changes in this release
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.3.0] - 2025-10-04
 
