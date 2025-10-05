@@ -24,6 +24,20 @@ import (
 
 ---
 
+## [v0.3.1] - 2025-10-05
+
+### Added
+- (fill)
+
+### Changed
+- (fill)
+
+### Fixed
+- (fill)
+
+### Removed
+- (fill)
+
 ## [v0.3.0] - 2025-10-04
 
 ### Added
