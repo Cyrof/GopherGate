@@ -10,7 +10,7 @@ It provides common functionality that both `gophergate-wg-agent` and `gophergate
 
 - Define **standardised paths** for storing logs, configs, and data for GopherGate applications.
 - Provide a **structured logger** (Zap + Lumberjack) with consistent defaults for both development and production.
-- Centraliiise **environment loading** (`.env`) and **database connection management**.
+- Centralise **environment loading** (`.env`) and **database connection management**.
 - Act as a foundation for future cross-application utitlies (config parsing, environment helper, etc).
 
 ---
