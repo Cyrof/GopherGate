@@ -150,7 +150,7 @@ func (d osDirFs) Open(name string) (fs.File, error) {
 	return openFile(path.Join(d.root, name))
 }
 
-func openFile(p string) (fs.File, error) { return os.Open(p) }
+func openFile(p string) (fs.File, error) { return osOpen(p) }
 
 var osOpen = func(p string) (fs.File, error) { return os.Open(p) }
 
