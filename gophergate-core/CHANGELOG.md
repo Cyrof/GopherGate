@@ -24,6 +24,20 @@ import (
 
 ---
 
+## [v0.3.2] - 2025-10-12
+
+### Added
+- Implemented a **centralized database module** to provide a unified interface for managing PostgreSQL connections across all dependent services.
+
+### Changed
+- (fill)
+
+### Fixed
+- (fill)
+
+### Removed
+- (fill)
+
 ## [v0.3.1] - 2025-10-05
 
 ### Added
