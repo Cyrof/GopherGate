@@ -27,7 +27,7 @@ import (
 ## [v0.3.3] - 2025-10-13
 
 ### Added
-- Added **unit tests** and **integration tests** for PostgreSQLto validate core database functionality and connection reliability.
+- Added **unit tests** and **integration tests** for PostgreSQL to validate core database functionality and connection reliability.
 - Introduced a **Makefile** to centralise common development and testing commands, streamlining local and CI workflows.
 
 ### Changed
