@@ -60,6 +60,8 @@ import (
 	"github.com/Cyrof/GopherGate/gophergate-core/logx"
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
 	"github.com/Cyrof/GopherGate/gophergate-core/dbx"
+
+    "github.com/your/module/internal/schema/migration"
 )
 
 func main() {
@@ -117,6 +119,19 @@ internal
     └── internal/schema/migrations
         └── internal/schema/migrations/001_init.sql
 ```
+
+#### migration.go
+Create a `migration.go` file in the same folder to embed all `.sql` files into the binary: 
+```go
+package migration
+
+import "embed"
+
+//go.embed *.sql
+var FS embed.FS
+```
+> This allows all SQL migration files to be pacakged into your binary or Docker image automatically, enduring consistent schema updates across deployments.
+
 ---
 
 ### Example `.env`
