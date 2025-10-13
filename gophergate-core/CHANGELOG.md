@@ -24,6 +24,20 @@ import (
 
 ---
 
+## [v0.3.4] - 2025-10-13
+
+### Added
+- Expanded **documentation** to cover the updated **dbx** module, which now supports automatic database migrations without requiring manual migration setup in individual applications.
+
+### Changed
+- No functional changes in this release.
+
+### Fixed
+- No fixes in this release.
+
+### Removed
+- No removals in this release.
+
 ## [v0.3.3] - 2025-10-13
 
 ### Added
