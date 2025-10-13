@@ -11,6 +11,7 @@ It provides common functionality that both `gophergate-wg-agent` and `gophergate
 - Define **standardised paths** for storing logs, configs, and data for GopherGate applications.
 - Provide a **structured logger** (Zap + Lumberjack) with consistent defaults for both development and production.
 - Centralise **environment loading** (`.env`) and **database connection management**.
+- Provide **built-in database migration support** for all subsystems.
 - Act as a foundation for future cross-application utitlies (config parsing, environment helper, etc).
 
 ---
@@ -41,6 +42,7 @@ It provides common functionality that both `gophergate-wg-agent` and `gophergate
 
 - Centralise Postgres connection pool based on [pgxpool](https://github.com/jackc/pgx).
 - Supports `DATABASE_URL` or manual config.
+- Provides a **built-in migration helper** for running SQL migrations from embedded file systems.
 - Shared across all GopherGate services.
 
 ---
@@ -89,11 +91,14 @@ func main() {
 	}
 	defer closePool()
 
-	log.Infow("connected to database")
+    // Run migration from embedded FS
+    mcfg := &dbx.MigrationConfig{AdvisoryLockKey: 4242}
+    if err := dbx.MigrateFS(ctx, pool, migration.FS, ".", mcfg); err != nil {
+        log.Fatalw("migrate failed", "err", err)
+    }
 
-	// Simulated app logic
-	time.Sleep(2 * time.Second)
-	log.Infow("application shutting down gracefully")
+	log.Infow("connected to database")
+    // continue setup
 }
 ```
 
@@ -104,6 +109,14 @@ func main() {
 >
 > This ensures each subsystem gets its own isolated directory structure and log files.
 
+### Folder Structure Standard
+Each GopherGate application that requires database migrations should follow this directory layout:
+```bash
+internal
+└── internal/schema
+    └── internal/schema/migrations
+        └── internal/schema/migrations/001_init.sql
+```
 ---
 
 ### Example `.env`
