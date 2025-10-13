@@ -29,3 +29,5 @@ type pgxTx interface {
 }
 
 var _ pgxTx = (pgx.Tx)(nil)
+
+type Tx = pgxTx
