@@ -27,16 +27,17 @@ import (
 ## [v0.3.3] - 2025-10-13
 
 ### Added
-- (fill)
+- Added **unit tests** and **integration tests** for PostgreSQLto validate core database functionality and connection reliability.
+- Introduced a **Makefile** to centralise common development and testing commands, streamlining local and CI workflows.
 
 ### Changed
-- (fill)
+- No functional changes in this release.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.3.2] - 2025-10-12
 
@@ -44,13 +45,13 @@ import (
 - Implemented a **centralized database module** to provide a unified interface for managing PostgreSQL connections across all dependent services.
 
 ### Changed
-- (fill)
+- Update internal database handling to utilise the centralised connection logic for improved consistency and maintainability.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.3.1] - 2025-10-05
 
