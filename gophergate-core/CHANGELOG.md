@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 To use `gophergate-core` in your Go project, install it as a module dependency:
 
 ```bash
-go get github.com/Cyrof/GopherGate/gophergate-core@v.0.2.0
+go get github.com/Cyrof/GopherGate/gophergate-core
 ```
 
 Then import the packages as needed:
@@ -19,10 +19,26 @@ Then import the packages as needed:
 import (
     "github.com/Cyrof/GopherGate/gophergate-core/logger"
     "github.com/Cyrof/GopherGate/gophergate-core/paths"
+    "github.com/Cyrof/GopherGate/gophergate-core/envx"
+    "github.com/Cyrof/GopherGate/gophergate-core/dbx"
 )
 ```
 
 ---
+
+## [v0.3.5] - 2025-10-13
+
+### Added
+- Updated **documentation** to include missing sections required for initialising and running the database component, ensuring clearer setup and configuration guidance for developers.
+
+### Changed
+- No functional changes in this release.
+
+### Fixed
+- No fixes in this release.
+
+### Removed
+- No removals in this release.
 
 ## [v0.3.4] - 2025-10-13
 
