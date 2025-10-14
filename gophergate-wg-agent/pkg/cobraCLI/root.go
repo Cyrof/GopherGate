@@ -1,12 +1,20 @@
 package cobraCLI
 
 import (
+	"context"
+	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
+	"github.com/Cyrof/GopherGate/gophergate-core/dbx"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/cobra"
 )
 
 var (
+	db      *pgxpool.Pool
+	stop    func()
 	rootCmd = &cobra.Command{
 		Use:   "gophergate-wg-agent",
 		Short: "A ClI agent for managing WireGuard with Cobra and gRPC.",
@@ -22,6 +30,43 @@ service for automation and integration.`,
 		},
 	}
 )
+
+func init() {
+	rootCmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
+		if db != nil {
+			return nil
+		}
+
+		ctx := withShutdown(context.Background())
+		cfg := dbx.Config{
+			App: "gophergate-wg-agent",
+			DSN: os.Getenv("DATABASE_URL"),
+		}
+		pool, cleanup, err := dbx.Open(ctx, cfg)
+		if err != nil {
+			return fmt.Errorf("open db: %w", err)
+		}
+		db = pool
+		stop = cleanup
+		return nil
+	}
+
+	rootCmd.PersistentPostRun = func(cmd *cobra.Command, args []string) {
+		if stop != nil {
+			stop()
+			stop = nil
+		}
+	}
+}
+
+func withShutdown(ctx context.Context) context.Context {
+	c, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c.Done()
+		cancel()
+	}()
+	return c
+}
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
