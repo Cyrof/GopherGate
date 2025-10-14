@@ -34,7 +34,6 @@ func init() {
 
 		ctx := withShutdown(context.Background())
 		cfg := dbx.Config{
-			App: paths.AppAgent,
 			DSN: os.Getenv("DATABASE_URL"),
 		}
 		pool, cleanup, err := dbx.Open(ctx, cfg)
