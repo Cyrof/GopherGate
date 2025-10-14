@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/Cyrof/GopherGate/gophergate-core/dbx"
-	"github.com/Cyrof/GopherGate/gophergate-core/paths"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/cobra"
 )
