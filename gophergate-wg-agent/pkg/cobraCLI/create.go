@@ -80,12 +80,12 @@ yet implemented, so running it will not create any peers.`,
 		}
 
 		// persist to DB
-		if db == nil {
+		if DB == nil {
 			return errors.New("database not initialised")
 		}
 
 		primaryIP := pickPrimaryIP(createAllowed)
-		repo := data.NewRepository(db)
+		repo := data.NewRepository(DB)
 		id, err := repo.Insert(ctx, data.Peer{
 			Name:                createName,
 			PublicKey:           createPubKey,

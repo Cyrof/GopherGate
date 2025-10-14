@@ -47,6 +47,8 @@ func main() {
 		logger.Fatalw("migrate failed", "err", err)
 	}
 
+	logger.Infow("Database initialised.")
+
 	cobraCLI.SetLogger(logger)
 
 	cobraCLI.Execute()

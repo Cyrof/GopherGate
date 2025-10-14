@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	db      *pgxpool.Pool
+	DB      *pgxpool.Pool
 	stop    func()
 	rootCmd = &cobra.Command{
 		Use:   "gophergate-wg-agent",
@@ -22,18 +22,12 @@ var (
 WireGuard interfaces and peers. It also exposes a gRPC server to allow
 external tools, such as the gophergate-ui, to interact with the WireGuard
 service for automation and integration.`,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// skip command if not runnable
-			if !cmd.Runnable() {
-				return
-			}
-		},
 	}
 )
 
 func init() {
-	rootCmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
-		if db != nil {
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if DB != nil {
 			return nil
 		}
 
@@ -46,7 +40,7 @@ func init() {
 		if err != nil {
 			return fmt.Errorf("open db: %w", err)
 		}
-		db = pool
+		DB = pool
 		stop = cleanup
 		return nil
 	}
