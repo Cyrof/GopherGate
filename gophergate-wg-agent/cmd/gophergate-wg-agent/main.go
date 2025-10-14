@@ -47,10 +47,12 @@ func main() {
 		if err := dbx.MigrateDir(ctx, pool, "./internal/schema/migration", mcfg); err != nil {
 			logger.Fatalw("migrate failed", "err", err)
 		}
+		logger.Infow("Migration successful.")
 	} else {
 		if err := dbx.MigrateFS(ctx, pool, migration.FS, ".", mcfg); err != nil {
 			logger.Fatalw("migrate failed", "err", err)
 		}
+		logger.Infow("Migration successful.")
 	}
 
 	logger.Infow("Database initialised.")
