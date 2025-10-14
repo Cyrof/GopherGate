@@ -43,8 +43,14 @@ func main() {
 	defer closePool()
 
 	mcfg := &dbx.MigrateConfig{AdvisoryLockKey: 4242}
-	if err := dbx.MigrateFS(ctx, pool, migration.FS, ".", mcfg); err != nil {
-		logger.Fatalw("migrate failed", "err", err)
+	if envx.IsDev() {
+		if err := dbx.MigrateDir(ctx, pool, "./internal/schema/migration", mcfg); err != nil {
+			logger.Fatalw("migrate failed", "err", err)
+		}
+	} else {
+		if err := dbx.MigrateFS(ctx, pool, migration.FS, ".", mcfg); err != nil {
+			logger.Fatalw("migrate failed", "err", err)
+		}
 	}
 
 	logger.Infow("Database initialised.")
