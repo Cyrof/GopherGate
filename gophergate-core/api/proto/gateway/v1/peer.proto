@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package gateway.v1;
+
+option go_package = "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1;gatewayv1";
+
+// Core Data Types
+
+message Peer {
+    string public_key = 1;
+    string iface = 2;
+    repeated string allowed_ips = 3;
+    int32 persistent_keepalive = 4;
+    string description = 5;
+    bool auto_assign_ip = 6;
+}
+
+message Status {
+    bool success = 1;
+    string message = 2;
+}
+
+// Create
+
+message CreatePeerRequest {
+    Peer peer = 1;
+}
+
+message CreatePeerResponse {
+    Status status = 1;
+    Peer peer = 2;
+}
+
+// Read
+
+message GetPeerRequest {
+    string public_key = 1;
+}
+
+message GetPeerResponse {
+    Peer peer = 1;
+}
+
+message ListPeerRequest {}
+
+message ListPeerResponse {
+    repeated Peer peers = 1;
+}
+
+// Update
+
+message UpdatePeerRequest {
+    Peer peer = 1;
+}
+
+message UpdatePeerResponse {
+    Status status = 1;
+    Peer peer = 2;
+}
+
+// Delete
+
+message DeletePeerRequest {
+    string public_key = 1;
+}
+
+message DeletePeerResponse {
+    Status status = 1;
+}
+
+// Wireguard Services
+service WireGuardService {
+    rpc CreatePeer(CreatePeerRequest) returns (CreatePeerResponse);
+    rpc GetPeer(GetPeerRequest) returns (GetPeerResponse);
+    rpc ListPeer(ListPeerRequest) returns (ListPeerResponse);
+    rpc UpdatePeer(UpdatePeerRequest) returns (UpdatePeerResponse);
+    rpc DeletePeer(DeletePeerRequest) returns (DeletePeerResponse);
+}
