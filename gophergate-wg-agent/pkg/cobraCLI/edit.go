@@ -3,10 +3,12 @@ package cobraCLI
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +16,7 @@ import (
 var (
 	upIface         string
 	upPubKey        string
+	upName          string
 	upSetAllowed    []string
 	upAppendAllowed []string
 	upEndpoint      string
@@ -25,24 +28,26 @@ var (
 var editCmd = &cobra.Command{
 	Use:     "edit",
 	Aliases: []string{"update"},
-	Short:   "Edit details of an existing WireGuard peer (placeholder, no backend yet)",
-	Long: `The edit command will be used to update details of an existing WireGuard
-peer, such as changing its name or assigned IP address. At present, this
-command is only a placeholder - the WireGuard service integration is not
-yet implemented`,
+	Short:   "Update a WireGaurd peer (by public key or name)",
+	Long: `Update a WireGuard peer on the running interface. You may:
+- Replace or append AllowedIPs
+- Set endpoint (host:port)
+- Set keepalive seconds (0 disables; omit flag to leave unchanged)
+
+Specify either --pubkey or --name (name resovles via DB). If both are provided, --pubkey takes precedence,`,
 	Example: `
-	# Edit a peer's name
-	gophergate-wg-agent edit --id 123 --name alice-renamed
+	# Replace AllowedIPs
+	gophergate-wg-agent edit --pubkey <base64> --set-allowed 10.0.0.2/32 --set-allowed 10.0.1.0/32
 
-	# Edit a peer's IP address
-	gophergate-wg-agent edit --name bob --ip 10.0.0.42
+	# Append AllowedIPs
+	gophergate-wg-agent edit --name alice --append-allowed 10.2.0.0/32
 
-	# Edit both name and IP address
-	gophergate-wg-agent edit --id 456 --name carol --ip 10.0.0.99
+	# Set endpoint and keepalive (30s)
+	gophergate-wg-agent edit --name alice --endpoint vpn.example.com:51820 --keepalive 30
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if upPubKey == "" {
-			return fmt.Errorf("--pubkey is required")
+		if upPubKey == "" && upName == "" {
+			return fmt.Errorf("either --pubkey or --name is required")
 		}
 		if len(upSetAllowed) > 0 && len(upAppendAllowed) > 0 {
 			return fmt.Errorf("provide either --set-allowed or --append-allowed, not both")
@@ -52,23 +57,58 @@ yet implemented`,
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Second)
+		defer cancel()
+
+		if DB == nil {
+			return errors.New("database not initialised")
+		}
+
+		repo := data.NewRepository(DB)
+
+		pubKey, err := wgsvc.ResolvePublicKey(ctx, repo, upName, upPubKey)
+		if err != nil {
+			return err
+		}
+
 		var kaPtr *int
 		if upKeepaliveSet {
-			ka := upKeepalive
-			kaPtr = &ka
+			if upKeepalive > 0 {
+				ka := upKeepalive
+				kaPtr = &ka
+			} else {
+				kaPtr = nil
+			}
+		}
+
+		var endpointPtr *string
+		setEndpoint := false
+		if cmd.Flags().Changed("endpoint") {
+			setEndpoint = true
+			if strings.TrimSpace(upEndpoint) == "" {
+				endpointPtr = nil
+			} else {
+				ep := upEndpoint
+				endpointPtr = &ep
+			}
+		}
+
+		dbIn := data.UpdatePeerDBInput{
+			ReplaceAllowed: upSetAllowed,
+			AppendAllowed:  upAppendAllowed,
+			SetEndpoint:    setEndpoint,
+			Endpoint:       endpointPtr,
+			SetKeepalive:   upKeepaliveSet,
 		}
 
 		req := wgsvc.UpdatePeerRequest{
 			Iface:              upIface,
-			PublicKey:          upPubKey,
+			PublicKey:          pubKey,
 			SetAllowedCIDRs:    upSetAllowed,
 			AppendAllowedCIDRs: upAppendAllowed,
 			Endpoint:           upEndpoint,
 			KeepaliveSeconds:   kaPtr,
 		}
-
-		ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Second)
-		defer cancel()
 
 		resp, err := wgsvc.UpdatePeer(ctx, req)
 		if err != nil {
@@ -78,6 +118,16 @@ yet implemented`,
 				Log.Errorw("update peer failed", "iface", upIface, "err", err)
 			}
 			return err
+		}
+
+		if kaPtr != nil {
+			ka16 := int16(*kaPtr)
+			dbIn.Keepalive = &ka16
+		} else if upKeepaliveSet {
+			dbIn.Keepalive = nil
+		}
+		if _, err := repo.UpdateByPublicKey(ctx, pubKey, dbIn); err != nil {
+			Log.Errorw("failed to syunc DB after kernal update", "pubKey", pubKey, "err", err)
 		}
 
 		if upAsJSON {
@@ -94,6 +144,8 @@ yet implemented`,
 func init() {
 	editCmd.Flags().StringVarP(&upIface, "iface", "i", "wg0", "Wireguard interface name")
 	editCmd.Flags().StringVarP(&upPubKey, "pubkey", "p", "", "Peer public key (base64, required)")
+	editCmd.Flags().StringVarP(&upName, "name", "n", "", "Peer name (look up in DB)")
+
 	editCmd.Flags().StringSliceVar(&upSetAllowed, "set-allowed", nil, "Replace AllowedIPs with these CIDRs (repeatable)")
 	editCmd.Flags().StringSliceVar(&upAppendAllowed, "append-allowed", nil, "Append these CIDRs to AllowedIPs (repeatable)")
 	editCmd.Flags().StringVarP(&upEndpoint, "endpoint", "e", "", "Set peer endpoint (host:port)")
