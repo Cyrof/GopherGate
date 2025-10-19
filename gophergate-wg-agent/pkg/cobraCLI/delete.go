@@ -3,67 +3,73 @@ package cobraCLI
 import (
 	"bufio"
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
+	"github.com/jackc/pgx/v5"
 	"github.com/spf13/cobra"
 )
 
 var (
 	delIface  string
 	delPubKey string
-	delAsJSON bool
+	delName   string
 	delYes    bool
-	delForce  bool
 )
 
 var deleteCmd = &cobra.Command{
 	Use:     "delete",
 	Aliases: []string{"rm", "remove", "del"},
-	Short:   "Delete an existing WireGuard peer (placeholder, no backend yet)",
-	Long: `The delete command will remove a WireGuard peer and its associated
-configuration. At present, this command is only a placeholder - the
-WireGuard service integration is not yet implemented`,
+	Short:   "Delete a WireGuard peer (by public key or name)",
+	Long:    `Delete a WireGuard peer from the running interface and remove its record from the database.`,
 	Example: `
-	# Delete by name (will prompt for confirmation in the future)
-	gophergate-wg-agent delete --name alice
+	# Delete by public key (non-interactive)
+	gophergate-wg-agent delete --pubkey <base64> --yes
 
-	# Delete by ID with non-interactive confirmation
-	gophergate-wg-agent delete --id 123 --yes
-
-	# Force delete (future behavior may skip safety checks)
-	gophergate-wg-agent delete --name bob --force --yes
+	# Delete by name (resolve via DB)
+	gophergate-wg-agent --name alice --yes
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if delPubKey == "" && peerID != "" {
-			delPubKey = peerID
-		}
-		if delPubKey == "" {
-			return fmt.Errorf("--pubkey (or --id) is required")
+		if delPubKey == "" && delName == "" {
+			return fmt.Errorf("either --pubkey or --name is required")
 		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Second)
+		defer cancel()
+
+		if DB == nil {
+			return errors.New("database not initialised")
+		}
+
+		repo := data.NewRepository(DB)
+
+		pubKey, err := wgsvc.ResolvePublicKey(ctx, repo, delName, delPubKey)
+		if err != nil {
+			return err
+		}
+
 		if !delYes {
-			fmt.Printf("Are you sure you want to delete peer %s on %s? (y/N): ", delPubKey, delIface)
+			fmt.Printf("Delete peer %s on %s? (y/N): ", selectorLabel(delName, pubKey), delIface)
 			reader := bufio.NewReader(os.Stdin)
 			resp, _ := reader.ReadString('\n')
+			resp = strings.TrimSpace(strings.ToLower(resp))
 			if resp != "y" && resp != "yes" {
 				fmt.Println("Aborted.")
 				return nil
 			}
 		}
+
 		req := wgsvc.DeletePeerRequest{
 			Iface:     delIface,
-			PublicKey: delPubKey,
+			PublicKey: pubKey,
 		}
-
-		ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Second)
-		defer cancel()
 
 		resp, err := wgsvc.DeletePeer(ctx, req)
 		if err != nil {
@@ -75,26 +81,31 @@ WireGuard service integration is not yet implemented`,
 			return err
 		}
 
-		if delAsJSON {
-			enc := json.NewEncoder(cmd.OutOrStdout())
-			enc.SetIndent("", " ")
-			return enc.Encode(resp)
+		if _, err := repo.DeleteByPublicKey(ctx, pubKey); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				Log.Warnw("no DB row matched; removed from interface only", "pubKey", pubKey)
+			} else {
+				Log.Errorw("failed to delete peer from DB", "pubKey", pubKey, "err", err)
+			}
 		}
+
 		Log.Infow("peer removed", "iface", resp.Iface, "pubKey", resp.PublicKey, "removed", resp.Removed)
 		return nil
 	},
 }
 
 func init() {
-	deleteCmd.Flags().StringVar(&name, "name", "", "Name of the peer to delete")
-	deleteCmd.Flags().StringVar(&peerID, "id", "", "Unique ID of the peer to delete")
-
 	deleteCmd.Flags().StringVarP(&delIface, "iface", "i", "wg0", "WireGuard interface name")
 	deleteCmd.Flags().StringVarP(&delPubKey, "pubkey", "p", "", "Peer public key (base64)")
-	deleteCmd.Flags().BoolVarP(&delAsJSON, "json", "j", false, "Output JSON response")
-
-	// reserved for future interactive safety
+	deleteCmd.Flags().StringVarP(&delName, "name", "n", "", "Peer name (look up in DB)")
 	deleteCmd.Flags().BoolVarP(&delYes, "yes", "y", false, "Confirm deletion without prompting (reserved)")
-	deleteCmd.Flags().BoolVar(&delForce, "force", false, "Force deletion (reserved)")
+
 	rootCmd.AddCommand(deleteCmd)
+}
+
+func selectorLabel(name, pub string) string {
+	if name != "" {
+		return fmt.Sprintf("%s (%s)", name, pub)
+	}
+	return pub
 }
