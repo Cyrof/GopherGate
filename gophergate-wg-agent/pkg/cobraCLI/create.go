@@ -2,7 +2,6 @@ package cobraCLI
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -22,30 +21,25 @@ var (
 	createEndpoint   string
 	createKeepalive  int
 	createReplaceIPs bool
-	createAsJSON     bool
 )
 
 var createCmd = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"c"},
 	Short:   "Create a new WireGuard peer (placeholder, no backend yet)",
-	Long: `The create command will be used to provide a new WireGuard peer
-for a user, including generating keys and configuration. At present, this
-command is only a placeholder - the WireGuard service integration is not
-yet implemented, so running it will not create any peers.`,
+	Long: `The create command provisions a new WireGuard peer, applies the configuration to the
+WireGuard interface, and persists the peer record into the database. Each peer must
+have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 	Example: `
-	# Create a new peer with default settings
-	gophergate-wg-agent create
+	# Create a new peer with basic settings 
+	gophergate-wg-agent create --name alice --pubkey <base64> --allowed 10.0.0.2/32 --keepalive 25
 
-	# Create a peer with a specific name
-	gophergate-wg-agent create --name alice
-
-	# Create a peer and specify an IP address
-  	gophergate-wg-agent create --name bob --ip 10.0.0.2
+	# Create another peer on interface wg1 with multiple allowed 	
+	gophergate-wg-agent create -i wg1 -n bob -p <base64> -a 10.0.0.3/32 -a 10.0.1.0/32 -k 30
   	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if createKeepalive < 0 {
-			return errors.New("--keepalive must be >= 0 seconds")
+			return errors.New("--keepalive must be >= 0")
 		}
 		// validate allowed CIDRs
 		for _, cidr := range createAllowed {
@@ -97,13 +91,7 @@ yet implemented, so running it will not create any peers.`,
 			return fmt.Errorf("insert peer: %w", err)
 		}
 
-		if createAsJSON {
-			enc := json.NewEncoder(cmd.OutOrStdout())
-			enc.SetIndent("", " ")
-			return enc.Encode(resp)
-		}
-
-		Log.Infow(
+		Log.Infow("peerCreated",
 			"id", id,
 			"name", resp.Name,
 			"iface", resp.Iface,
@@ -122,7 +110,6 @@ func init() {
 	createCmd.Flags().StringSliceVarP(&createAllowed, "allowed", "a", nil, "Allowed IPs (CIDR). Repeatable (required)")
 	createCmd.Flags().IntVarP(&createKeepalive, "keepalive", "k", 0, "Persistent keepalive in seconds (0 = disabled)")
 	createCmd.Flags().BoolVarP(&createReplaceIPs, "replace-ips", "r", true, "Replace existing AllowedIPs for this peer")
-	createCmd.Flags().BoolVarP(&createAsJSON, "json", "j", false, "Output JSON response")
 
 	if err := createCmd.MarkFlagRequired("pubkey"); err != nil {
 		Log.Errorw("Failed to mark flag as required", "flag", "pubkey", "error", err)
@@ -130,6 +117,10 @@ func init() {
 
 	if err := createCmd.MarkFlagRequired("allowed"); err != nil {
 		Log.Errorw("Failed to mark flag as required", "flag", "allowed", "error", err)
+	}
+
+	if err := createCmd.MarkFlagRequired("keepalive"); err != nil {
+		Log.Errorw("Failed to mark flag as required", "flag", "keepalive", "error", err)
 	}
 
 	rootCmd.AddCommand(createCmd)
