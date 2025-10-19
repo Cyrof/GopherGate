@@ -2,13 +2,12 @@ package wgsvc
 
 import (
 	"fmt"
-	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-func GetPeerByNameOrID(iface, name, peerID string) (*PeerStatus, error) {
+func GetPeerByPublicKey(iface, pubkey string) (*PeerStatus, error) {
 	ctx, err := wgctrl.New()
 	if err != nil {
 		return nil, fmt.Errorf("wgctrl init error: %w", err)
@@ -20,11 +19,11 @@ func GetPeerByNameOrID(iface, name, peerID string) (*PeerStatus, error) {
 		return nil, fmt.Errorf("failed to read device %s: %w", iface, err)
 	}
 	for _, p := range dev.Peers {
-		if peerID != "" && p.PublicKey.String() == peerID {
+		if p.PublicKey.String() == pubkey {
 			return formatPeer(p), nil
 		}
 	}
-	return nil, fmt.Errorf("peer not found: name=%s, id=%s", name, peerID)
+	return nil, fmt.Errorf("peer not found on %s", iface)
 }
 
 func formatPeer(p wgtypes.Peer) *PeerStatus {
@@ -36,11 +35,15 @@ func formatPeer(p wgtypes.Peer) *PeerStatus {
 	if p.PersistentKeepaliveInterval > 0 {
 		ka = p.PersistentKeepaliveInterval.String()
 	}
+	hs := ""
+	if !p.LastHandshakeTime.IsZero() {
+		hs = p.LastHandshakeTime.UTC().Format("2006-01-02T15:04:05Z07:00")
+	}
 	return &PeerStatus{
 		PublicKey:  p.PublicKey.String(),
 		Endpoint:   fmt.Sprint(p.Endpoint),
 		AllowedIPs: ips,
-		Handshake:  p.LastHandshakeTime.Format(time.RFC3339),
+		Handshake:  hs,
 		RxBytes:    uint64(p.ReceiveBytes),
 		TxBytes:    uint64(p.TransmitBytes),
 		Keepalive:  ka,

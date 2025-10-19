@@ -1,45 +1,62 @@
 package cobraCLI
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
 	"github.com/spf13/cobra"
 )
 
 var (
 	getIface string
+	getName  string
+	getPub   string
 	asJSON   bool
 )
 
 var getCmd = &cobra.Command{
 	Use:     "get",
 	Aliases: []string{"g", "retrieve"},
-	Short:   "Retrieve details of a WireGuard peer (placeholder, no backend yet)",
-	Long: `The get command will be used to fetch details of a WireGuard peer,
-such as public key, IP address, and connection status. At present, this
-command is only a placeholder - the WireGuard service integration is not
-not yet implemented, so running it will not return any peer information`,
+	Short:   "Retrieve details of a WireGuard peer (by public key or name)",
+	Long: `Show live status for a WireGuard peer from the running interface.
+You can specify either --pubkey or --name (name resolves via the DB). If both
+are provided, --pubkey takes precedences.`,
 	Example: `
-	# Retrieve details for a specific peer by name
+	# Get by public key
+	gophergate-wg-agent get --pubkey <base64>
+
+	# Get by name (resolve via DB to a public key)
 	gophergate-wg-agent get --name alice
 
-	# Retrieve details for a peer by ID
-	gophergate-wg-agent get --id 123
+	# JSON output 
+	gophergate-wg-agent get --name alice --json
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		// make sure either name or id is provided
-		if name == "" && peerID == "" {
-			return errors.New("you must specify either --name or --id")
-		}
-		if name != "" && peerID != "" {
-			return errors.New("please specify only one of --name or --id, not both")
+		if getPub == "" && getName == "" {
+			return errors.New("either --pubkey or --name is required")
 		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		peer, err := wgsvc.GetPeerByNameOrID(getIface, name, peerID)
+		ctx, cancel := context.WithTimeout(cmd.Context(), 10*time.Second)
+		defer cancel()
+
+		if DB == nil {
+			return errors.New("database not initialised")
+		}
+
+		repo := data.NewRepository(DB)
+
+		pubKey, err := wgsvc.ResolvePublicKey(ctx, repo, getName, getPub)
+		if err != nil {
+			return err
+		}
+
+		peer, err := wgsvc.GetPeerByPublicKey(getIface, pubKey)
 		if err != nil {
 			return err
 		}
@@ -63,9 +80,9 @@ not yet implemented, so running it will not return any peer information`,
 }
 
 func init() {
-	getCmd.Flags().StringVar(&name, "name", "", "Name of the user peer")
-	getCmd.Flags().StringVar(&peerID, "id", "", "Unique ID of the peer")
 	getCmd.Flags().StringVarP(&getIface, "iface", "i", "wg0", "WireGuard interface name")
+	getCmd.Flags().StringVarP(&getName, "name", "n", "", "Peer name (looked up in DB)")
+	getCmd.Flags().StringVarP(&getPub, "pubkey", "p", "", "Peer public key (base64)")
 	getCmd.Flags().BoolVarP(&asJSON, "json", "j", false, "Output JSON")
 
 	rootCmd.AddCommand(getCmd)
