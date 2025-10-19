@@ -26,7 +26,7 @@ var (
 var createCmd = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"c"},
-	Short:   "Create a new WireGuard peer (placeholder, no backend yet)",
+	Short:   "Create a new WireGuard peer and persist it to the database",
 	Long: `The create command provisions a new WireGuard peer, applies the configuration to the
 WireGuard interface, and persists the peer record into the database. Each peer must
 have a unique name, public key, and one or more allowed IPs (CIDRs).`,
