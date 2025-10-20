@@ -201,3 +201,29 @@ func (r *Repository) UpdateByPublicKey(ctx context.Context, pubkey string, in Up
 		ChangeKeepalive: changeKeepalive,
 	}, nil
 }
+
+func (r *Repository) NamesByPublicKeys(ctx context.Context, pubs []string) (map[string]string, error) {
+	if len(pubs) == 0 {
+		return map[string]string{}, nil
+	}
+	const q = `
+		select public_key, name
+		from peers
+		where public_key = any($1::text[])
+	`
+	rows, err := r.db.Query(ctx, q, pubs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make(map[string]string, len(pubs))
+	for rows.Next() {
+		var pk, name string
+		if err := rows.Scan(&pk, &name); err != nil {
+			return nil, err
+		}
+		out[pk] = name
+	}
+	return out, rows.Err()
+}
