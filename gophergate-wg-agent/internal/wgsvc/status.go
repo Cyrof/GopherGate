@@ -10,6 +10,10 @@ import (
 )
 
 func Status(ctx context.Context, iface string) (DeviceStatus, error) {
+	if iface == "" {
+		return DeviceStatus{}, fmt.Errorf("iface is required")
+	}
+
 	cli, err := wgctrl.New()
 	if err != nil {
 		return DeviceStatus{}, fmt.Errorf("wgctrl new: %w", err)
@@ -25,7 +29,10 @@ func Status(ctx context.Context, iface string) (DeviceStatus, error) {
 		Interface:    dev.Name,
 		ListenPort:   dev.ListenPort,
 		FirewallMark: dev.FirewallMark,
-		PublicKey:    dev.PrivateKey.String(),
+	}
+
+	if dev.PrivateKey != (dev.PrivateKey) {
+		out.PublicKey = dev.PrivateKey.String()
 	}
 
 	for _, p := range dev.Peers {

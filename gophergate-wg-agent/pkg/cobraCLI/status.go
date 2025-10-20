@@ -21,8 +21,7 @@ var statusCmd = &cobra.Command{
 	Long: `Show current WireGuard dsice information (listen port, public key, firewall mark)
 and all peers (endpoint, allowed IPs, last handshake, bytes, keepalive).
 
-In ds, this reads the dsice create by the linuxserver/wireguard container (host networking)
-using wgctrl-go (generic netlink). No 'wg' CLI is required.`,
+This uses wgctrl-go (generic netlink). No'wg' CLI is required.`,
 	Example: `
 	# Show status of wg0 (human-readable logs)
 	gophergate-wg-agent status --iface wg0
@@ -32,9 +31,7 @@ using wgctrl-go (generic netlink). No 'wg' CLI is required.`,
 	
 	# JSON output for piping to tools (e.g., jp)
 	gophergate-wg-agent status -i wg0 -j | jq .
-	
-	# Only peers in JSON, pretty-printed
-	gophergate-wg-agent status -i wg0 -j | jq '.peers[]'`,
+	`,
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(cmd.Context(), 3*time.Second)
@@ -56,7 +53,7 @@ using wgctrl-go (generic netlink). No 'wg' CLI is required.`,
 		}
 
 		// human logs
-		Log.Infow("wg dsice",
+		Log.Infow("wg device",
 			"name", ds.Interface,
 			"listenPort", ds.ListenPort,
 			"fwMark", ds.FirewallMark,
@@ -64,11 +61,15 @@ using wgctrl-go (generic netlink). No 'wg' CLI is required.`,
 			"peers", len(ds.Peers),
 		)
 		for _, p := range ds.Peers {
+			handshake := p.Handshake
+			if strings.TrimSpace(handshake) == "" {
+				handshake = "-"
+			}
 			Log.Infow("peer",
 				"pubKey", p.PublicKey,
 				"endpoint", p.Endpoint,
 				"allowedIPs", strings.Join(p.AllowedIPs, ", "),
-				"latestHandshake", p.Handshake,
+				"latestHandshake", handshake,
 				"rxBytes", p.RxBytes,
 				"txBytes", p.TxBytes,
 				"keepalive", p.Keepalive,
