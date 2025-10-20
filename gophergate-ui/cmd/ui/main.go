@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	stdlog "log"
 
+	"github.com/Cyrof/GopherGate/gophergate-core/envx"
 	"github.com/Cyrof/GopherGate/gophergate-core/logx"
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
 
@@ -16,14 +16,14 @@ var Version = "0.1.0"
 func main() {
 	// In the main function, it should run the configuration setup from the `config` folder
 	// and also the initialisation for the httpserver that is setup using gin from the `httpserver` folder
-	fmt.Println("Ui skeleton running...")
+	envx.LoadDotenvIfPresent()
 
-	p := paths.ForApp("gophergate-ui")
+	p := paths.ForApp(paths.AppUI)
 	if err := p.Ensure(); err != nil {
 		stdlog.Fatalf("failed to ensure paths: %v", err)
 	}
 
-	logger, flush := logx.Init(logx.Default("gophergate-ui"))
+	logger, flush := logx.Init(logx.Default(paths.AppUI))
 	defer flush()
 
 	cfg, err := config.Load(logger)
