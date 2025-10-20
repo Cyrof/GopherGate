@@ -41,6 +41,7 @@ Use --output json for scripting.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		peers, err := wgsvc.ListPeers(listIface)
 		if err != nil {
+			errf(cmd, "Error reading device %s: %v\n", listIface, err)
 			return err
 		}
 
@@ -53,11 +54,13 @@ Use --output json for scripting.`,
 		defer cancel()
 
 		if DB == nil {
+			errf(cmd, "Warning: database not initialised; names will be empty\n")
 			return errors.New("database not initialised")
 		}
 		repo := data.NewRepository(DB)
 		nameMap, err := repo.NamesByPublicKeys(ctx, pubKeys)
 		if err != nil {
+			errf(cmd, "Warning: failed to fetch names from DB: %v\n", err)
 			return fmt.Errorf("query names: %w", err)
 		}
 
@@ -78,16 +81,18 @@ Use --output json for scripting.`,
 		case "json":
 			enc := json.NewEncoder(cmd.OutOrStdout())
 			enc.SetIndent("", " ")
+			Log.Infow("list displayed", "iface", listIface, "peers", len(rows), "format", "json")
 			return enc.Encode(peers)
 
 		case "table":
 			if len(peers) == 0 {
-				cmd.Println("No peers found.")
+				out(cmd, "No peers found.\n")
+				Log.Infow("list displayed", "iface", listIface, "peers", 0, "format", "table")
 				return nil
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "%-16s %-28s %-22s %-12s %-12s %-20s\n", "Name", "PublicKey", "Endpoint", "RxBytes", "TxBytes", "Handshake")
+			outf(cmd, "%-16s %-28s %-22s %-12s %-12s %-20s\n", "Name", "PublicKey", "Endpoint", "RxBytes", "TxBytes", "Handshake")
 			for _, r := range rows {
-				fmt.Fprintf(cmd.OutOrStdout(), "%-16s %-28s %-22s %-12d %-12d %-20s\n",
+				outf(cmd, "%-16s %-28s %-22s %-12d %-12d %-20s\n",
 					trunc(r.Name, 16),
 					truncKey(r.PublicKey, 28),
 					trunc(r.Endpoint, 22),
@@ -95,9 +100,20 @@ Use --output json for scripting.`,
 					r.TxBytes,
 					trunc(r.Handshake, 20),
 				)
+				Log.Debugw("peer listed",
+					"iface", listIface,
+					"name", r.Name,
+					"pubKey", r.PublicKey,
+					"endpoint", r.Endpoint,
+					"rx", r.RxBytes,
+					"tx", r.TxBytes,
+					"handshake", r.Handshake,
+				)
 			}
+			Log.Infow("list displayed", "iface", listIface, "peers", len(rows), "format", "table")
 			return nil
 		default:
+			errf(cmd, "unsupported output format: %s (use table|json)\n", listOutput)
 			return fmt.Errorf("unsupported output format: %s (use table|json)", listOutput)
 		}
 	},

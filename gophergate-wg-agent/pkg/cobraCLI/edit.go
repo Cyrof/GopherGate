@@ -61,6 +61,8 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 		defer cancel()
 
 		if DB == nil {
+			errf(cmd, "Error: database not initialised (required for --name lookup)\n")
+			Log.Errorw("edit failed: DB not initialied for name lookup", "iface", upIface, "name", upName)
 			return errors.New("database not initialised")
 		}
 
@@ -68,6 +70,8 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 
 		pubKey, err := wgsvc.ResolvePublicKey(ctx, repo, upName, upPubKey)
 		if err != nil {
+			errf(cmd, "Error: failed to resolve name %q: %v\n", upName, err)
+			Log.Errorw("resolve name failed", "iface", upIface, "name", upName, "err", err)
 			return err
 		}
 
@@ -113,8 +117,10 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 		resp, err := wgsvc.UpdatePeer(ctx, req)
 		if err != nil {
 			if strings.Contains(strings.ToLower(err.Error()), "operation not permitted") {
+				errf(cmd, "Error: need CAP_NET_ADMIN (sudo or setcap cap_net_admin=ep)\n")
 				Log.Errorw("permission error: need CAP_NET_ADMIN (sudo or setup cap_net_admin=ep)")
 			} else {
+				errf(cmd, "ErrorL update peer failed on %s: %v\n", upIface, err)
 				Log.Errorw("update peer failed", "iface", upIface, "err", err)
 			}
 			return err
@@ -127,16 +133,39 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 			dbIn.Keepalive = nil
 		}
 		if _, err := repo.UpdateByPublicKey(ctx, pubKey, dbIn); err != nil {
+			errf(cmd, "Warning: failed to sync DB: %v\n", err)
 			Log.Errorw("failed to syunc DB after kernal update", "pubKey", pubKey, "err", err)
 		}
 
 		if upAsJSON {
 			enc := json.NewEncoder(cmd.OutOrStdout())
 			enc.SetIndent("", " ")
+			Log.Infow("peer updated", "iface", resp.Iface, "pubKey", resp.PublicKey, "format", "json",
+				"change.allowedIPs", resp.Changed.AllowedIPs,
+				"change.endpoint", resp.Changed.Endpoint,
+				"change.keepalive", resp.Changed.Keepalive,
+			)
 			return enc.Encode(resp)
 		}
 
-		Log.Infow("peer updated", "iface", resp.Iface, "pubKey", resp.PublicKey, "change.allowedIPs", resp.Changed.AllowedIPs, "change.endpoint", resp.Changed.Endpoint, "change.keepalive", resp.Changed.Keepalive)
+		outf(cmd, "Peer updated on %s\n PublicKey: %s\n Changed: allowedIPs=%t endpoint=%t keepalive=%t\n",
+			resp.Iface, resp.PublicKey, resp.Changed.AllowedIPs, resp.Changed.Endpoint, resp.Changed.Keepalive)
+
+		Log.Infow("peer updated", "iface", resp.Iface, "pubKey", resp.PublicKey, "format", "text",
+			"change.allowedIPs", resp.Changed.AllowedIPs,
+			"change.endpoint", resp.Changed.Endpoint,
+			"change.keepalive", resp.Changed.Keepalive,
+		)
+
+		Log.Debugw("peer update request detail",
+			"iface", upIface,
+			"pubKey", pubKey,
+			"setAllowed", upSetAllowed,
+			"appendAllowed", upAppendAllowed,
+			"endpoint", upEndpoint,
+			"keepaliveSet", upKeepaliveSet,
+			"keepalive", upKeepalive,
+		)
 		return nil
 	},
 }

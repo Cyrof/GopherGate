@@ -45,6 +45,8 @@ var deleteCmd = &cobra.Command{
 		defer cancel()
 
 		if DB == nil {
+			errf(cmd, "Error: database initialised (required for --name lookup)\n")
+			Log.Errorw("delete failed: DB not initialised for name lookup", "iface", delIface, "name", delName)
 			return errors.New("database not initialised")
 		}
 
@@ -52,6 +54,8 @@ var deleteCmd = &cobra.Command{
 
 		pubKey, err := wgsvc.ResolvePublicKey(ctx, repo, delName, delPubKey)
 		if err != nil {
+			errf(cmd, "Error: failed to resolve name %q: %v\n", delName, err)
+			Log.Errorw("resolve name failed", "iface", delIface, "name", delName, "err", err)
 			return err
 		}
 
@@ -61,7 +65,8 @@ var deleteCmd = &cobra.Command{
 			resp, _ := reader.ReadString('\n')
 			resp = strings.TrimSpace(strings.ToLower(resp))
 			if resp != "y" && resp != "yes" {
-				fmt.Println("Aborted.")
+				out(cmd, "Aborted.\n")
+				Log.Infow("delete aborted by user", "iface", delIface, "pubKey", pubKey)
 				return nil
 			}
 		}
@@ -74,8 +79,10 @@ var deleteCmd = &cobra.Command{
 		resp, err := wgsvc.DeletePeer(ctx, req)
 		if err != nil {
 			if strings.Contains(strings.ToLower(err.Error()), "operation not permitted") {
-				Log.Errorw("permission error: need CAP_NET_ADMIN (sudo or setcap cap_net_admin=ep)")
+				errf(cmd, "Error: need CAP_NET_ADMIN (sudo or setcap cap_net_admin=ep)\n")
+				Log.Errorw("delete permission error", "iface", delIface, "pubKey", pubKey, "err", err)
 			} else {
+				errf(cmd, "Error: failed to delete peer on %s: %v\n", delIface, err)
 				Log.Errorw("delete peer failed", "iface", delIface, "err", err)
 			}
 			return err
@@ -83,12 +90,15 @@ var deleteCmd = &cobra.Command{
 
 		if _, err := repo.DeleteByPublicKey(ctx, pubKey); err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				outf(cmd, "Note: no DB row matched for %s; removed from interface only\n", pubKey)
 				Log.Warnw("no DB row matched; removed from interface only", "pubKey", pubKey)
 			} else {
+				outf(cmd, "Warning: failed to delete peer from DB: %v\n", err)
 				Log.Errorw("failed to delete peer from DB", "pubKey", pubKey, "err", err)
 			}
 		}
 
+		outf(cmd, "Peer removed on %s: %s\n", resp.Iface, resp.PublicKey)
 		Log.Infow("peer removed", "iface", resp.Iface, "pubKey", resp.PublicKey, "removed", resp.Removed)
 		return nil
 	},

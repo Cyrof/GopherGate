@@ -22,6 +22,8 @@ var (
 WireGuard interfaces and peers. It also exposes a gRPC server to allow
 external tools, such as the gophergate-ui, to interact with the WireGuard
 service for automation and integration.`,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 )
 
@@ -32,15 +34,24 @@ func init() {
 		}
 
 		ctx := withShutdown(context.Background())
-		cfg := dbx.Config{
-			DSN: os.Getenv("DATABASE_URL"),
+
+		dsn := os.Getenv("DATABASE_URL")
+		if dsn == "" {
+			errf(cmd, "Warning: DATABASE_URL is not set; DB-backend features may be limited.\n")
+			Log.Warn("DATABASE_URL not set; continuing without DB")
+			return nil
 		}
-		pool, cleanup, err := dbx.Open(ctx, cfg)
+
+		pool, cleanup, err := dbx.Open(ctx, dbx.Config{DSN: dsn})
 		if err != nil {
+			errf(cmd, "Error: failed to open database: %v\n", err)
+			Log.Errorw("open db failed", "err", err)
 			return fmt.Errorf("open db: %w", err)
 		}
+
 		DB = pool
 		stop = cleanup
+		Log.Infow("database initialised")
 		return nil
 	}
 
@@ -48,6 +59,7 @@ func init() {
 		if stop != nil {
 			stop()
 			stop = nil
+			Log.Debug("database connection closed")
 		}
 	}
 }
@@ -63,6 +75,8 @@ func withShutdown(ctx context.Context) context.Context {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		Log.Errorw("unexpected error occured", "err", err)
 		os.Exit(1)
 	}
 }

@@ -66,15 +66,19 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 		resp, err := wgsvc.CreatePeer(ctx, req)
 		if err != nil {
 			if strings.Contains(strings.ToLower(err.Error()), "operation not permitted") {
-				Log.Errorw("permission error: need CAP_NET_ADMIN (sudo or setcap cap_net_admin=ep)")
+				errf(cmd, "Error: need CAP_NET_ADMIN (sudo or setcap cap_net_admin=ep)\n")
+				Log.Errorw("create permission error", "iface", createIface, "name", createName, "pubKey", createPubKey, "err", err)
 			} else {
-				Log.Errorw("create peer failed", "iface", createIface, "err", err)
+				errf(cmd, "Error: create peer failed on %s: %v\n", createIface, err)
+				Log.Errorw("create peer failed", "iface", createIface, "name", createName, "pubKey", createPubKey, "err", err)
 			}
 			return err
 		}
 
 		// persist to DB
 		if DB == nil {
+			errf(cmd, "Error: database no initialied; cannot persist peer\n")
+			Log.Errorw("create failed: DB not intialised", "iface", createIface, "name", createName, "pubKey", createPubKey)
 			return errors.New("database not initialised")
 		}
 
@@ -88,8 +92,14 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			PersistentKeepalive: optionalI16(createKeepalive),
 		})
 		if err != nil {
+			errf(cmd, "Error: failed to insert peer in DB: %v\n", err)
+			Log.Errorw("insert peer failed", "iface", createIface, "name", createName, "pubKey", createPubKey, "err", err)
 			return fmt.Errorf("insert peer: %w", err)
 		}
+
+		outf(cmd, "Peer created on %s\n ID: %s\n Name: %s\n PublicKey: %s\n PrimaryIP: %s\n ConfigApplied: %t\n",
+			resp.Iface, id, resp.Name, resp.PublicKey, primaryIP, resp.ConfigApplied,
+		)
 
 		Log.Infow("peerCreated",
 			"id", id,
@@ -98,6 +108,16 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			"pubKey", resp.PublicKey,
 			"configApplied", resp.ConfigApplied,
 			"ip", primaryIP,
+		)
+
+		Log.Debugw("peer create request detail",
+			"iface", createIface,
+			"name", createName,
+			"pubKey", createPubKey,
+			"allowedCIDRs", createAllowed,
+			"endpoint", createEndpoint,
+			"keepalive", createKeepalive,
+			"replaceIPs", createReplaceIPs,
 		)
 		return nil
 	},
