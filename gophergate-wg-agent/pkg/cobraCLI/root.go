@@ -150,8 +150,19 @@ func syncWireGuardFromDB(ctx context.Context, pool *pgxpool.Pool, iface string) 
 		}
 
 		// diff against kernel
-		cur, _ := current[pub.String()]
+		cur, has := current[pub.String()]
 		need := wgtypes.PeerConfig{PublicKey: pub}
+
+		if !has {
+			Log.Debugw("peer missing in kernel, will add", "name", r.Name, "pubKey", r.PublicKey)
+			need.ReplaceAllowedIPs = len(wantAllowed) > 0
+			need.AllowedIPs = wantAllowed
+			need.Endpoint = wantEP
+			need.PersistentKeepaliveInterval = wantKA
+			updates = append(updates, need)
+			changed++
+			continue
+		}
 
 		// compoase allowedIPs
 		if !allowedEqual(cur.AllowedIPs, wantAllowed) {
