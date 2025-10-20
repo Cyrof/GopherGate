@@ -15,7 +15,7 @@ type Peer struct {
 	Name                string
 	PublicKey           string
 	IPAddress           net.IP
-	AllowedIPs          []net.IP
+	AllowedIPs          []net.IPNet
 	Endpoint            *string
 	PersistentKeepalive *int16
 	LastHandshake       *time.Time
@@ -34,19 +34,25 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 func (r *Repository) Insert(ctx context.Context, p Peer) (string, error) {
 	const q = `
 		insert into peers (name, public_key, ip_address, allowed_ips, endpoint, persistent_keepalive)	
-		values ($1, $2, $3, $4, $5, $6)
+		values ($1, $2, $3, $4::inet[], $5, $6)
 		returning id::text;
 	`
 	allowed := make([]string, 0, len(p.AllowedIPs))
-	for _, ip := range p.AllowedIPs {
-		allowed = append(allowed, ip.String())
+	for _, ipn := range p.AllowedIPs {
+		allowed = append(allowed, ipn.String())
+	}
+
+	var ipStr *string
+	if p.IPAddress != nil {
+		s := p.IPAddress.String()
+		ipStr = &s
 	}
 
 	var id string
 	err := r.db.QueryRow(ctx, q,
 		p.Name,
 		p.PublicKey,
-		p.IPAddress.String(),
+		ipStr,
 		allowed,
 		p.Endpoint,
 		p.PersistentKeepalive,
@@ -84,14 +90,14 @@ func (r *Repository) GetPublicKeyByName(ctx context.Context, name string) (strin
 
 func (r *Repository) GetByPublicKey(ctx context.Context, pub string) (*Peer, error) {
 	const q = `
-		select id::text, name, public_key, ip_address, allowed_ips, endpoint, 
-			persistent_keepalive, last_handshake, create_at, updated_at
+		select id::text, name, public_key, ip_address::text, allowed_ips::text[], endpoint, 
+			persistent_keepalive, last_handshake, created_at, updated_at
 		from peers
 		where public_key = $1
 		limit 1;
 	`
 	var p Peer
-	var ipStr string
+	var ipStr *string
 	var allowed []string
 	if err := r.db.QueryRow(ctx, q, pub).Scan(
 		&p.ID, &p.Name, &p.PublicKey, &ipStr, &allowed, &p.Endpoint,
@@ -99,11 +105,25 @@ func (r *Repository) GetByPublicKey(ctx context.Context, pub string) (*Peer, err
 	); err != nil {
 		return nil, err
 	}
-	p.IPAddress = net.ParseIP(ipStr)
+
+	if ipStr != nil {
+		p.IPAddress = net.ParseIP(*ipStr)
+	}
+
 	for _, a := range allowed {
-		if ip := net.ParseIP(a); ip != nil {
-			p.AllowedIPs = append(p.AllowedIPs, ip)
+		_, ipn, err := net.ParseCIDR(a)
+		if err != nil {
+			ip := net.ParseIP(strings.TrimSpace(a))
+			if ip == nil {
+				continue
+			}
+			mask := net.CIDRMask(32, 32)
+			if ip.To4() == nil {
+				mask = net.CIDRMask(128, 128)
+			}
+			ipn = &net.IPNet{IP: ip, Mask: mask}
 		}
+		p.AllowedIPs = append(p.AllowedIPs, *ipn)
 	}
 	return &p, nil
 }
@@ -139,15 +159,16 @@ func (r *Repository) UpdateByPublicKey(ctx context.Context, pubkey string, in Up
 	var changeAllowed bool
 	switch {
 	case len(in.ReplaceAllowed) > 0:
-		add(`allowed_ips = $`+fmt.Sprint(len(args)+1)+`::text[]`, in.ReplaceAllowed)
+		add(`allowed_ips = $`+fmt.Sprint(len(args)+1)+`::net[]`, in.ReplaceAllowed)
 		changeAllowed = true
+
 	case len(in.AppendAllowed) > 0:
 		add(`allowed_ips = (
 			select array(
 				select distinct x from (
-					select unnest(coalesce(allowed_ips, '{}')) as x
+				select unnest(coalesce(allowed_ips, '{}::inet[]')) as x
 					union all
-					select unest($`+fmt.Sprint(len(args)+1)+`::text[]) as x
+					select unest($`+fmt.Sprint(len(args)+1)+`::inet[]) as x
 				) t
 			)
 		)`, in.AppendAllowed)
@@ -184,7 +205,7 @@ func (r *Repository) UpdateByPublicKey(ctx context.Context, pubkey string, in Up
 	// always bump updated_at
 	setParts = append(setParts, `updated_at = NOW()`)
 
-	q := `update peers set` + strings.Join(setParts, ", ") + `where public_key = $` + fmt.Sprint(len(args)+1) + `;`
+	q := `update peers set ` + strings.Join(setParts, ", ") + ` where public_key = $` + fmt.Sprint(len(args)+1) + `;`
 	args = append(args, pubkey)
 
 	ct, err := r.db.Exec(ctx, q, args...)
@@ -224,6 +245,68 @@ func (r *Repository) NamesByPublicKeys(ctx context.Context, pubs []string) (map[
 			return nil, err
 		}
 		out[pk] = name
+	}
+	return out, rows.Err()
+}
+
+type BootstrapPeer struct {
+	PublicKey string
+	Allowed   []string
+	Endpoint  *string
+	Keepalive *int16
+	Name      string
+}
+
+func (r *Repository) BootstrapPeers(ctx context.Context) ([]BootstrapPeer, error) {
+	const q = `
+		select name, public_key, allowed_ips::text[], endpoint, persistent_keepalive
+		from peers
+		order by created_at asc;
+	`
+	rows, err := r.db.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []BootstrapPeer
+	for rows.Next() {
+		var name, pub string
+		var allowedRaw []string
+		var endpoint *string
+		var ka *int16
+
+		if err := rows.Scan(&name, &pub, &allowedRaw, &endpoint, &ka); err != nil {
+			return nil, err
+		}
+
+		allowedCIDRs := make([]string, 0, len(allowedRaw))
+		for _, s := range allowedRaw {
+			ss := strings.TrimSpace(s)
+			if ss == "" {
+				continue
+			}
+			if _, _, err := net.ParseCIDR(ss); err == nil {
+				allowedCIDRs = append(allowedCIDRs, ss)
+				continue
+			}
+
+			if ip := net.ParseIP(ss); ip != nil {
+				if ip.To4() != nil {
+					allowedCIDRs = append(allowedCIDRs, ip.String()+"/32")
+				} else {
+					allowedCIDRs = append(allowedCIDRs, ip.String()+"/128")
+				}
+			}
+		}
+
+		out = append(out, BootstrapPeer{
+			PublicKey: pub,
+			Allowed:   allowedCIDRs,
+			Endpoint:  endpoint,
+			Keepalive: ka,
+			Name:      name,
+		})
 	}
 	return out, rows.Err()
 }
