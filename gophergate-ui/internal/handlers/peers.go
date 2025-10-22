@@ -14,7 +14,8 @@ type peer struct {
 	ID string
 	Name string
 	IP string
-	Note string
+	Keepalive string
+	PublicKey string
 }
 
 type Peers struct {
@@ -50,16 +51,17 @@ func (p *Peers) List(c *gin.Context) {
 func (p *Peers) Create(c *gin.Context) {
 	name := c.PostForm("name")
 	ip := c.PostForm("ip")
-	note := c.PostForm("note")
+	keepalive := c.PostForm("keepalive")
+	pubkey := c.PostForm("pubkey")
 
 	p.mu.Lock()
 	p.seq++
 	id := fmt.Sprintf("peer-%03d", p.seq)
-	rec := peer{ID: id, Name: name, IP: ip, Note: note}
+	rec := peer{ID: id, Name: name, IP: ip, Keepalive: keepalive, PublicKey: pubkey}
 	p.data[id] = rec
 	p.mu.Unlock()
 
-	p.log.Infow("peer.create", "id", id, "name", name, "ip", ip, "note", note)
+	p.log.Infow("peer.create", "id", id, "name", name, "ip", ip, "keepalive(s)", keepalive, "public-key", pubkey)
 	// TODO: later call gRPC CreatePeer
 	c.Redirect(http.StatusSeeOther, "/peers")
 }
@@ -87,11 +89,12 @@ func (p *Peers) Edit(c *gin.Context) {
 	id := c.Param("id")
 	name := c.PostForm("name")
 	ip := c.PostForm("ip")
-	note := c.PostForm("note")
+	keepalive := c.PostForm("keepalive")
+	pubkey := c.PostForm("pubkey")
 
 	p.mu.Lock()
 	if rec, ok := p.data[id]; ok {
-		rec.Name, rec.IP, rec.Note = name, ip, note
+		rec.Name, rec.IP, rec.Keepalive, rec.PublicKey = name, ip, keepalive, pubkey
 		p.data[ip] = rec
 		p.mu.Unlock()
 		p.log.Infow("peer.update", "id", id, "name", name, "ip", ip)

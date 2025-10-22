@@ -11,19 +11,27 @@
   <form method="post" action="/peers">
     <input name="name" placeholder="name" required />
     <input name="ip" placeholder="10.8.0.x/32" />
-    <input name="note" placeholder="note" />
+    <input name="keepalive" placeholder="20" />
+    <input name="pubkey" placeholder="" />
     <button type="submit">Create</button>
   </form>
 
   <h2>Peers</h2>
   <table border="1" cellpadding="6">
-    <tr><th>ID</th><th>Name</th><th>IP</th><th>Note</th><th>Actions</th></tr>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Public Key</th>
+      <th>Endpoint IP</th>
+      <th>Actions</th>
+    </tr>
     {{ range .peers }}
     <tr>
       <td>{{ .ID }}</td>
       <td>{{ .Name }}</td>
       <td>{{ .IP }}</td>
-      <td>{{ .Note }}</td>
+      <td>{{ .Keepalive }}</td>
+      <td>{{ .PublicKey }}</td>
       <td>
         <a href="/peers/{{ .ID }}/edit"><button>Edit</button></a>
         <form method="post" action="/peers/{{ .ID }}/delete" style="display:inline"
