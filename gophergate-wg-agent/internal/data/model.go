@@ -3,8 +3,6 @@ package data
 import (
 	"net"
 	"time"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Peer struct {
