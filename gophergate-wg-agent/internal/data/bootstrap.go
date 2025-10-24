@@ -6,6 +6,19 @@ import (
 	"strings"
 )
 
+func (r *Repository) DeleteByPublicKey(ctx context.Context, publicKey string) (string, error) {
+	const q = `
+		delete from peers
+		where public_key = $1
+		returning id::text;
+	`
+	var id string
+	if err := r.db.QueryRow(ctx, q, publicKey).Scan(&id); err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
 func (r *Repository) BootstrapPeers(ctx context.Context) ([]BootstrapPeer, error) {
 	const q = `
 		select name, public_key, allowed_ips::text[], endpoint, persistent_keepalive
