@@ -31,24 +31,24 @@
   <h2>Peers</h2>
   <table border="1" cellpadding="6">
     <tr>
-      <th>ID</th>
       <th>Name</th>
       <th>Public Key</th>
       <th>Endpoint IP</th>
-      <th>Actions</th>
+      <th>Keepalive</th> 
     </tr>
     {{ range .peers }}
     <tr>
-      <td>{{ .ID }}</td>
       <td>{{ .Name }}</td>
+      <td>{{ .PublicKey }}</td>
       <td>{{ .IP }}</td>
       <td>{{ .Keepalive }}</td>
-      <td>{{ .PublicKey }}</td>
       <td>
-        <a href="/peers/{{ .ID }}/edit"><button>Edit</button></a>
-        <form method="post" action="/peers/{{ .ID }}/delete" style="display:inline"
-              onsubmit="return confirm('Delete {{ .ID }}?')">
-          <button>Delete</button>
+        <a href="/peers/edit?pubkey={{ .PublicKey }}"><button>Edit</button></a>
+
+        <form method="post" action="/peers/delete" style="display:inline"
+              onsubmit="return confirm('Delete peer {{ .Name }}?')">
+          <input type="hidden" name="pubkey" value="{{ .PublicKey }}" />
+          <button type="submit">Delete</button>
         </form>
       </td>
     </tr>

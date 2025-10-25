@@ -38,3 +38,6 @@ go.work.sum
 dev-sim/wireguard
 dev-sim/secrets
 dev-sim/dev
+
+# ignore local formatter config
+*.prettierrc

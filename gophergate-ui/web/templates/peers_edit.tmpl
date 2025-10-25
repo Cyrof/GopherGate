@@ -1,4 +1,4 @@
-<!doctype html>
+<!docid html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
@@ -7,20 +7,28 @@
 <body>
   <h1>{{ .title }}</h1>
 
-  <form method="post" action="/peers/{{ .peer.ID }}/edit">
-    <p>ID: {{ .peer.ID }}</p>
+  <form method="post" action="/peers/edit">
+    <input id="hidden" name="pubkey_original" value="{{ .peer.PublicKey }}" />
+
     <p>
-      Name: <input name="name" value="{{ .peer.Name }}" />
+        <label for="name">Name:</label><br/>
+        <input name="name" value="{{ .peer.Name }}" />
     </p>
     <p>
-      IP: <input name="ip" value="{{ .peer.IP }}" />
+        <label for="ip">Endpoint IP (AllowedIPs):</label><br/>
+        <input id="ip" name="ip" value="{{ .peer.IP}}" />
     </p>
     <p>
-      Note: <input name="note" value="{{ .peer.Note }}" />
+        <label for="keepalive">Persistent Keepalive (seconds):</label><br/>
+        <input id="keepalive" name="keepalive" value="{{ .peer.Keepalive }}" />
+    </p>
+    <p>
+        <label for="pubkey">Public Key:</label><br/>
+        <input id="pubkey" name="pubkey" value="{{ .peer.PublicKey }}" />
     </p>
     <p>
       <button type="submit">Save</button>
-      <a href="/peers"><button>Cancel</button></a>
+      <button type="button" onclick="window.location='/peers'">Cancel</button>
     </p>
   </form>
 </body>
