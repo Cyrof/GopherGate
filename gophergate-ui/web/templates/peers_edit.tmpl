@@ -1,0 +1,38 @@
+<!docid html>
+    <html lang="en">
+
+    <head>
+        <meta charset="utf-8" />
+        <title>{{ .title }}</title>
+    </head>
+
+    <body>
+        <h1>{{ .title }}</h1>
+
+        <form method="post" action="/peers/edit">
+            <input id="hidden" name="pubkey_original" value="{{ .peer.PublicKey }}" />
+
+            <p>
+                <label for="name">Name:</label><br />
+                <input name="name" value="{{ .peer.Name }}" />
+            </p>
+            <p>
+                <label for="ip">Endpoint IP (AllowedIPs):</label><br />
+                <input id="ip" name="ip" value="{{ .peer.IP}}" />
+            </p>
+            <p>
+                <label for="keepalive">Persistent Keepalive (seconds):</label><br />
+                <input id="keepalive" name="keepalive" value="{{ .peer.Keepalive }}" />
+            </p>
+            <p>
+                <label for="pubkey">Public Key:</label><br />
+                <input id="pubkey" name="pubkey" value="{{ .peer.PublicKey }}" />
+            </p>
+            <p>
+                <button type="submit">Save</button>
+                <button type="button" onclick="window.location='/peers'">Cancel</button>
+            </p>
+        </form>
+    </body>
+
+    </html>
