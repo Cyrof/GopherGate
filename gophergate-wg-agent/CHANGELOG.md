@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 - Initial implementation of the **gophergate-wg-agent**, establishing the backend service and CLI for the GopherGate system.
 - Implemented full **CRUD operation** for WireGuard peers, enabling creation, retrieval, update, and deletion via the command-line interface.
-- Integration **PostgreSQL support**. including a structured SQL schema directory for database initialisation and management.
+- Integrated **PostgreSQL support**, including a structured SQL schema directory for database initialisation and management.
 - Introduced modular repository layer and service logic to manage peer data and synchronisation between database and WireGuard interfaces.
 
 ### Changed
