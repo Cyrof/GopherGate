@@ -1,18 +1,29 @@
-# Changelog - gophergate-wg-agent
+# Changelog
+
+All notable changes to this project will be documented in this file
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
 ## [v0.2.0] - 2025-10-26
 
 ### Added
-- (fill)
+
+- Initial implementation of the **gophergate-wg-agent**, establishing the backend service and CLI for the GopherGate system.
+- Implemented full **CRUD operation** for WireGuard peers, enabling creation, retrieval, update, and deletion via the command-line interface.
+- Integration **PostgreSQL support**. including a structured SQL schema directory for database initialisation and management.
+- Introduced modular repository layer and service logic to manage peer data and synchronisation between database and WireGuard interfaces.
 
 ### Changed
-- (fill)
+
+- No changes in this release.
 
 ### Fixed
-- (fill)
+
+- No fixes in this release.
 
 ### Removed
-- (fill)
 
+- No removals in this release.
