@@ -1,18 +1,29 @@
-# Changelog - gophergate-ui
+# Changelog
+
+All notable changes to this project will be documented in this file
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
 ## [v0.2.0] - 2025-10-26
 
 ### Added
-- (fill)
+
+- Initial implementation of the **gophergate-ui** for Phase 1, establishing the foundational structure of the web interface.
+- Basic page routing and functional components implemented to support future integration with **gophergate-agent**.
+- Core functionality placeholders created for peer management, system overview, and configuration views.
+- Currently serves as a functional prototype with minimal stlying and limited usability until backend integration is completed
 
 ### Changed
-- (fill)
+
+- No changes in this release
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
 
+- No removals in this release.
