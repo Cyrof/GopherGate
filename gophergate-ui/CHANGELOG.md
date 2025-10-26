@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 - Initial implementation of the **gophergate-ui** for Phase 1, establishing the foundational structure of the web interface.
 - Basic page routing and functional components implemented to support future integration with **gophergate-agent**.
 - Core functionality placeholders created for peer management, system overview, and configuration views.
-- Currently serves as a functional prototype with minimal stlying and limited usability until backend integration is completed
+- Currently serves as a functional prototype with minimal styling and limited usability until backend integration is completed
 
 ### Changed
 
