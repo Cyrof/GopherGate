@@ -1,60 +1,63 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <title>{{ .title }}</title>
+    <meta charset="utf-8" />
+    <title>{{ .title }}</title>
 </head>
+
 <body>
-  <h1>{{ .title }}</h1>
-  
-  <h2>Create Peer</h2>
-  <form method="post" action="/peers">
-    <p>
-        <label for="name">Name:</label><br/>
-        <input name="name" placeholder="name" required />
-    </p>
-    <p>
-        <label for="ip">Endpoint IP (AllowedIPs):</label><br/>
-        <input name="ip" placeholder="10.8.0.x/32" />
-    </p>
-    <p>
-        <label for="keepalive">Persistent Keepalive (seconds):</label><br/> 
-        <input name="keepalive" placeholder="20" />
-    </p>
-    <p>
-        <label for="pubkey">Public Key:</label><br/>
-        <input name="pubkey" placeholder="" />
-    </p>
-    <button type="submit">Create</button>
-  </form>
+    <h1>{{ .title }}</h1>
 
-  <h2>Peers</h2>
-  <table border="1" cellpadding="6">
-    <tr>
-      <th>Name</th>
-      <th>Public Key</th>
-      <th>Endpoint IP</th>
-      <th>Keepalive</th> 
-    </tr>
-    {{ range .peers }}
-    <tr>
-      <td>{{ .Name }}</td>
-      <td>{{ .PublicKey }}</td>
-      <td>{{ .IP }}</td>
-      <td>{{ .Keepalive }}</td>
-      <td>
-        <a href="/peers/edit?pubkey={{ .PublicKey }}"><button>Edit</button></a>
+    <h2>Create Peer</h2>
+    <form method="post" action="/peers">
+        <p>
+            <label for="name">Name:</label><br />
+            <input name="name" placeholder="name" required />
+        </p>
+        <p>
+            <label for="ip">Endpoint IP (AllowedIPs):</label><br />
+            <input name="ip" placeholder="10.8.0.x/32" />
+        </p>
+        <p>
+            <label for="keepalive">Persistent Keepalive (seconds):</label><br />
+            <input name="keepalive" placeholder="20" />
+        </p>
+        <p>
+            <label for="pubkey">Public Key:</label><br />
+            <input name="pubkey" placeholder="" />
+        </p>
+        <button type="submit">Create</button>
+    </form>
 
-        <form method="post" action="/peers/delete" style="display:inline"
-              onsubmit="return confirm('Delete peer {{ .Name }}?')">
-          <input type="hidden" name="pubkey" value="{{ .PublicKey }}" />
-          <button type="submit">Delete</button>
-        </form>
-      </td>
-    </tr>
-    {{ end }}
-  </table>
+    <h2>Peers</h2>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Name</th>
+            <th>Public Key</th>
+            <th>Endpoint IP</th>
+            <th>Keepalive</th>
+        </tr>
+        {{ range .peers }}
+        <tr>
+            <td>{{ .Name }}</td>
+            <td>{{ .PublicKey }}</td>
+            <td>{{ .IP }}</td>
+            <td>{{ .Keepalive }}</td>
+            <td>
+                <a href="/peers/edit?pubkey={{ .PublicKey }}"><button>Edit</button></a>
 
-  <p><a href="/">Home</a></p>
+                <form method="post" action="/peers/delete" style="display:inline"
+                    onsubmit="return confirm('Delete peer {{ .Name }}?')">
+                    <input type="hidden" name="pubkey" value="{{ .PublicKey }}" />
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {{ end }}
+    </table>
+
+    <p><a href="/">Home</a></p>
 </body>
+
 </html>
