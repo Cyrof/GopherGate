@@ -32,7 +32,7 @@ var deleteCmd = &cobra.Command{
 	gophergate-wg-agent delete --pubkey <base64> --yes
 
 	# Delete by name (resolve via DB)
-	gophergate-wg-agent --name alice --yes
+	gophergate-wg-agent delete --name alice --yes
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if delPubKey == "" && delName == "" {
