@@ -41,3 +41,4 @@ dev-sim/dev
 
 # ignore local formatter config
 *.prettierrc
+*.pg_format
