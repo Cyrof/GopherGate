@@ -29,86 +29,112 @@ import (
 ## [v0.4.0] - 2025-11-02
 
 ### Added
-- (fill)
+
+- Integrated **gRPC** support into the core module to enable efficient inter-service communication within the GopherGate ecosystem.
+- Added an **API** directory containing the protobuf (`.proto`) definitions for service interfaces.
+- Introduced a **pkg** directory to store auto-generated gRPC and protobuf files, maintaining a clean separation between source definitions and generated artifacts.
 
 ### Changed
-- (fill)
+
+- Updated **Makefile** to include new targets for protobuf code generation, streamlining regeneration and ensuring consistent build workflows.
 
 ### Fixed
-- (fill)
+
+- No fixes in this release.
 
 ### Removed
-- (fill)
+
+- No removals in this release.
 
 ## [v0.3.5] - 2025-10-13
 
 ### Added
+
 - Updated **documentation** to include missing sections required for initialising and running the database component, ensuring clearer setup and configuration guidance for developers.
 
 ### Changed
+
 - No functional changes in this release.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.3.4] - 2025-10-13
 
 ### Added
+
 - Expanded **documentation** to cover the updated **dbx** module, which now supports automatic database migrations without requiring manual migration setup in individual applications.
 
 ### Changed
+
 - No functional changes in this release.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.3.3] - 2025-10-13
 
 ### Added
+
 - Added **unit tests** and **integration tests** for PostgreSQL to validate core database functionality and connection reliability.
 - Introduced a **Makefile** to centralise common development and testing commands, streamlining local and CI workflows.
 
 ### Changed
+
 - No functional changes in this release.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.3.2] - 2025-10-12
 
 ### Added
+
 - Implemented a **centralized database module** to provide a unified interface for managing PostgreSQL connections across all dependent services.
 
 ### Changed
+
 - Update internal database handling to utilise the centralised connection logic for improved consistency and maintainability.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.3.1] - 2025-10-05
 
 ### Added
+
 - Expanded **README.md** documentation to include detailed usage guides for the new **envx** and **dbx** packages.
 
 ### Changed
+
 - No functional changes in this release
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.3.0] - 2025-10-04
@@ -139,8 +165,8 @@ import (
 ### Changed
 
 - Updated logger initialisation to:
-  - Ignore known/benign errors returned during `Sync`.
-  - Integrate with **godotenv** to automatically load variables from a `.env` file, allowing the initialisation process to correctly detect development mode from environment configuration.
+    - Ignore known/benign errors returned during `Sync`.
+    - Integrate with **godotenv** to automatically load variables from a `.env` file, allowing the initialisation process to correctly detect development mode from environment configuration.
 
 ### Fixed
 
