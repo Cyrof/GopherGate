@@ -21,32 +21,33 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Peer struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	PublicKey           string                 `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
-	Iface               string                 `protobuf:"bytes,2,opt,name=iface,proto3" json:"iface,omitempty"`
-	AllowedIps          []string               `protobuf:"bytes,3,rep,name=allowed_ips,json=allowedIps,proto3" json:"allowed_ips,omitempty"`
-	PersistentKeepalive int32                  `protobuf:"varint,4,opt,name=persistent_keepalive,json=persistentKeepalive,proto3" json:"persistent_keepalive,omitempty"`
-	Description         string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	AutoAssignIp        bool                   `protobuf:"varint,6,opt,name=auto_assign_ip,json=autoAssignIp,proto3" json:"auto_assign_ip,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+type PeerStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PublicKey     string                 `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Endpoint      string                 `protobuf:"bytes,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	AllowedIps    []string               `protobuf:"bytes,3,rep,name=allowed_ips,json=allowedIps,proto3" json:"allowed_ips,omitempty"`
+	Handshake     string                 `protobuf:"bytes,4,opt,name=handshake,proto3" json:"handshake,omitempty"`
+	RxBytes       uint64                 `protobuf:"varint,5,opt,name=rx_bytes,json=rxBytes,proto3" json:"rx_bytes,omitempty"`
+	TxBytes       uint64                 `protobuf:"varint,6,opt,name=tx_bytes,json=txBytes,proto3" json:"tx_bytes,omitempty"`
+	Keepalive     string                 `protobuf:"bytes,7,opt,name=keepalive,proto3" json:"keepalive,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Peer) Reset() {
-	*x = Peer{}
+func (x *PeerStatus) Reset() {
+	*x = PeerStatus{}
 	mi := &file_gateway_v1_peer_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Peer) String() string {
+func (x *PeerStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Peer) ProtoMessage() {}
+func (*PeerStatus) ProtoMessage() {}
 
-func (x *Peer) ProtoReflect() protoreflect.Message {
+func (x *PeerStatus) ProtoReflect() protoreflect.Message {
 	mi := &file_gateway_v1_peer_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -58,75 +59,86 @@ func (x *Peer) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Peer.ProtoReflect.Descriptor instead.
-func (*Peer) Descriptor() ([]byte, []int) {
+// Deprecated: Use PeerStatus.ProtoReflect.Descriptor instead.
+func (*PeerStatus) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Peer) GetPublicKey() string {
+func (x *PeerStatus) GetPublicKey() string {
 	if x != nil {
 		return x.PublicKey
 	}
 	return ""
 }
 
-func (x *Peer) GetIface() string {
+func (x *PeerStatus) GetEndpoint() string {
 	if x != nil {
-		return x.Iface
+		return x.Endpoint
 	}
 	return ""
 }
 
-func (x *Peer) GetAllowedIps() []string {
+func (x *PeerStatus) GetAllowedIps() []string {
 	if x != nil {
 		return x.AllowedIps
 	}
 	return nil
 }
 
-func (x *Peer) GetPersistentKeepalive() int32 {
+func (x *PeerStatus) GetHandshake() string {
 	if x != nil {
-		return x.PersistentKeepalive
-	}
-	return 0
-}
-
-func (x *Peer) GetDescription() string {
-	if x != nil {
-		return x.Description
+		return x.Handshake
 	}
 	return ""
 }
 
-func (x *Peer) GetAutoAssignIp() bool {
+func (x *PeerStatus) GetRxBytes() uint64 {
 	if x != nil {
-		return x.AutoAssignIp
+		return x.RxBytes
 	}
-	return false
+	return 0
 }
 
-type Status struct {
+func (x *PeerStatus) GetTxBytes() uint64 {
+	if x != nil {
+		return x.TxBytes
+	}
+	return 0
+}
+
+func (x *PeerStatus) GetKeepalive() string {
+	if x != nil {
+		return x.Keepalive
+	}
+	return ""
+}
+
+// overall wiregaurd state
+type DeviceStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	ListenPort    int32                  `protobuf:"varint,2,opt,name=listen_port,json=listenPort,proto3" json:"listen_port,omitempty"`
+	FirewallMark  int32                  `protobuf:"varint,3,opt,name=firewall_mark,json=firewallMark,proto3" json:"firewall_mark,omitempty"`
+	PublicKey     string                 `protobuf:"bytes,4,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Peers         []*PeerStatus          `protobuf:"bytes,5,rep,name=peers,proto3" json:"peers,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Status) Reset() {
-	*x = Status{}
+func (x *DeviceStatus) Reset() {
+	*x = DeviceStatus{}
 	mi := &file_gateway_v1_peer_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Status) String() string {
+func (x *DeviceStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Status) ProtoMessage() {}
+func (*DeviceStatus) ProtoMessage() {}
 
-func (x *Status) ProtoReflect() protoreflect.Message {
+func (x *DeviceStatus) ProtoReflect() protoreflect.Message {
 	mi := &file_gateway_v1_peer_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -138,30 +150,57 @@ func (x *Status) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Status.ProtoReflect.Descriptor instead.
-func (*Status) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeviceStatus.ProtoReflect.Descriptor instead.
+func (*DeviceStatus) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Status) GetSuccess() bool {
+func (x *DeviceStatus) GetIface() string {
 	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *Status) GetMessage() string {
-	if x != nil {
-		return x.Message
+		return x.Iface
 	}
 	return ""
 }
 
+func (x *DeviceStatus) GetListenPort() int32 {
+	if x != nil {
+		return x.ListenPort
+	}
+	return 0
+}
+
+func (x *DeviceStatus) GetFirewallMark() int32 {
+	if x != nil {
+		return x.FirewallMark
+	}
+	return 0
+}
+
+func (x *DeviceStatus) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *DeviceStatus) GetPeers() []*PeerStatus {
+	if x != nil {
+		return x.Peers
+	}
+	return nil
+}
+
 type CreatePeerRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Peer          *Peer                  `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Iface             string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	Name              string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	PublicKey         string                 `protobuf:"bytes,3,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	AllowedCidrs      []string               `protobuf:"bytes,4,rep,name=allowed_cidrs,json=allowedCidrs,proto3" json:"allowed_cidrs,omitempty"`
+	Endpoint          string                 `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	KeepaliveSeconds  int32                  `protobuf:"varint,6,opt,name=keepalive_seconds,json=keepaliveSeconds,proto3" json:"keepalive_seconds,omitempty"`
+	ReplaceAllowedIps bool                   `protobuf:"varint,7,opt,name=replace_allowed_ips,json=replaceAllowedIps,proto3" json:"replace_allowed_ips,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *CreatePeerRequest) Reset() {
@@ -194,17 +233,61 @@ func (*CreatePeerRequest) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CreatePeerRequest) GetPeer() *Peer {
+func (x *CreatePeerRequest) GetIface() string {
 	if x != nil {
-		return x.Peer
+		return x.Iface
+	}
+	return ""
+}
+
+func (x *CreatePeerRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreatePeerRequest) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *CreatePeerRequest) GetAllowedCidrs() []string {
+	if x != nil {
+		return x.AllowedCidrs
 	}
 	return nil
 }
 
+func (x *CreatePeerRequest) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *CreatePeerRequest) GetKeepaliveSeconds() int32 {
+	if x != nil {
+		return x.KeepaliveSeconds
+	}
+	return 0
+}
+
+func (x *CreatePeerRequest) GetReplaceAllowedIps() bool {
+	if x != nil {
+		return x.ReplaceAllowedIps
+	}
+	return false
+}
+
 type CreatePeerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *Status                `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
-	Peer          *Peer                  `protobuf:"bytes,2,opt,name=peer,proto3" json:"peer,omitempty"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	PublicKey     string                 `protobuf:"bytes,3,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	ConfigApplied bool                   `protobuf:"varint,4,opt,name=config_applied,json=configApplied,proto3" json:"config_applied,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -239,23 +322,38 @@ func (*CreatePeerResponse) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CreatePeerResponse) GetStatus() *Status {
+func (x *CreatePeerResponse) GetIface() string {
 	if x != nil {
-		return x.Status
+		return x.Iface
 	}
-	return nil
+	return ""
 }
 
-func (x *CreatePeerResponse) GetPeer() *Peer {
+func (x *CreatePeerResponse) GetName() string {
 	if x != nil {
-		return x.Peer
+		return x.Name
 	}
-	return nil
+	return ""
+}
+
+func (x *CreatePeerResponse) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *CreatePeerResponse) GetConfigApplied() bool {
+	if x != nil {
+		return x.ConfigApplied
+	}
+	return false
 }
 
 type GetPeerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PublicKey     string                 `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	PublicKey     string                 `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -290,6 +388,13 @@ func (*GetPeerRequest) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{4}
 }
 
+func (x *GetPeerRequest) GetIface() string {
+	if x != nil {
+		return x.Iface
+	}
+	return ""
+}
+
 func (x *GetPeerRequest) GetPublicKey() string {
 	if x != nil {
 		return x.PublicKey
@@ -299,7 +404,7 @@ func (x *GetPeerRequest) GetPublicKey() string {
 
 type GetPeerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Peer          *Peer                  `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
+	Peer          *PeerStatus            `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -334,7 +439,7 @@ func (*GetPeerResponse) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *GetPeerResponse) GetPeer() *Peer {
+func (x *GetPeerResponse) GetPeer() *PeerStatus {
 	if x != nil {
 		return x.Peer
 	}
@@ -343,6 +448,7 @@ func (x *GetPeerResponse) GetPeer() *Peer {
 
 type ListPeerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -377,9 +483,16 @@ func (*ListPeerRequest) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{6}
 }
 
+func (x *ListPeerRequest) GetIface() string {
+	if x != nil {
+		return x.Iface
+	}
+	return ""
+}
+
 type ListPeerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Peers         []*Peer                `protobuf:"bytes,1,rep,name=peers,proto3" json:"peers,omitempty"`
+	Peers         []*PeerStatus          `protobuf:"bytes,1,rep,name=peers,proto3" json:"peers,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -414,7 +527,7 @@ func (*ListPeerResponse) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *ListPeerResponse) GetPeers() []*Peer {
+func (x *ListPeerResponse) GetPeers() []*PeerStatus {
 	if x != nil {
 		return x.Peers
 	}
@@ -422,10 +535,15 @@ func (x *ListPeerResponse) GetPeers() []*Peer {
 }
 
 type UpdatePeerRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Peer          *Peer                  `protobuf:"bytes,1,opt,name=peer,proto3" json:"peer,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Iface              string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	PublicKey          string                 `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	SetAllowedCidrs    []string               `protobuf:"bytes,3,rep,name=set_allowed_cidrs,json=setAllowedCidrs,proto3" json:"set_allowed_cidrs,omitempty"`
+	AppendAllowedCidrs []string               `protobuf:"bytes,4,rep,name=append_allowed_cidrs,json=appendAllowedCidrs,proto3" json:"append_allowed_cidrs,omitempty"`
+	Endpoint           string                 `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	KeepaliveSeconds   int32                  `protobuf:"varint,6,opt,name=keepalive_seconds,json=keepaliveSeconds,proto3" json:"keepalive_seconds,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *UpdatePeerRequest) Reset() {
@@ -458,17 +576,53 @@ func (*UpdatePeerRequest) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *UpdatePeerRequest) GetPeer() *Peer {
+func (x *UpdatePeerRequest) GetIface() string {
 	if x != nil {
-		return x.Peer
+		return x.Iface
+	}
+	return ""
+}
+
+func (x *UpdatePeerRequest) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *UpdatePeerRequest) GetSetAllowedCidrs() []string {
+	if x != nil {
+		return x.SetAllowedCidrs
 	}
 	return nil
 }
 
+func (x *UpdatePeerRequest) GetAppendAllowedCidrs() []string {
+	if x != nil {
+		return x.AppendAllowedCidrs
+	}
+	return nil
+}
+
+func (x *UpdatePeerRequest) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *UpdatePeerRequest) GetKeepaliveSeconds() int32 {
+	if x != nil {
+		return x.KeepaliveSeconds
+	}
+	return 0
+}
+
 type UpdatePeerResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *Status                `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
-	Peer          *Peer                  `protobuf:"bytes,2,opt,name=peer,proto3" json:"peer,omitempty"`
+	state         protoimpl.MessageState      `protogen:"open.v1"`
+	Iface         string                      `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	PublicKey     string                      `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Changed       *UpdatePeerResponse_Changed `protobuf:"bytes,3,opt,name=changed,proto3" json:"changed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -503,23 +657,31 @@ func (*UpdatePeerResponse) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *UpdatePeerResponse) GetStatus() *Status {
+func (x *UpdatePeerResponse) GetIface() string {
 	if x != nil {
-		return x.Status
+		return x.Iface
 	}
-	return nil
+	return ""
 }
 
-func (x *UpdatePeerResponse) GetPeer() *Peer {
+func (x *UpdatePeerResponse) GetPublicKey() string {
 	if x != nil {
-		return x.Peer
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *UpdatePeerResponse) GetChanged() *UpdatePeerResponse_Changed {
+	if x != nil {
+		return x.Changed
 	}
 	return nil
 }
 
 type DeletePeerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PublicKey     string                 `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	PublicKey     string                 `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -554,6 +716,13 @@ func (*DeletePeerRequest) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{10}
 }
 
+func (x *DeletePeerRequest) GetIface() string {
+	if x != nil {
+		return x.Iface
+	}
+	return ""
+}
+
 func (x *DeletePeerRequest) GetPublicKey() string {
 	if x != nil {
 		return x.PublicKey
@@ -563,7 +732,9 @@ func (x *DeletePeerRequest) GetPublicKey() string {
 
 type DeletePeerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *Status                `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	PublicKey     string                 `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Removed       bool                   `protobuf:"varint,3,opt,name=removed,proto3" json:"removed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -598,11 +769,85 @@ func (*DeletePeerResponse) Descriptor() ([]byte, []int) {
 	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *DeletePeerResponse) GetStatus() *Status {
+func (x *DeletePeerResponse) GetIface() string {
 	if x != nil {
-		return x.Status
+		return x.Iface
 	}
-	return nil
+	return ""
+}
+
+func (x *DeletePeerResponse) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *DeletePeerResponse) GetRemoved() bool {
+	if x != nil {
+		return x.Removed
+	}
+	return false
+}
+
+type UpdatePeerResponse_Changed struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AllowedIps    bool                   `protobuf:"varint,1,opt,name=allowed_ips,json=allowedIps,proto3" json:"allowed_ips,omitempty"`
+	Endpoint      bool                   `protobuf:"varint,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Keepalive     bool                   `protobuf:"varint,3,opt,name=keepalive,proto3" json:"keepalive,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePeerResponse_Changed) Reset() {
+	*x = UpdatePeerResponse_Changed{}
+	mi := &file_gateway_v1_peer_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePeerResponse_Changed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePeerResponse_Changed) ProtoMessage() {}
+
+func (x *UpdatePeerResponse_Changed) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_v1_peer_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePeerResponse_Changed.ProtoReflect.Descriptor instead.
+func (*UpdatePeerResponse_Changed) Descriptor() ([]byte, []int) {
+	return file_gateway_v1_peer_proto_rawDescGZIP(), []int{9, 0}
+}
+
+func (x *UpdatePeerResponse_Changed) GetAllowedIps() bool {
+	if x != nil {
+		return x.AllowedIps
+	}
+	return false
+}
+
+func (x *UpdatePeerResponse_Changed) GetEndpoint() bool {
+	if x != nil {
+		return x.Endpoint
+	}
+	return false
+}
+
+func (x *UpdatePeerResponse_Changed) GetKeepalive() bool {
+	if x != nil {
+		return x.Keepalive
+	}
+	return false
 }
 
 var File_gateway_v1_peer_proto protoreflect.FileDescriptor
@@ -610,42 +855,78 @@ var File_gateway_v1_peer_proto protoreflect.FileDescriptor
 const file_gateway_v1_peer_proto_rawDesc = "" +
 	"\n" +
 	"\x15gateway/v1/peer.proto\x12\n" +
-	"gateway.v1\"\xd7\x01\n" +
-	"\x04Peer\x12\x1d\n" +
+	"gateway.v1\"\xda\x01\n" +
 	"\n" +
-	"public_key\x18\x01 \x01(\tR\tpublicKey\x12\x14\n" +
-	"\x05iface\x18\x02 \x01(\tR\x05iface\x12\x1f\n" +
+	"PeerStatus\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x01 \x01(\tR\tpublicKey\x12\x1a\n" +
+	"\bendpoint\x18\x02 \x01(\tR\bendpoint\x12\x1f\n" +
 	"\vallowed_ips\x18\x03 \x03(\tR\n" +
-	"allowedIps\x121\n" +
-	"\x14persistent_keepalive\x18\x04 \x01(\x05R\x13persistentKeepalive\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12$\n" +
-	"\x0eauto_assign_ip\x18\x06 \x01(\bR\fautoAssignIp\"<\n" +
-	"\x06Status\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"9\n" +
-	"\x11CreatePeerRequest\x12$\n" +
-	"\x04peer\x18\x01 \x01(\v2\x10.gateway.v1.PeerR\x04peer\"f\n" +
-	"\x12CreatePeerResponse\x12*\n" +
-	"\x06status\x18\x01 \x01(\v2\x12.gateway.v1.StatusR\x06status\x12$\n" +
-	"\x04peer\x18\x02 \x01(\v2\x10.gateway.v1.PeerR\x04peer\"/\n" +
-	"\x0eGetPeerRequest\x12\x1d\n" +
+	"allowedIps\x12\x1c\n" +
+	"\thandshake\x18\x04 \x01(\tR\thandshake\x12\x19\n" +
+	"\brx_bytes\x18\x05 \x01(\x04R\arxBytes\x12\x19\n" +
+	"\btx_bytes\x18\x06 \x01(\x04R\atxBytes\x12\x1c\n" +
+	"\tkeepalive\x18\a \x01(\tR\tkeepalive\"\xb7\x01\n" +
+	"\fDeviceStatus\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1f\n" +
+	"\vlisten_port\x18\x02 \x01(\x05R\n" +
+	"listenPort\x12#\n" +
+	"\rfirewall_mark\x18\x03 \x01(\x05R\ffirewallMark\x12\x1d\n" +
 	"\n" +
-	"public_key\x18\x01 \x01(\tR\tpublicKey\"7\n" +
-	"\x0fGetPeerResponse\x12$\n" +
-	"\x04peer\x18\x01 \x01(\v2\x10.gateway.v1.PeerR\x04peer\"\x11\n" +
-	"\x0fListPeerRequest\":\n" +
-	"\x10ListPeerResponse\x12&\n" +
-	"\x05peers\x18\x01 \x03(\v2\x10.gateway.v1.PeerR\x05peers\"9\n" +
-	"\x11UpdatePeerRequest\x12$\n" +
-	"\x04peer\x18\x01 \x01(\v2\x10.gateway.v1.PeerR\x04peer\"f\n" +
-	"\x12UpdatePeerResponse\x12*\n" +
-	"\x06status\x18\x01 \x01(\v2\x12.gateway.v1.StatusR\x06status\x12$\n" +
-	"\x04peer\x18\x02 \x01(\v2\x10.gateway.v1.PeerR\x04peer\"2\n" +
-	"\x11DeletePeerRequest\x12\x1d\n" +
+	"public_key\x18\x04 \x01(\tR\tpublicKey\x12,\n" +
+	"\x05peers\x18\x05 \x03(\v2\x16.gateway.v1.PeerStatusR\x05peers\"\xfa\x01\n" +
+	"\x11CreatePeerRequest\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
-	"public_key\x18\x01 \x01(\tR\tpublicKey\"@\n" +
-	"\x12DeletePeerResponse\x12*\n" +
-	"\x06status\x18\x01 \x01(\v2\x12.gateway.v1.StatusR\x06status2\x84\x03\n" +
+	"public_key\x18\x03 \x01(\tR\tpublicKey\x12#\n" +
+	"\rallowed_cidrs\x18\x04 \x03(\tR\fallowedCidrs\x12\x1a\n" +
+	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x12+\n" +
+	"\x11keepalive_seconds\x18\x06 \x01(\x05R\x10keepaliveSeconds\x12.\n" +
+	"\x13replace_allowed_ips\x18\a \x01(\bR\x11replaceAllowedIps\"\x84\x01\n" +
+	"\x12CreatePeerResponse\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x03 \x01(\tR\tpublicKey\x12%\n" +
+	"\x0econfig_applied\x18\x04 \x01(\bR\rconfigApplied\"E\n" +
+	"\x0eGetPeerRequest\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x02 \x01(\tR\tpublicKey\"=\n" +
+	"\x0fGetPeerResponse\x12*\n" +
+	"\x04peer\x18\x01 \x01(\v2\x16.gateway.v1.PeerStatusR\x04peer\"'\n" +
+	"\x0fListPeerRequest\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\"@\n" +
+	"\x10ListPeerResponse\x12,\n" +
+	"\x05peers\x18\x01 \x03(\v2\x16.gateway.v1.PeerStatusR\x05peers\"\xef\x01\n" +
+	"\x11UpdatePeerRequest\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x02 \x01(\tR\tpublicKey\x12*\n" +
+	"\x11set_allowed_cidrs\x18\x03 \x03(\tR\x0fsetAllowedCidrs\x120\n" +
+	"\x14append_allowed_cidrs\x18\x04 \x03(\tR\x12appendAllowedCidrs\x12\x1a\n" +
+	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x12+\n" +
+	"\x11keepalive_seconds\x18\x06 \x01(\x05R\x10keepaliveSeconds\"\xf1\x01\n" +
+	"\x12UpdatePeerResponse\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x02 \x01(\tR\tpublicKey\x12@\n" +
+	"\achanged\x18\x03 \x01(\v2&.gateway.v1.UpdatePeerResponse.ChangedR\achanged\x1ad\n" +
+	"\aChanged\x12\x1f\n" +
+	"\vallowed_ips\x18\x01 \x01(\bR\n" +
+	"allowedIps\x12\x1a\n" +
+	"\bendpoint\x18\x02 \x01(\bR\bendpoint\x12\x1c\n" +
+	"\tkeepalive\x18\x03 \x01(\bR\tkeepalive\"H\n" +
+	"\x11DeletePeerRequest\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x02 \x01(\tR\tpublicKey\"c\n" +
+	"\x12DeletePeerResponse\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x02 \x01(\tR\tpublicKey\x12\x18\n" +
+	"\aremoved\x18\x03 \x01(\bR\aremoved2\x84\x03\n" +
 	"\x10WireGuardService\x12K\n" +
 	"\n" +
 	"CreatePeer\x12\x1d.gateway.v1.CreatePeerRequest\x1a\x1e.gateway.v1.CreatePeerResponse\x12B\n" +
@@ -668,46 +949,42 @@ func file_gateway_v1_peer_proto_rawDescGZIP() []byte {
 	return file_gateway_v1_peer_proto_rawDescData
 }
 
-var file_gateway_v1_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_gateway_v1_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_gateway_v1_peer_proto_goTypes = []any{
-	(*Peer)(nil),               // 0: gateway.v1.Peer
-	(*Status)(nil),             // 1: gateway.v1.Status
-	(*CreatePeerRequest)(nil),  // 2: gateway.v1.CreatePeerRequest
-	(*CreatePeerResponse)(nil), // 3: gateway.v1.CreatePeerResponse
-	(*GetPeerRequest)(nil),     // 4: gateway.v1.GetPeerRequest
-	(*GetPeerResponse)(nil),    // 5: gateway.v1.GetPeerResponse
-	(*ListPeerRequest)(nil),    // 6: gateway.v1.ListPeerRequest
-	(*ListPeerResponse)(nil),   // 7: gateway.v1.ListPeerResponse
-	(*UpdatePeerRequest)(nil),  // 8: gateway.v1.UpdatePeerRequest
-	(*UpdatePeerResponse)(nil), // 9: gateway.v1.UpdatePeerResponse
-	(*DeletePeerRequest)(nil),  // 10: gateway.v1.DeletePeerRequest
-	(*DeletePeerResponse)(nil), // 11: gateway.v1.DeletePeerResponse
+	(*PeerStatus)(nil),                 // 0: gateway.v1.PeerStatus
+	(*DeviceStatus)(nil),               // 1: gateway.v1.DeviceStatus
+	(*CreatePeerRequest)(nil),          // 2: gateway.v1.CreatePeerRequest
+	(*CreatePeerResponse)(nil),         // 3: gateway.v1.CreatePeerResponse
+	(*GetPeerRequest)(nil),             // 4: gateway.v1.GetPeerRequest
+	(*GetPeerResponse)(nil),            // 5: gateway.v1.GetPeerResponse
+	(*ListPeerRequest)(nil),            // 6: gateway.v1.ListPeerRequest
+	(*ListPeerResponse)(nil),           // 7: gateway.v1.ListPeerResponse
+	(*UpdatePeerRequest)(nil),          // 8: gateway.v1.UpdatePeerRequest
+	(*UpdatePeerResponse)(nil),         // 9: gateway.v1.UpdatePeerResponse
+	(*DeletePeerRequest)(nil),          // 10: gateway.v1.DeletePeerRequest
+	(*DeletePeerResponse)(nil),         // 11: gateway.v1.DeletePeerResponse
+	(*UpdatePeerResponse_Changed)(nil), // 12: gateway.v1.UpdatePeerResponse.Changed
 }
 var file_gateway_v1_peer_proto_depIdxs = []int32{
-	0,  // 0: gateway.v1.CreatePeerRequest.peer:type_name -> gateway.v1.Peer
-	1,  // 1: gateway.v1.CreatePeerResponse.status:type_name -> gateway.v1.Status
-	0,  // 2: gateway.v1.CreatePeerResponse.peer:type_name -> gateway.v1.Peer
-	0,  // 3: gateway.v1.GetPeerResponse.peer:type_name -> gateway.v1.Peer
-	0,  // 4: gateway.v1.ListPeerResponse.peers:type_name -> gateway.v1.Peer
-	0,  // 5: gateway.v1.UpdatePeerRequest.peer:type_name -> gateway.v1.Peer
-	1,  // 6: gateway.v1.UpdatePeerResponse.status:type_name -> gateway.v1.Status
-	0,  // 7: gateway.v1.UpdatePeerResponse.peer:type_name -> gateway.v1.Peer
-	1,  // 8: gateway.v1.DeletePeerResponse.status:type_name -> gateway.v1.Status
-	2,  // 9: gateway.v1.WireGuardService.CreatePeer:input_type -> gateway.v1.CreatePeerRequest
-	4,  // 10: gateway.v1.WireGuardService.GetPeer:input_type -> gateway.v1.GetPeerRequest
-	6,  // 11: gateway.v1.WireGuardService.ListPeer:input_type -> gateway.v1.ListPeerRequest
-	8,  // 12: gateway.v1.WireGuardService.UpdatePeer:input_type -> gateway.v1.UpdatePeerRequest
-	10, // 13: gateway.v1.WireGuardService.DeletePeer:input_type -> gateway.v1.DeletePeerRequest
-	3,  // 14: gateway.v1.WireGuardService.CreatePeer:output_type -> gateway.v1.CreatePeerResponse
-	5,  // 15: gateway.v1.WireGuardService.GetPeer:output_type -> gateway.v1.GetPeerResponse
-	7,  // 16: gateway.v1.WireGuardService.ListPeer:output_type -> gateway.v1.ListPeerResponse
-	9,  // 17: gateway.v1.WireGuardService.UpdatePeer:output_type -> gateway.v1.UpdatePeerResponse
-	11, // 18: gateway.v1.WireGuardService.DeletePeer:output_type -> gateway.v1.DeletePeerResponse
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	0,  // 0: gateway.v1.DeviceStatus.peers:type_name -> gateway.v1.PeerStatus
+	0,  // 1: gateway.v1.GetPeerResponse.peer:type_name -> gateway.v1.PeerStatus
+	0,  // 2: gateway.v1.ListPeerResponse.peers:type_name -> gateway.v1.PeerStatus
+	12, // 3: gateway.v1.UpdatePeerResponse.changed:type_name -> gateway.v1.UpdatePeerResponse.Changed
+	2,  // 4: gateway.v1.WireGuardService.CreatePeer:input_type -> gateway.v1.CreatePeerRequest
+	4,  // 5: gateway.v1.WireGuardService.GetPeer:input_type -> gateway.v1.GetPeerRequest
+	6,  // 6: gateway.v1.WireGuardService.ListPeer:input_type -> gateway.v1.ListPeerRequest
+	8,  // 7: gateway.v1.WireGuardService.UpdatePeer:input_type -> gateway.v1.UpdatePeerRequest
+	10, // 8: gateway.v1.WireGuardService.DeletePeer:input_type -> gateway.v1.DeletePeerRequest
+	3,  // 9: gateway.v1.WireGuardService.CreatePeer:output_type -> gateway.v1.CreatePeerResponse
+	5,  // 10: gateway.v1.WireGuardService.GetPeer:output_type -> gateway.v1.GetPeerResponse
+	7,  // 11: gateway.v1.WireGuardService.ListPeer:output_type -> gateway.v1.ListPeerResponse
+	9,  // 12: gateway.v1.WireGuardService.UpdatePeer:output_type -> gateway.v1.UpdatePeerResponse
+	11, // 13: gateway.v1.WireGuardService.DeletePeer:output_type -> gateway.v1.DeletePeerResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_gateway_v1_peer_proto_init() }
@@ -721,7 +998,7 @@ func file_gateway_v1_peer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_v1_peer_proto_rawDesc), len(file_gateway_v1_peer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

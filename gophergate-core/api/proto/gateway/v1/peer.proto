@@ -6,66 +6,92 @@ option go_package = "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway
 
 // Core Data Types
 
-message Peer {
-    string public_key = 1;
-    string iface = 2;
+message PeerStatus {
+    string public_key           = 1;
+    string endpoint             = 2;
     repeated string allowed_ips = 3;
-    int32 persistent_keepalive = 4;
-    string description = 5;
-    bool auto_assign_ip = 6;
+    string handshake            = 4;
+    uint64 rx_bytes             = 5;
+    uint64 tx_bytes             = 6;
+    string keepalive            = 7;
 }
 
-message Status {
-    bool success = 1;
-    string message = 2;
+// overall wiregaurd state
+message DeviceStatus {
+    string iface              = 1;
+    int32 listen_port         = 2;
+    int32 firewall_mark       = 3;
+    string public_key         = 4;
+    repeated PeerStatus peers = 5;
 }
 
 // Create
 
 message CreatePeerRequest {
-    Peer peer = 1;
+    string iface                  = 1;
+    string name                   = 2;
+    string public_key             = 3;
+    repeated string allowed_cidrs = 4;
+    string endpoint               = 5;
+    int32 keepalive_seconds       = 6;
+    bool replace_allowed_ips      = 7;
 }
 
 message CreatePeerResponse {
-    Status status = 1;
-    Peer peer = 2;
+    string iface        = 1;
+    string name         = 2;
+    string public_key   = 3;
+    bool config_applied = 4;
 }
 
 // Read
 
 message GetPeerRequest {
-    string public_key = 1;
+    string iface      = 1;
+    string public_key = 2;
 }
 
-message GetPeerResponse {
-    Peer peer = 1;
-}
+message GetPeerResponse { PeerStatus peer = 1; }
 
-message ListPeerRequest {}
+message ListPeerRequest { string iface = 1; }
 
-message ListPeerResponse {
-    repeated Peer peers = 1;
-}
+message ListPeerResponse { repeated PeerStatus peers = 1; }
 
 // Update
 
 message UpdatePeerRequest {
-    Peer peer = 1;
+    string iface                         = 1;
+    string public_key                    = 2;
+    repeated string set_allowed_cidrs    = 3;
+    repeated string append_allowed_cidrs = 4;
+    string endpoint                      = 5;
+    int32 keepalive_seconds              = 6;
 }
 
 message UpdatePeerResponse {
-    Status status = 1;
-    Peer peer = 2;
+    string iface      = 1;
+    string public_key = 2;
+
+    message Changed {
+        bool allowed_ips = 1;
+        bool endpoint    = 2;
+        bool keepalive   = 3;
+    }
+
+    Changed changed = 3;
 }
 
 // Delete
 
 message DeletePeerRequest {
-    string public_key = 1;
+    string iface      = 1;
+    string public_key = 2;
 }
 
 message DeletePeerResponse {
-    Status status = 1;
+    string iface      = 1;
+    string public_key = 2;
+    bool removed      = 3;
 }
 
 // Wireguard Services
