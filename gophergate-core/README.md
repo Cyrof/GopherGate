@@ -12,6 +12,7 @@ It provides common functionality that both `gophergate-wg-agent` and `gophergate
 - Provide a **structured logger** (Zap + Lumberjack) with consistent defaults for both development and production.
 - Centralise **environment loading** (`.env`) and **database connection management**.
 - Provide **built-in database migration support** for all subsystems.
+- Offer **gRPC proto definitions** and generated Go code for cross-application use.
 - Act as a foundation for future cross-application utitlies (config parsing, environment helper, etc).
 
 ---
@@ -44,6 +45,19 @@ It provides common functionality that both `gophergate-wg-agent` and `gophergate
 - Supports `DATABASE_URL` or manual config.
 - Provides a **built-in migration helper** for running SQL migrations from embedded file systems.
 - Shared across all GopherGate services.
+
+#### 5. gRPC / Protocol Definitions
+- Protobuf definitions live under: `api/proto/gateway/v1/peer.proto`
+- Generated client/server Go files in: 
+    - `pkg/gen/gateway/v1/peer.pb.go`
+    - `pkg/gen/gateway/v1/peer_grpc.pb.go`
+- Used by both agent + UI to remain consistent.
+
+#### 6. Tests (`test` folder)
+Includes integration & unit tests for:
+- `dbx`
+- `envx`
+- `logx`
 
 ---
 
@@ -152,6 +166,29 @@ If you store Postgres passwords in Docker secrets, build the `DATABASE_URL` from
 
 ---
 
+### Makefile
+`gophergate-core` includes a Makefile to help with testing and regenerating gRPC stubs.
+
+#### Running tests
+```bash
+make test
+make itest
+```
+Runs unit test and integration tests under `test/`.
+
+#### Regenerate protobuf/gRPC stubs
+```bash
+make proto
+```
+This regenerates:
+- `pkg/gen/gateway/v1/peer.pb.go`
+- `pkg/gen/gateway/v1/peer_grpc.pb.go`
+
+Based on:
+- `api/proto/gateway/v1/peer.proto`
+
+---
+
 ### Installation
 
 Add `gophergate-core` to your project with:
@@ -177,7 +214,6 @@ import (
 
 - Config parsing (YAML/JSON/TOML).
 - Environment variable helpers.
-- Common gRPC interceptors and middleware.
 - Shared error types and constants.
 
 ---
