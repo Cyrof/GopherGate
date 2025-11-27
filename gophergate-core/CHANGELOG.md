@@ -29,16 +29,16 @@ import (
 ## [v0.4.1] - 2025-11-19
 
 ### Added
-- (fill)
+- Updated **README** documentation to include the latest gRPC integration details, directory structure (`api`, `pkg`), and Makefile usage for protobuf regeneration.
 
 ### Changed
-- (fill)
+- Improved general documentation clarity to better reflect the current module architecture and setup instructions.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.4.0] - 2025-11-02
 
