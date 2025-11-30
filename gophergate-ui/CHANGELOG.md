@@ -10,16 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.2.1] - 2025-11-30
 
 ### Added
-- (fill)
+
+- Updated **README** documentation to include additional details about the current UI structure and setup instructions for development.
 
 ### Changed
-- (fill)
+
+- Improved overall documentation clarity to reflect the latest project state and upcoming integration with the **gophergate-agent**.
 
 ### Fixed
-- (fill)
+
+- No fixes in this release.
 
 ### Removed
-- (fill)
+
+- No removals in this release.
 
 ## [v0.2.0] - 2025-10-26
 
