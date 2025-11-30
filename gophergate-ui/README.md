@@ -19,8 +19,7 @@ Planned upcoming features:
 - Working Update functionality
 - Minimal styling for readability
 - Improved routing/navigation
-- Improved routing/navigation
-- UI testts + error handling
+- UI tests + error handling
 
 ## Prerequisites
 
