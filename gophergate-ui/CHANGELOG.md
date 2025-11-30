@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.2.1] - 2025-11-30
+
+### Added
+- (fill)
+
+### Changed
+- (fill)
+
+### Fixed
+- (fill)
+
+### Removed
+- (fill)
+
 ## [v0.2.0] - 2025-10-26
 
 ### Added
