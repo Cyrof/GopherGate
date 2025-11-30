@@ -26,7 +26,7 @@ Before running locally, ensure the environment is set up correctly.
 
 #### 1. `.env` file
 
-The agent uses the same environment configuration as defineed in [gophergate-core](https://github.com/Cyrof/GopherGate/blob/dev/gophergate-core/README.md). A `.env` file is needed at the root of the project (or in your working directory) with entries such as:
+The agent uses the same environment configuration as defined in [gophergate-core](https://github.com/Cyrof/GopherGate/blob/dev/gophergate-core/README.md). A `.env` file is needed at the root of the project (or in your working directory) with entries such as:
 
 ```ini
 GOPHERGATE_ENV=dev
@@ -118,7 +118,7 @@ Because the agent doesn't export a file yet, developers must manually create a c
     ```
 
 - `<SERVER_ADDR>` is the IP/hostname of the machine running `gophergate-wg-agent`.
-- `<SERVER_PUBLIC_KEY` is the server's WireGuard public key (e.g., from `wg show` or your server config).
+- `<SERVER_PUBLIC_KEY>` is the server's WireGuard public key (e.g., from `wg show` or your server config).
 - Ensure server-side forwarding/NAT is configured if you need egress via the server.
 
 ## Notes for contributors
