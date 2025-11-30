@@ -10,16 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.2.1] - 2025-11-30
 
 ### Added
-- (fill)
+
+- Expanded **README** documentation with additional details on CLI usage, available commands, and how the agent interacts with the backend service.
 
 ### Changed
-- (fill)
+
+- Improved documentation structure and clarity to better guide developers through setup, database usage, and initial configuration.
 
 ### Fixed
-- (fill)
+
+- No fixes in this release.
 
 ### Removed
-- (fill)
+
+- No removals in this release.
 
 ## [v0.2.0] - 2025-10-26
 
