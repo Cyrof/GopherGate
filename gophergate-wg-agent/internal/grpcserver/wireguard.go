@@ -144,3 +144,48 @@ func (s *WireGuardService) ListPeer(
 		Peers: out,
 	}, nil
 }
+
+// update peer
+func (s *WireGuardService) UpdatePeer(
+	ctx context.Context,
+	req *gatewayv1.UpdatePeerRequest,
+) (*gatewayv1.UpdatePeerResponse, error) {
+	if req.GetIface() == "" {
+		return nil, status.Error(codes.InvalidArgument, "iface is required")
+	}
+
+	if req.GetPublicKey() == "" {
+		return nil, status.Error(codes.InvalidArgument, "public_key is required")
+	}
+
+	// map keepalive: 0 => nil (no change), >0 = *int
+	var keepalivePtr *int
+	if ks := req.GetKeepaliveSeconds(); ks != 0 {
+		v := int(ks)
+		keepalivePtr = &v
+	}
+
+	svcReq := wgsvc.UpdatePeerRequest{
+		Iface:              req.GetIface(),
+		PublicKey:          req.GetPublicKey(),
+		SetAllowedCIDRs:    req.GetSetAllowedCidrs(),
+		AppendAllowedCIDRs: req.GetAppendAllowedCidrs(),
+		Endpoint:           req.GetEndpoint(),
+		KeepaliveSeconds:   keepalivePtr,
+	}
+
+	svcResp, err := wgsvc.UpdatePeer(ctx, svcReq)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "update peer: %v", err)
+	}
+
+	return &gatewayv1.UpdatePeerResponse{
+		Iface:     svcResp.Iface,
+		PublicKey: svcResp.PublicKey,
+		Changed: &gatewayv1.UpdatePeerResponse_Changed{
+			AllowedIps: svcResp.Changed.AllowedIPs,
+			Endpoint:   svcResp.Changed.Endpoint,
+			Keepalive:  svcResp.Changed.Keepalive,
+		},
+	}, nil
+}
