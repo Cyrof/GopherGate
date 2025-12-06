@@ -120,3 +120,27 @@ func (s *WireGuardService) GetPeer(
 		Peer: mapPeerStatusToProto(peer),
 	}, nil
 }
+
+// list peer
+func (s *WireGuardService) ListPeer(
+	ctx context.Context,
+	req *gatewayv1.ListPeerRequest,
+) (*gatewayv1.ListPeerResponse, error) {
+	if req.GetIface() == "" {
+		return nil, status.Error(codes.InvalidArgument, "iface is required")
+	}
+
+	peers, err := wgsvc.ListPeers(req.GetIface())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "list peers: %v", err)
+	}
+
+	out := make([]*gatewayv1.PeerStatus, 0, len(peers))
+	for i := range peers {
+		out = append(out, mapPeerStatusToProto(&peers[i]))
+	}
+
+	return &gatewayv1.ListPeerResponse{
+		Peers: out,
+	}, nil
+}
