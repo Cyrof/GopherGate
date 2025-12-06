@@ -2,6 +2,7 @@ package grpcserver
 
 import (
 	"context"
+	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -75,5 +76,47 @@ func (s *WireGuardService) DeletePeer(
 		Iface:     svcReq.Iface,
 		PublicKey: svcReq.PublicKey,
 		Removed:   svcResp.Removed,
+	}, nil
+}
+
+// Get peer helper
+func mapPeerStatusToProto(p *wgsvc.PeerStatus) *gatewayv1.PeerStatus {
+	if p == nil {
+		return nil
+	}
+
+	return &gatewayv1.PeerStatus{
+		PublicKey:  p.PublicKey,
+		Endpoint:   p.Endpoint,
+		AllowedIps: p.AllowedIPs,
+		Handshake:  p.Handshake,
+		RxBytes:    p.RxBytes,
+		TxBytes:    p.TxBytes,
+		Keepalive:  p.Keepalive,
+	}
+}
+
+// Get peer
+func (s *WireGuardService) GetPeer(
+	ctx context.Context,
+	req *gatewayv1.GetPeerRequest,
+) (*gatewayv1.GetPeerResponse, error) {
+	if req.GetIface() == "" {
+		return nil, status.Error(codes.InvalidArgument, "iface is required")
+	}
+	if req.GetPublicKey() == "" {
+		return nil, status.Error(codes.InvalidArgument, "public_key is required")
+	}
+
+	peer, err := wgsvc.GetPeerByPublicKey(req.GetIface(), req.GetPublicKey())
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "peer not found") {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Errorf(codes.Internal, "get peer: %v", err)
+	}
+
+	return &gatewayv1.GetPeerResponse{
+		Peer: mapPeerStatusToProto(peer),
 	}, nil
 }
