@@ -9,6 +9,10 @@
 <body>
     <h1>{{ .title }}</h1>
 
+    {{ if .error }}
+    <div>{{ .error }}</div>
+    {{ end }}
+
     <h2>Create Peer</h2>
     <form method="post" action="/peers">
         <p>
@@ -16,42 +20,60 @@
             <input name="name" placeholder="name" required />
         </p>
         <p>
-            <label for="ip">Endpoint IP (AllowedIPs):</label><br />
-            <input name="ip" placeholder="10.8.0.x/32" />
+            <label for="pubkey">Public Key:</label><br />
+            <input name="pubkey" placeholder="base64 encoded key" required />
+        </p>
+        <p>
+            <label for="ip">Allowed IPs (CIDR):</label><br />
+            <input name="ip" placeholder="10.8.0.2/32" />
+            <span>Optional: IP addresses this peer can use</span>
+        </p>
+        <p>
+            <label for="endpoint">Endpoint:</label><br />
+            <input name="endpoint" placeholder="192.168.1.100:51820" />
+            <span>Optional: IP:port of the peer</span>
         </p>
         <p>
             <label for="keepalive">Persistent Keepalive (seconds):</label><br />
-            <input name="keepalive" placeholder="20" />
-        </p>
-        <p>
-            <label for="pubkey">Public Key:</label><br />
-            <input name="pubkey" placeholder="" />
+            <input name="keepalive" placeholder="25" />
+            <span>Optional: interval for keepalive packets</span>
         </p>
         <button type="submit">Create</button>
     </form>
 
-    <h2>Peers</h2>
-    <table border="1" cellpadding="6">
+    <h2>Active Peers</h2>
+    <table>
         <tr>
-            <th>Name</th>
             <th>Public Key</th>
-            <th>Endpoint IP</th>
+            <th>Allowed IPs</th>
+            <th>Endpoint</th>
             <th>Keepalive</th>
+            <th>Last Handshake</th>
+            <th>Actions</th>
         </tr>
+        {{ if .peers }}
         {{ range .peers }}
         <tr>
-            <td>{{ .Name }}</td>
-            <td>{{ .PublicKey }}</td>
+            <td><code>{{ .PublicKey }}</code></td>
             <td>{{ .IP }}</td>
+            <td>{{ .Endpoint }}</td>
             <td>{{ .Keepalive }}</td>
+            <td>{{ .Handshake }}</td>
             <td>
                 <a href="/peers/edit?pubkey={{ .PublicKey }}"><button>Edit</button></a>
 
                 <form method="post" action="/peers/delete" style="display:inline"
-                    onsubmit="return confirm('Delete peer {{ .Name }}?')">
+                    onsubmit="return confirm('Delete peer {{ .PublicKey }}?')">
                     <input type="hidden" name="pubkey" value="{{ .PublicKey }}" />
                     <button type="submit">Delete</button>
                 </form>
+            </td>
+        </tr>
+        {{ end }}
+        {{ else }}
+        <tr>
+            <td colspan="7" style="text-align: center; padding: 20px;">
+                No peers configured yet.
             </td>
         </tr>
         {{ end }}
