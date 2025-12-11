@@ -1,35 +1,36 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
-	"slices"
+	"time"
 
+	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
 	"github.com/gin-gonic/gin"
 )
 
 func (p *Peers) Delete(c *gin.Context) {
 	pubkeyParam := c.PostForm("pubkey")
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
 
-	index := -1
-	for i, v := range p.data {
-		if v.PublicKey == pubkeyParam {
-			index = i
-			break
-		}
+	req := &gatewayv1.DeletePeerRequest{
+		Iface: p.wgIface,
+		PublicKey: pubkeyParam,
 	}
 
-	if index == -1 {
-		p.log.Warnw("peer.delete.missing", "pubkey", pubkeyParam)
+	resp, err := p.grpc.DeletePeer(ctx, req)
+	if err != nil{
+		p.log.Infow("peer.delete.grpc_error", "pubkey", pubkeyParam, "err", err)
 		c.Redirect(http.StatusSeeOther, "/peers")
-		return
+	}
+	
+	if resp.Removed {
+		p.log.Infow("peer.delete.success", "pubkey", pubkeyParam)
+	} else {
+		p.log.Warnw("peer.delete.not_found", "pubkey", pubkeyParam)
 	}
 
-	p.data = slices.Delete(p.data, index, index+1)
-	p.log.Infow("peer.delete", "pubkey", pubkeyParam)
-
-	// TODO: later call gRPC DeletePeer
 	c.Redirect(http.StatusSeeOther, "/peers")
 }
