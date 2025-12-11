@@ -25,11 +25,11 @@ func (p *Peers) Create(c *gin.Context) {
 			c.HTML(http.StatusBadRequest, "peers.tmpl", gin.H{
 				"title": "Peers",
 				"peers": []peer{},
-				"error": "Invalid Keepalive Value"
+				"error": "Invalid Keepalive Value",
 			})
 			return
 		}
-		keepalive := int32(val)
+		keepalive = int32(val)
 	}
 
 	allowedCIRDs := []string{}

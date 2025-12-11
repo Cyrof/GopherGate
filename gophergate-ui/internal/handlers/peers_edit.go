@@ -12,8 +12,6 @@ import (
 
 func (p *Peers) Edit(c *gin.Context) {
 	pubkeyOriginal := c.PostForm("pubkey_original")
-
-	name := c.PostForm("name")
 	ip := c.PostForm("ip")
 	keepaliveStr := c.PostForm("keepalive")
 	endpoint := c.PostForm("endpoint")
@@ -54,7 +52,7 @@ func (p *Peers) Edit(c *gin.Context) {
 		"pubkey", pubkeyOriginal,
 		"changed_allowed_ips", resp.Changed.AllowedIps,
 		"changed_endpoint", resp.Changed.Endpoint,
-		"changed_keepalive", resp.Changed.Keepalive
+		"changed_keepalive", resp.Changed.Keepalive,
 	)
 	
 	c.Redirect(http.StatusSeeOther, "/peers")

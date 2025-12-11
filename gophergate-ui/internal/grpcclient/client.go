@@ -42,7 +42,7 @@ func New(addr string, useTLS bool, log *zap.SugaredLogger) (*Client, error){
 	return &Client{
 		conn: conn,
 		wg: gatewayv1.NewWireGuardServiceClient(conn),
-		log: log
+		log: log,
 	}, nil
 }
 
@@ -55,7 +55,7 @@ func (c *Client) Close() error {
 }
 
 // Create a new WireGuard Peer
-func (c *Client) CreatePeer (ctx context.Context, req *gatewayv1.CreatePeerRequest) (*gatewayv1.CreatePeerReponse, error){
+func (c *Client) CreatePeer (ctx context.Context, req *gatewayv1.CreatePeerRequest) (*gatewayv1.CreatePeerResponse, error){
 	c.log.Infow("grpc.create_peer", "name", req.Name, "pubkey", req.PublicKey)
 	return c.wg.CreatePeer(ctx, req)
 }

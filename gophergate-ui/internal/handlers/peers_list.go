@@ -14,8 +14,8 @@ func (p *Peers) List(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	resp, err := p.grpc.ListPeer(ctx, &gatewayv1.ListPeerRequest{
-		Iface: p.wgIface.
+	resp, err := p.grpc.ListPeers(ctx, &gatewayv1.ListPeerRequest{
+		Iface: p.wgIface,
 	})
 
 	if err != nil {
@@ -28,7 +28,7 @@ func (p *Peers) List(c *gin.Context) {
 		return
 	}
 
-	row := make([]peer, 0, len(resp.Peers))
+	rows := make([]peer, 0, len(resp.Peers))
 	for _, peerStatus := range resp.Peers {
 		ip := ""
 		if len(peerStatus.AllowedIps) > 0 {

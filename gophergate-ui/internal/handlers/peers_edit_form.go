@@ -41,7 +41,7 @@ func (p *Peers) EditForm(c *gin.Context) {
 		Endpoint: resp.Peer.Endpoint,
 		RxBytes: resp.Peer.RxBytes,
 		TxBytes: resp.Peer.TxBytes,
-		Handshake: resp.Peer.Handshake
+		Handshake: resp.Peer.Handshake,
 	}
 
 

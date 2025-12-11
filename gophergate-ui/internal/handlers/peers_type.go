@@ -12,9 +12,9 @@ type peer struct {
 	IP        string
 	Keepalive string
 	PublicKey string
-	Endpoint string
-	RxBytes string
-	TxBytes string
+	Endpoint  string
+	RxBytes   uint64
+	TxBytes   uint64
 	Handshake string
 }
 
