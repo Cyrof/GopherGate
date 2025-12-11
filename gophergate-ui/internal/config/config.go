@@ -14,6 +14,7 @@ type Config struct {
 	HTTPAddr string
 	GRPCAddr string
 	TLS      bool
+	WGIface string
 }
 
 func Load(logger *zap.SugaredLogger) (*Config, error) {
@@ -22,6 +23,7 @@ func Load(logger *zap.SugaredLogger) (*Config, error) {
 		HTTPAddr: getenv(logger, "HTTP_ADDR", ":8080"),
 		GRPCAddr: getenv(logger, "GRPC_ADDR", "127.0.0.1:5051"),
 		TLS:      getbool(logger, "GRPC_TLS_ENABLE", false),
+		WGIface:  getenv(logger, "WG_IFACE", "wg0"),
 	}
 	return c, nil
 }
