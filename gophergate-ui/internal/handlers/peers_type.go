@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"sync"
-
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/grpcclient"
 	"go.uber.org/zap"
 )
@@ -20,7 +18,6 @@ type peer struct {
 
 type Peers struct {
 	log  *zap.SugaredLogger
-	mu   sync.Mutex
 	data []peer
 	grpc *grpcclient.Client
 	wgIface string
