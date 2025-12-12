@@ -3,7 +3,6 @@ package grpcclient
 import (
 	"context"
 	"fmt"
-	"time"
 
 	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
 	"go.uber.org/zap"
@@ -29,14 +28,10 @@ func New(addr string, useTLS bool, log *zap.SugaredLogger) (*Client, error){
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	// Set dial timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	log.Infow("grpc.dial", "addr", addr, "tls", useTLS)
-	conn, err := grpc.DialContext(ctx, addr, opts...)
+	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to dial gRPC: %w", err)
+		return nil, fmt.Errorf("Failed to create gRPC client: %w", err)
 	}
 
 	return &Client{
