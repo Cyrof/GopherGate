@@ -10,16 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.3.0] - 2025-12-12
 
 ### Added
-- (fill)
+- Integrated **gRPC** support into the UI to enable communication with the `gophergate-wg-agent`.
+- Added gRPC client logic to support remote backend operations from the UI.
 
 ### Changed
-- (fill)
+- Updated UI templates and handlers to align with gRPC-based workflows instead of direct or local calls.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.2.1] - 2025-11-30
 
