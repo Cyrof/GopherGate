@@ -10,16 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.3.1] - 2025-12-12
 
 ### Added
-- (fill)
+- Updated **README** documentation to include latest startup guide and available API endpoint reference.
 
 ### Changed
-- (fill)
+- Improved documentation clarity to reflect the current gRPC-based UI integration and workflows.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.3.0] - 2025-12-12
 
