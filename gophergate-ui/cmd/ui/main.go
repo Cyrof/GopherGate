@@ -8,7 +8,7 @@ import (
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
 
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/config"
-	"github.com/Cyrof/GopherGate/gophergate-ui/internal/httpserver"
+	"github.com/Cyrof/GopherGate/gophergate-ui/internal/web"
 )
 
 var Version = "0.1.0"

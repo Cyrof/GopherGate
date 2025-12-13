@@ -1,4 +1,4 @@
-package httpserver
+package web
 
 // this file should hold the initialisation function for the httpserver using gin as the framework
 
@@ -23,8 +23,8 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) error {
 	r := gin.New()
 	r.Use(ZapLogger(log), ZapRecovery(log))
 
-	r.Static("/static", "web/static")
-	r.LoadHTMLGlob("web/templates/*.tmpl")
+	r.StaticFS("/static", http.FS(webFS))
+	r.LoadHTMLFS(webFS, "web/templates/*.tmpl")
 
 	r.GET("/", handlers.Home())
 
