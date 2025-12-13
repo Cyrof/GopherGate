@@ -224,12 +224,12 @@ jobs:
                       type=raw,value=latest
 
             - name: Set up QEMU
-              if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false && (input.module_path == 'gophergate-agent' || inputs.module_path == 'gophergate-ui') }}
+              if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false && (inputs.module_path == 'gophergate-agent' || inputs.module_path == 'gophergate-ui') }}
               uses: docker/setup-qemu-action@v3
 
             - name: Set up Docker Buildx
               if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false && (inputs.module_path == 'gophergate-wg-agent' || inputs.module_path == 'gophergate-ui') }}
-              uses: docker/setup-builx-action@v3
+              uses: docker/setup-buildx-action@v3
 
             - name: Login to Docker Hub
               if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false && (inputs.module_path == 'gophergate-wg-agent' || inputs.module_path == 'gophergate-ui') }}
@@ -245,11 +245,11 @@ jobs:
                   context: ./${{ inputs.module_path }}
                   file: ./${{ inputs.module_path }}/Dockerfile
                   push: true
-                  platforms: linux/amd64,linux/arm/v7
+                  platforms: linux/amd64,linux/arm/v7,linux/arm64
                   tags: ${{ steps.meta_agent.outputs.tags }}
                   labels: ${{ steps.meta_agent.outputs.labels }}
                   cache-from: type=gha
-                  cache-to: type=gha, mode=max
+                  cache-to: type=gha,mode=max
 
             - name: Build & push (ui)
               if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false && inputs.module_path == 'gophergate-ui' }}
@@ -258,11 +258,11 @@ jobs:
                   context: ./${{ inputs.module_path }}
                   file: ./${{ inputs.module_path }}/Dockerfile
                   push: true
-                  platforms: linux/amd64,linux/arm/v7
+                  platforms: linux/amd64,linux/arm/v7,linux/arm64
                   tags: ${{ steps.meta_ui.outputs.tags }}
                   labels: ${{ steps.meta_ui.outputs.labels }}
                   cache-from: type=gha
-                  cache-to: type=gha, mode=max
+                  cache-to: type=gha,mode=max
 
             - name: Open PR to dev (skip on dry-run)
               if: ${{ steps.decide.outputs.should_release == 'true' && inputs.dry_run == false }}
