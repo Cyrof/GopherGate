@@ -2,23 +2,27 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /src
 
-RUN apk add --no-cache git
+RUN apk add --no-cache ca-certificates git
 
-COPY ./go.mod ./go.sum ./gophergate-ui/
-WORKDIR /src/gophergate-ui
-
+COPY ./go.mod ./go.sum ./
 RUN go mod download -x
 
-WORKDIR /src
 COPY . .
 
-WORKDIR /src/gophergate-ui
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
     -o /out/ui ./cmd/ui
 
-FROM gcr.io/distroless/static-debian12
+# runtime 
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates \
+    && adduser -D -H -u 65532 nonroot \
+    && mkdir -p /home/nonroot \
+    && chown -R 65532:65532 /home/nonroot
+
+ENV HOME=/home/nonroot
 
 COPY --from=builder /out/ui /ui
 
-EXPOSE 3000
+USER 65532:65532
 ENTRYPOINT ["/ui"]
