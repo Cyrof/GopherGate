@@ -125,9 +125,7 @@ jobs:
                       cyrof/gophergate
                   tags: |
                       type=raw,value=${{ steps.parse.outputs.module_path }}-v${{ steps.parse.outputs.version}}
-                      type=raw,value=${{ steps.parse.outputs.module_path }}-${{ steps.parse.outputs.version }}
                       type=raw,value=${{ steps.parse.outputs.module_path }}-latest
-                      type=raw,value=latest
 
             - name: Build & push (multi-arch)
               if: ${{ steps.decide.outputs.publish == 'true' }}
