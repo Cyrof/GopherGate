@@ -125,6 +125,22 @@ func main() {
 >
 > This ensures each subsystem gets its own isolated directory structure and log files.
 
+---
+
+### gRPC & Proto Definitions
+GopherGate uses gRPC and Protocol Bufferes to define a shared API contract between the WireGuard agent and the UI.
+
+The proto definitions and generated Go code live in `gophergate-core` and are versioned to ensure backward compatibility.
+
+**Full documentations:**
+See [`docs/proto.md`](../docs/proto.md) for:
+- Proto file structure
+- Regeneration instructions
+- Backend (server) and UI (client) usage examples
+- Contribution and verisoning guidelines
+
+--- 
+
 ### Folder Structure Standard
 Each GopherGate application that requires database migrations should follow this directory layout:
 ```bash
