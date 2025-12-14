@@ -1,0 +1,49 @@
+# Service for gophergate-wg-agent
+apiVersion: v1
+kind: Service
+metadata:
+    name: gophergate-wg-agent
+    labels:
+        app: gophergate-wg-agent
+spec:
+    ports:
+        - port: 7443
+          targetPort: 7443
+          name: grpc
+    selector:
+        app: gophergate-wg-agent
+    ClusterIP: None
+
+---
+# Service for gophergate-ui
+apiVersion: v1
+kind: Service
+metadata:
+    name: gophergate-ui
+    labels:
+        app: gophergate-ui
+spec:
+    ports:
+        - port: 3000
+          targetPort: 3000
+          name: http
+    selector:
+        app: gophergate-ui
+    type: ClusterIP
+
+---
+# Service for Postgresql
+apiVersion: v1
+kind: Service
+metadata:
+    name: gophergate-postgresql
+    labels:
+        app: gophergate-postgresql
+spec:
+    ports:
+        - port: 5432
+          targetPort: 5432
+          name: db
+    selector:
+        app: gophergate-postgresql
+    ClusterIP: None

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: gophergate-wg-agent
+    labels:
+        app: gophergate
+spec:
+    selector:
+        matchLabels:
+            app: gophergate-wg-agent
+    template:
+        metadata:
+            labels:
+                app: gophergate-wg-agent
+        spec:
+            containers:
+                - name: gophergate-wg-agent
+                  image: '{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}'
+                  imagePullPolicy: '{{ .Values.agent.image.pullPolicy }}'
+                  resources:
+                      requests:
+                          cpu: '{{ .Values.agent.resources.requests.cpu }}'
+                          memory: '{{ .Values.agent.resources.requests.memory }}'
+                      limits:
+                          cpu: '{{ .Values.agent.resources.limits.cpu }}'
+                          memory: '{{ .Values.agent.resources.limits.memory }}'
+                  env:
+                      - name: GATEWAY_DB_HOST
+                        value: 'postgresql'
+                      - name: GATEWAY_DB_USERNAME
+                        value: '{{ .Values.postgresql.postgresqlUsername }}'
+                      - name: Gateway_DB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: gophergate-db-credentials
+                                key: password
+                      - name: DATABASE_URL
+                        value: '{{ .Values.agent.env.DATABASE_URL }}'
+                      - name: GRPC_ADDR
+                        value: '{{ .Values.agent.env.GRPC_ADDR }}'
+            nodeSelector:
+                role: vpn
+            tolerations:
+                - key: 'dedicated'
+                  operator: 'Equal'
+                  value: 'vpn'
+                  effect: 'NoSchedule'

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: gophergate-postgresql
+    labels:
+        app: gophergate-postgresql
+spec:
+    serviceName: 'gophergate-postgresql'
+    repliacas: 1
+    selector:
+        matchLabels:
+            app: gophergate-postgresql
+    template:
+        metadata:
+            labels:
+                app: gophergate-postgresql
+        spec:
+            containers:
+                - name: postgresql
+                  image: '{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}'
+                  imagePullPolicy: '{{ .Values.postgresql.iamge.pullPolicy }}'
+                  env:
+                      - name: POSTGRES_USER
+                        value: '{{ .Values.postgresql.postgresqlUsername }}'
+                      - name: POSTGRES_DB
+                        value: '{{ .Values.postgresql.postgresqlDatabase }}'
+                      - name: POSTGRES_PASSWORD_FILE
+                        value: '{{ .Values.postgresql.postgresqlPasswordFile }}'
+                  volumeMounts:
+                      - name: pg-password
+                        mountPath: /run/secrets
+                        readonly: true
+                  resources:
+                      requests:
+                          cpu: '{{ .Values.postgresql.resources.requests.cpu }}'
+                          memory: '{{ .Values.postgresql.resources.requests.memory }}'
+                      limits:
+                          cpu: '{{ .Values.postgresql.resources.limits.cpu }}'
+                          memory: '{{ .Values.postgresql.resources.limits.memory }}'
+                  livenesProbe:
+                      exec:
+                          command: { { .Values.postgresql.healthcheck.command | toJson } }
+                      initialDelaySeconds:
+                          { { .Values.postgresql.healthcheck.initialDelaySeconds } }
+                      periodSeconds: { { .Values.postgresql.healthcheck.periodSeconds } }
+                      failureThreshold: { { .Values.postgresql.healthcheck.failureThreshold } }
+    volumeClaimTemplates: []
