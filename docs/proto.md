@@ -31,6 +31,8 @@ The current `v1` proto definitions covers:
 
 Future services (e.g. streaming, authentication, metrics) can be added in later phases.
 
+---
+
 ## Folder Structure
 
 ```text
@@ -61,10 +63,12 @@ gophergate-core/
 - `Makefile`
     - Contains the `make proto` target for regeneration
 
+---
+
 ## Regenerating gRPC stubs
 Prerequisities
 You must have the following tools installed:
-1. Protobuf compiler
+#### 1. Protobuf compiler
 ```bash
 protoc --version
 ```
@@ -79,7 +83,7 @@ sudo pacman -S protobuf
 sudo apt install protobuf-compiler
 ```
 
-2. Go plugins for protoc
+#### 2. Go plugins for protoc
 ```bash
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -88,6 +92,8 @@ Ensure Go's bin directory is in your PATH:
 ```bash
 export PATH="$PATH:$(go env GOPATH)/bin"
 ```
+
+---
 
 ### Regeneration Command
 From `gophergate-core`:
@@ -105,6 +111,7 @@ pkg/gen/gateway/v1/*.pb.go
 - Generated files **must be committed** to the repository
 - UI and agent both depend on the comitted generated code
 
+---
 
 ## Using Generated Code
 ### In `gophergate-wg-agent` (Server)
@@ -136,6 +143,8 @@ gatewayv1.RegisterWireGuardServiceServer(grpcServer, &Server{})
 
 The backend listens for incoming gRPC requests from the UI.
 
+---
+
 ### In `gophergate-ui` (Client)
 The UI uses the generated **client stubs** to call backend RPCs.
 ```go
@@ -159,6 +168,8 @@ resp, err := client.CreatePeet(ctx, &gatewayv1.CreatePeerRequest{
 
 The call is automatically serialised, sent to the agent, handled by the backend implementaion, and deserialised into a response.
 
+---
+
 ## Contribution Guidelines
 ### Backwards Compatibility (v1)
 - **Do not modify or renumber existing fields**
@@ -175,6 +186,8 @@ If a breaking change is required:
 - Keep v1 intact
 - Allow UI and agent to migrate independently
 
+---
+
 ## Future Extensions
 This documentation and structure are designed to scale.
 
@@ -184,6 +197,8 @@ Future additions may include:
 - Audit logging or metrics APIs
 
 This document should be updated as new services are added.
+
+---
 
 ## Summary
 - `.proto` files defines the API contract
