@@ -26,6 +26,20 @@ import (
 
 ---
 
+## [v0.4.2] - 2025-12-14
+
+### Added
+- No additions in this release.
+
+### Changed
+- Updated **README.md** to include minor explaination of gRPC and proto files.
+
+### Fixed
+- No fixes in this release.
+
+### Removed
+- No removals in this release.
+
 ## [v0.4.1] - 2025-11-19
 
 ### Added
