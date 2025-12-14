@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.4.0] - 2025-12-14
+
+### Added
+- Added a **Dockerfile** to enable containerised builds and deployments of the `gophergate-ui`
+
+### Changed
+- Updated runtime configuration to support container-based execution.
+
+### Fixed
+- (fill)
+
+### Removed
+- (fill)
+
 ## [v0.3.1] - 2025-12-12
 
 ### Added
