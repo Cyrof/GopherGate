@@ -10,30 +10,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.4.0] - 2025-12-14
 
 ### Added
-- (fill)
+
+- Added a **Dockerfile** to enable containerised builds and deployments of the `gophergate-wg-agent`.
 
 ### Changed
-- (fill)
+
+- Updated build and runtime configuration to support container-based execution.
 
 ### Fixed
-- (fill)
+
+- No fixes in this release.
 
 ### Removed
-- (fill)
+
+- No removals in this release.
 
 ## [v0.3.0] - 2025-12-08
 
 ### Added
+
 - Integrated **gRPC** support into the agent to enable remote management and inter-service communication within the GopherGate ecosystem.
 - Added protobuf service definitions and generated gRPC handlers to support future UI and backend integrations.
 
 ### Changed
+
 - Updated project structure to include gRPC-related directories and generated code.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.2.1] - 2025-11-30
