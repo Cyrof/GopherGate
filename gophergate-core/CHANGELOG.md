@@ -29,16 +29,16 @@ import (
 ## [v0.4.2] - 2025-12-14
 
 ### Added
-- (fill)
+- No additions in this release.
 
 ### Changed
-- (fill)
+- Updated **README.md** to include minor explaination of gRPC and proto files.
 
 ### Fixed
-- (fill)
+- No fixes in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.4.1] - 2025-11-19
 
