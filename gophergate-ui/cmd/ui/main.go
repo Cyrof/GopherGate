@@ -8,7 +8,7 @@ import (
 	"github.com/Cyrof/GopherGate/gophergate-core/paths"
 
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/config"
-	"github.com/Cyrof/GopherGate/gophergate-ui/internal/httpserver"
+	"github.com/Cyrof/GopherGate/gophergate-ui/internal/web"
 )
 
 var Version = "0.1.0"
@@ -33,7 +33,7 @@ func main() {
 
 	logger.Infow("ui starting", "version", Version, "http", cfg.HTTPAddr, "grpc", cfg.GRPCAddr, "env", cfg.Env)
 
-	if err := httpserver.Run(cfg, logger); err != nil {
+	if err := web.Run(cfg, logger); err != nil {
 		logger.Fatalw("http server error", "err", err)
 	}
 }

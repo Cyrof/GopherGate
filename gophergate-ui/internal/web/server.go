@@ -1,13 +1,16 @@
-package httpserver
+package web
 
 // this file should hold the initialisation function for the httpserver using gin as the framework
 
 import (
+	"html/template"
+	"io/fs"
 	"net/http"
 
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/config"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/grpcclient"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/handlers"
+	"github.com/Cyrof/GopherGate/gophergate-ui/web"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -23,8 +26,17 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) error {
 	r := gin.New()
 	r.Use(ZapLogger(log), ZapRecovery(log))
 
-	r.Static("/static", "web/static")
-	r.LoadHTMLGlob("web/templates/*.tmpl")
+	staticFS, err := fs.Sub(web.FS, "static")
+	if err != nil {
+		return err
+	}
+	r.StaticFS("/static", http.FS(staticFS))
+
+	tmpl, err := template.ParseFS(web.FS, "templates/*.tmpl")
+	if err != nil {
+		return err
+	}
+	r.SetHTMLTemplate(tmpl)
 
 	r.GET("/", handlers.Home())
 
@@ -43,4 +55,3 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) error {
 
 	return r.Run(cfg.HTTPAddr)
 }
-
