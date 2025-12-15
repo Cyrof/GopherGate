@@ -34,3 +34,6 @@ spec:
                         value: '{{ .Values.ui.env.GRPC_TLS_ENABLE }}'
                       - name: WG_IFACE
                         value: '{{ .Values.ui.env.WG_IFACE }}'
+                  ports:
+                      - containerPort: 3000
+                        name: http
