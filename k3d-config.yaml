@@ -1,26 +1,27 @@
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
-  name: gophergate-dev
+    name: gophergate-dev
 servers: 1
 agents: 2
 
 ports:
-  - port: 8080:80
-  - port: 8443:443
+    - port: 18080:80
+    - port: 18443:443
 
 registries:
-  create:
-    name: gophergate-registry
-    host: "0.0.0.0"
-    hostPort: "5000"
+    create:
+        name: gophergate-registry
+        host: '0.0.0.0'
+        hostPort: '5000'
 
 options:
-  k3d:
-    wait: true
-    timeout: "180s"
-  k3s:
-    extraArgs:
-      - arg: --disable=traefik
-        nodeFilters:
-          - server:0
+    k3d:
+        wait: true
+        timeout: '180s'
+    k3s:
+        extraArgs:
+            - arg: --disable=traefik
+              nodeFilters:
+                  - server:0
+
