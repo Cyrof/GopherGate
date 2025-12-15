@@ -12,7 +12,7 @@ spec:
           name: grpc
     selector:
         app: gophergate-wg-agent
-    ClusterIP: None
+    clusterIP: None
 
 ---
 # Service for gophergate-ui
@@ -46,4 +46,4 @@ spec:
           name: db
     selector:
         app: gophergate-postgresql
-    ClusterIP: None
+    clusterIP: None

@@ -6,7 +6,7 @@ metadata:
         app: gophergate-postgresql
 spec:
     serviceName: 'gophergate-postgresql'
-    repliacas: 1
+    replicas: 1
     selector:
         matchLabels:
             app: gophergate-postgresql
@@ -18,7 +18,7 @@ spec:
             containers:
                 - name: postgresql
                   image: '{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}'
-                  imagePullPolicy: '{{ .Values.postgresql.iamge.pullPolicy }}'
+                  imagePullPolicy: '{{ .Values.postgresql.image.pullPolicy }}'
                   env:
                       - name: POSTGRES_USER
                         value: '{{ .Values.postgresql.postgresqlUsername }}'
@@ -29,7 +29,7 @@ spec:
                   volumeMounts:
                       - name: pg-password
                         mountPath: /run/secrets
-                        readonly: true
+                        readOnly: true
                   resources:
                       requests:
                           cpu: '{{ .Values.postgresql.resources.requests.cpu }}'
@@ -37,7 +37,7 @@ spec:
                       limits:
                           cpu: '{{ .Values.postgresql.resources.limits.cpu }}'
                           memory: '{{ .Values.postgresql.resources.limits.memory }}'
-                  livenesProbe:
+                  livenessProbe:
                       exec:
                           command: { { .Values.postgresql.healthcheck.command | toJson } }
                       initialDelaySeconds:
