@@ -51,8 +51,9 @@ postgresql:
         tag: '16-alpine'
         pullPolicy: IfNotPresent
     postgresqlUsername: gg_admin
-    postgresqlPasswordSecret: /run/secrets/gp_password
     postgresqlDatabase: gophergate
+    existingSecret: "gophergate-db-credentials"
+    existingSecretKey: "password"
     persistence:
         enabled: false
     resources:
@@ -62,10 +63,6 @@ postgresql:
         limits:
             cpu: '500m'
             memory: '512Mi'
-    secrets:
-        pg_password:
-            secretName: pg-password-secret
-            secretKey: pg_password
     healthcheck:
         enabled: true
         command: ['CMD-SHELL', 'pg_isready -U gg_admin -d gophergate']
