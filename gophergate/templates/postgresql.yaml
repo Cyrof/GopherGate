@@ -39,9 +39,9 @@ spec:
                           memory: '{{ .Values.postgresql.resources.limits.memory }}'
                   livenessProbe:
                       exec:
-                          command: { { .Values.postgresql.healthcheck.command | toJson } }
+                          command: {{ .Values.postgresql.healthcheck.command | toJson }}
                       initialDelaySeconds:
-                          { { .Values.postgresql.healthcheck.initialDelaySeconds } }
-                      periodSeconds: { { .Values.postgresql.healthcheck.periodSeconds } }
-                      failureThreshold: { { .Values.postgresql.healthcheck.failureThreshold } }
+                          {{ .Values.postgresql.healthcheck.initialDelaySeconds }}
+                      periodSeconds: {{ .Values.postgresql.healthcheck.periodSeconds }}
+                      failureThreshold: {{ .Values.postgresql.healthcheck.failureThreshold }}
     volumeClaimTemplates: []

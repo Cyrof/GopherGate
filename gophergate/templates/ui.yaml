@@ -5,7 +5,7 @@ metadata:
     labels:
         app: gophergate-ui
 spec:
-    replicas: { { .Values.ui.replicaCount } }
+    replicas: {{ .Values.ui.replicaCount }}
     selector:
         matchLabels:
             app: gophergate-ui

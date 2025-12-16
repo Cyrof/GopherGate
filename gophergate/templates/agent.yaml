@@ -25,17 +25,13 @@ spec:
                           cpu: '{{ .Values.agent.resources.limits.cpu }}'
                           memory: '{{ .Values.agent.resources.limits.memory }}'
                   env:
-                      - name: GATEWAY_DB_HOST
-                        value: 'postgresql'
-                      - name: GATEWAY_DB_USERNAME
-                        value: '{{ .Values.postgresql.postgresqlUsername }}'
-                      - name: Gateway_DB_PASSWORD
-                        valueFrom:
-                            secretKeyRef:
-                                name: gophergate-db-credentials
-                                key: password
                       - name: DATABASE_URL
-                        value: '{{ .Values.agent.env.DATABASE_URL }}'
+                        value: postgres://gg_admin:$(DB_PASSWORD)@gophergate-postgresql:5432/gophergate?sslmode=disable
+                      - name: DB_PASSWORD
+                        valueFrom:
+                          secretKeyRef:
+                            name: gophergate-db-credentials
+                            key: password
                       - name: GRPC_ADDR
                         value: '{{ .Values.agent.env.GRPC_ADDR }}'
             nodeSelector:
