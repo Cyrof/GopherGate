@@ -12,6 +12,9 @@ agent:
           operator: 'Equal'
           value: 'vpn'
           effect: 'NoSchedule'
+    dbSecret:
+        name: gophergate-db-credentials
+        key: database_url
     resources:
         requests:
             cpu: '250m'
@@ -50,10 +53,11 @@ postgresql:
         repository: postgres
         tag: '16-alpine'
         pullPolicy: IfNotPresent
-    postgresqlUsername: gg_admin
-    postgresqlDatabase: gophergate
-    existingSecret: "gophergate-db-credentials"
-    existingSecretKey: "password"
+    auth:
+        postgresqlUsername: gg_admin
+        postgresqlDatabase: gophergate
+        existingSecret: gophergate-db-credentials
+        existingSecretKey: password
     persistence:
         enabled: false
     resources:

@@ -17,6 +17,12 @@ spec:
                 - name: gophergate-wg-agent
                   image: '{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}'
                   imagePullPolicy: '{{ .Values.agent.image.pullPolicy }}'
+                  securityContext:
+                    capabilities:
+                        add:
+                            - NET_ADMIN
+                            - NET_RAW
+                    privileged: true
                   resources:
                       requests:
                           cpu: '{{ .Values.agent.resources.requests.cpu }}'
@@ -26,14 +32,20 @@ spec:
                           memory: '{{ .Values.agent.resources.limits.memory }}'
                   env:
                       - name: DATABASE_URL
-                        value: postgres://gg_admin:$(DB_PASSWORD)@gophergate-postgresql:5432/gophergate?sslmode=disable
-                      - name: DB_PASSWORD
                         valueFrom:
-                          secretKeyRef:
-                            name: gophergate-db-credentials
-                            key: password
+                            secretKeyRef:
+                                name: {{ .Values.agent.dbSecret.name }}
+                                key: {{ .Values.agent.dbSecret.key }}
                       - name: GRPC_ADDR
                         value: '{{ .Values.agent.env.GRPC_ADDR }}'
+                  volumeMounts:
+                    - name: dev-net-tun
+                      mountPath: /dev/net/tun
+            volumes:
+                - name: dev-net-tun
+                  hostPath:
+                    path: /dev/net/tun
+                    type: CharDevice
             nodeSelector:
                 role: vpn
             tolerations:
