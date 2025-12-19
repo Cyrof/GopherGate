@@ -1,15 +1,22 @@
 FROM golang:1.24-alpine AS builder
 
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+
 WORKDIR /src
 
 RUN apk add --no-cache ca-certificates git
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 \
+    GOOS=$TARGETOS \
+    GOARCH=$TARGETARCH \
     go build -trimpath -ldflags="-s -w" \
     -o /out/gophergate-wg-agent ./cmd/gophergate-wg-agent
 
