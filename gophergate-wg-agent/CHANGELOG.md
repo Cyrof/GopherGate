@@ -10,16 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.4.1] - 2025-12-19
 
 ### Added
-- (fill)
+- Updated the **Dockerfile** to build the agent binary dynamically based on target architecture, removing previously hard-coded architecture values.
 
 ### Changed
-- (fill)
+- Resolved cross-architecture build issues that caused image incompatibility on non-matching platforms.
 
 ### Fixed
-- (fill)
+- No additions in this release.
 
 ### Removed
-- (fill)
+- No removals in this release.
 
 ## [v0.4.0] - 2025-12-14
 
