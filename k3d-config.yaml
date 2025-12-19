@@ -8,6 +8,7 @@ agents: 2
 ports:
     - port: 18080:80
     - port: 18443:443
+    - port: 3000:30080  # UI Ports Mapping
 
 registries:
     create:

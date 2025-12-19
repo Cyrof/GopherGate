@@ -23,13 +23,14 @@ metadata:
     labels:
         app: gophergate-ui
 spec:
+    type: NodePort
     ports:
         - port: 3000
           targetPort: 3000
           name: http
+          nodePort: 30080
     selector:
         app: gophergate-ui
-    type: ClusterIP
 
 ---
 # Service for Postgresql
