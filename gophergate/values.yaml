@@ -1,0 +1,75 @@
+# agent settings (daemonset)
+agent:
+    image:
+        repository: cyrof/gophergate
+        tag: gophergate-wg-agent-latest
+        pullPolicy: Always
+    replicaCount: 1
+    nodeSelector:
+        role: vpn
+    tolerations:
+        - key: 'dedicated'
+          operator: 'Equal'
+          value: 'vpn'
+          effect: 'NoSchedule'
+    dbSecret:
+        name: gophergate-db-credentials
+        key: database_url
+    resources:
+        requests:
+            cpu: '250m'
+            memory: '64Mi'
+        limits:
+            cpu: '500m'
+            memory: '128Mi'
+    env:
+        DATABASE_URL: 'postgres://gg_admin:{{ .Values.postgresql.postgresqlPassword }}@gophergate-postgresql.gophergate.svc.cluster.local:5432/gophergate?sslmode=disable'
+        GRPC_ADDR: ':7443'
+
+# ui settings (deployment)
+ui:
+    image:
+        repository: cyrof/gophergate
+        tag: gophergate-ui-latest
+        pullPolicy: IfNotPresent
+    replicaCount: 1
+    resources:
+        requests:
+            cpu: '250m'
+            memory: '64Mi'
+        limits:
+            cpu: '500m'
+            memory: '128Mi'
+    env:
+        HTTP_ADDR: ':3000'
+        GRPC_ADDR: 'gophergate-wg-agent:7443'
+        GRPC_TLS_ENABLE: 'false'
+        WG_IFACE: 'wg0'
+
+# PostgreSQL (statefulset)
+postgresql:
+    enabled: true
+    image:
+        repository: postgres
+        tag: '16-alpine'
+        pullPolicy: IfNotPresent
+    auth:
+        postgresqlUsername: gg_admin
+        postgresqlDatabase: gophergate
+        existingSecret: gophergate-db-credentials
+        existingSecretKey: password
+    persistence:
+        enabled: false
+    resources:
+        requests:
+            cpu: '100m'
+            memory: '256Mi'
+        limits:
+            cpu: '500m'
+            memory: '512Mi'
+    healthcheck:
+        enabled: true
+        command: ['CMD-SHELL', 'pg_isready -U gg_admin -d gophergate']
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        failureThreshold: 5
