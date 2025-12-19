@@ -3,7 +3,7 @@ agent:
     image:
         repository: cyrof/gophergate
         tag: gophergate-wg-agent-latest
-        pullPolicy: IfNotPresent
+        pullPolicy: Always
     replicaCount: 1
     nodeSelector:
         role: vpn
@@ -23,7 +23,7 @@ agent:
             cpu: '500m'
             memory: '128Mi'
     env:
-        DATABASE_URL: 'postgres://gg_admin:{{ .Values.postgresql.postgresqlPassword }}@postgresql:5432/gophergate?sslmode=disable'
+        DATABASE_URL: 'postgres://gg_admin:{{ .Values.postgresql.postgresqlPassword }}@gophergate-postgresql.gophergate.svc.cluster.local:5432/gophergate?sslmode=disable'
         GRPC_ADDR: ':7443'
 
 # ui settings (deployment)

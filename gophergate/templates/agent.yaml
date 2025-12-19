@@ -13,15 +13,16 @@ spec:
             labels:
                 app: gophergate-wg-agent
         spec:
+            hostNetwork: true
             containers:
                 - name: gophergate-wg-agent
                   image: '{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}'
                   imagePullPolicy: '{{ .Values.agent.image.pullPolicy }}'
                   securityContext:
-                    capabilities:
-                        add:
-                            - NET_ADMIN
-                            - NET_RAW
+                    # capabilities:
+                    #     add:
+                    #         - NET_ADMIN
+                    #         - NET_RAW
                     privileged: true
                   resources:
                       requests:

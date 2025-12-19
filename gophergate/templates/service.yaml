@@ -47,4 +47,4 @@ spec:
           name: db
     selector:
         app: gophergate-postgresql
-    clusterIP: None
+    # clusterIP: None
