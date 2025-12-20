@@ -28,8 +28,5 @@ WORKDIR /
 
 COPY --from=builder /out/gophergate-wg-agent /usr/local/bin/gophergate-wg-agent
 
-RUN addgroup -S gophergate && adduser -S gophergate -G gophergate
-USER gophergate
-
 ENTRYPOINT ["/usr/local/bin/gophergate-wg-agent"]
 CMD ["serve"]
