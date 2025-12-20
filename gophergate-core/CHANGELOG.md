@@ -29,16 +29,16 @@ import (
 ## [v0.4.3] - 2025-12-20
 
 ### Added
-- (fill)
+- Kubernetes-specific logging environment override to force stdout logging for containerised deployments.
 
 ### Changed
-- (fill)
+- No changes for this release.
 
 ### Fixed
-- (fill)
+- No fixes for this release.
 
 ### Removed
-- (fill)
+- No removals for this release.
 
 ## [v0.4.2] - 2025-12-14
 
