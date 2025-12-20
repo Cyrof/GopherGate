@@ -14,6 +14,7 @@ spec:
                 app: gophergate-wg-agent
         spec:
             hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
             containers:
                 - name: gophergate-wg-agent
                   image: '{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}'
