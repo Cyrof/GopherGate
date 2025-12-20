@@ -45,12 +45,16 @@ func Default(app string) Config {
 	}
 }
 
+func isKubernetes() bool {
+	return os.Getenv("K3S_SERVICE_HOST") != ""
+}
+
 func Init(cfg Config) (*zap.SugaredLogger, func()) {
 
 	// decide mode
 	mode := cfg.Mode
 	if mode == Auto {
-		if envx.IsDev() {
+		if envx.IsDev() || isKubernetes() {
 			mode = Console
 		} else {
 			mode = File
