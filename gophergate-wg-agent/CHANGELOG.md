@@ -10,16 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.4.3] - 2025-12-20
 
 ### Added
-- (fill)
+- No additions for this release.
 
 ### Changed
-- (fill)
+- Updated runtime to use the kubernetes default/privileged user instead of a custom user.
 
 ### Fixed
-- (fill)
+- No fixes for this release.
 
 ### Removed
-- (fill)
+- Removed custom user configuration in favor of Kubernetes-manageed privileges.
 
 ## [v0.4.2] - 2025-12-19
 
