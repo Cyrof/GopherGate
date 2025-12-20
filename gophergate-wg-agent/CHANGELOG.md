@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 - No fixes for this release.
 
 ### Removed
-- Removed custom user configuration in favor of Kubernetes-manageed privileges.
+- Removed custom user configuration in favor of Kubernetes-managed privileges.
 
 ## [v0.4.2] - 2025-12-19
 
