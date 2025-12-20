@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.4.2] - 2025-12-19
+
+### Added
+- File-base logging support.
+ease
+### Changed
+- No changes in this release.
+
+### Fixed
+- No fixes in this release.
+
+### Removed
+- No removals in this release.
+
 ## [v0.4.1] - 2025-12-19
 
 ### Added
