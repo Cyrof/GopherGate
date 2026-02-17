@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: gophergate-wg-agent
+    labels:
+        app: gophergate
+spec:
+    selector:
+        matchLabels:
+            app: gophergate-wg-agent
+    template:
+        metadata:
+            labels:
+                app: gophergate-wg-agent
+        spec:
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0
+            containers:
+                - name: gophergate-wg-agent
+                  image: '{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}'
+                  imagePullPolicy: '{{ .Values.agent.image.pullPolicy }}'
+                  securityContext:
+                    privileged: true
+                    allowPrivilegeEscalation: true
+                    readOnlyRootFilesystem: false
+                    runAsUser: 0
+                    runAsGroup: 0
+                    capabilities:
+                        add:
+                            - NET_ADMIN
+                            - NET_RAW
+                  resources:
+                      requests:
+                          cpu: '{{ .Values.agent.resources.requests.cpu }}'
+                          memory: '{{ .Values.agent.resources.requests.memory }}'
+                      limits:
+                          cpu: '{{ .Values.agent.resources.limits.cpu }}'
+                          memory: '{{ .Values.agent.resources.limits.memory }}'
+                  env:
+                      - name: DATABASE_URL
+                        valueFrom:
+                            secretKeyRef:
+                                name: {{ .Values.agent.dbSecret.name }}
+                                key: {{ .Values.agent.dbSecret.key }}
+                      - name: GRPC_ADDR
+                        value: '{{ .Values.agent.env.GRPC_ADDR }}'
+                  volumeMounts:
+                    - name: dev-net-tun
+                      mountPath: /dev/net/tun
+            volumes:
+                - name: dev-net-tun
+                  hostPath:
+                    path: /dev/net/tun
+                    type: CharDevice
+            nodeSelector:
+                role: vpn
+            tolerations:
+                - key: 'dedicated'
+                  operator: 'Equal'
+                  value: 'vpn'
+                  effect: 'NoSchedule'

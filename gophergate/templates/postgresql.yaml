@@ -1,0 +1,57 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gophergate-postgresql
+  labels:
+    app: gophergate-postgresql
+spec:
+  serviceName: gophergate-postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gophergate-postgresql
+  template:
+    metadata:
+      labels:
+        app: gophergate-postgresql
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgresql
+          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          imagePullPolicy: "{{ .Values.postgresql.image.pullPolicy }}"
+
+          env:
+            - name: POSTGRES_USER
+              value: "{{ .Values.postgresql.auth.postgresqlUsername }}"
+            - name: POSTGRES_DB
+              value: "{{ .Values.postgresql.auth.postgresqlDatabase }}"
+            - name: POSTGRES_PASSWORD_FILE
+              value: /run/secrets/password
+
+          resources:
+            requests:
+              cpu: "{{ .Values.postgresql.resources.requests.cpu }}"
+              memory: "{{ .Values.postgresql.resources.requests.memory }}"
+            limits:
+              cpu: "{{ .Values.postgresql.resources.limits.cpu }}"
+              memory: "{{ .Values.postgresql.resources.limits.memory }}"
+
+          livenessProbe:
+            exec:
+              command: {{ .Values.postgresql.healthcheck.command | toJson }}
+            initialDelaySeconds: {{ .Values.postgresql.healthcheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.postgresql.healthcheck.periodSeconds }}
+            failureThreshold: {{ .Values.postgresql.healthcheck.failureThreshold }}
+
+          volumeMounts:
+            - name: pg-password
+              mountPath: /run/secrets
+              readOnly: true
+
+      volumes:
+        - name: pg-password
+          secret:
+            secretName: {{ .Values.postgresql.auth.existingSecret }}
+{{- end }}
