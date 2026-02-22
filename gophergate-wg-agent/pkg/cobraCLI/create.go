@@ -50,6 +50,15 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// persist to DB
+		if DB == nil {
+			errf(cmd, "Error: database no initialied; cannot persist peer\n")
+			Log.Errorw("create failed: DB not intialised", "iface", createIface, "name", createName, "pubKey", createPubKey)
+			return errors.New("database not initialised")
+		}
+
+		repo := data.NewRepository(DB)
+
 		req := wgsvc.CreatePeerRequest{
 			Iface:             createIface,
 			Name:              createName,
@@ -58,6 +67,7 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			Endpoint:          createEndpoint,
 			KeepaliveSeconds:  createKeepalive,
 			ReplaceAllowedIPs: createReplaceIPs,
+			Repo:              repo,
 		}
 
 		ctx, cancel := context.WithTimeout(cmd.Context(), 8*time.Second)
@@ -75,34 +85,14 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			return err
 		}
 
-		// persist to DB
-		if DB == nil {
-			errf(cmd, "Error: database no initialied; cannot persist peer\n")
-			Log.Errorw("create failed: DB not intialised", "iface", createIface, "name", createName, "pubKey", createPubKey)
-			return errors.New("database not initialised")
-		}
-
 		primaryIP := pickPrimaryIP(createAllowed)
-		repo := data.NewRepository(DB)
-		id, err := repo.Insert(ctx, data.Peer{
-			Name:                createName,
-			PublicKey:           createPubKey,
-			IPAddress:           primaryIP,
-			Endpoint:            optionalString(createEndpoint),
-			PersistentKeepalive: optionalI16(createKeepalive),
-		})
-		if err != nil {
-			errf(cmd, "Error: failed to insert peer in DB: %v\n", err)
-			Log.Errorw("insert peer failed", "iface", createIface, "name", createName, "pubKey", createPubKey, "err", err)
-			return fmt.Errorf("insert peer: %w", err)
-		}
 
 		outf(cmd, "Peer created on %s\n ID: %s\n Name: %s\n PublicKey: %s\n PrimaryIP: %s\n ConfigApplied: %t\n",
-			resp.Iface, id, resp.Name, resp.PublicKey, primaryIP, resp.ConfigApplied,
+			resp.Iface, resp.ID, resp.Name, resp.PublicKey, primaryIP, resp.ConfigApplied,
 		)
 
 		Log.Infow("peerCreated",
-			"id", id,
+			"id", resp.ID,
 			"name", resp.Name,
 			"iface", resp.Iface,
 			"pubKey", resp.PublicKey,
@@ -158,19 +148,4 @@ func pickPrimaryIP(cidrs []string) net.IP {
 		}
 	}
 	return nil
-}
-
-func optionalString(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
-}
-
-func optionalI16(v int) *int16 {
-	if v <= 0 {
-		return nil
-	}
-	x := int16(v)
-	return &x
 }

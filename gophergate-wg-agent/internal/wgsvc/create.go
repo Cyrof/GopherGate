@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -75,10 +76,38 @@ func CreatePeer(ctx context.Context, req CreatePeerRequest) (CreatePeerResponse,
 		return CreatePeerResponse{}, fmt.Errorf("configure device: %w", err)
 	}
 
+	// persist to db
+	var id string
+	if req.Repo != nil {
+		primaryIP := pickPrimaryIP(req.AllowedCIDRs)
+
+		var err error
+		id, err = req.Repo.Insert(ctx, data.Peer{
+			Name:                req.Name,
+			PublicKey:           pub.String(),
+			IPAddress:           primaryIP,
+			Endpoint:            optionalString(req.Endpoint),
+			PersistentKeepalive: optionalI16(req.KeepaliveSeconds),
+		})
+		if err != nil {
+			// roll back to avoid drift
+			rollbackErr := cli.ConfigureDevice(req.Iface, wgtypes.Config{
+				Peers: []wgtypes.PeerConfig{
+					{PublicKey: pub, Remove: true},
+				},
+			})
+			if rollbackErr != nil {
+				fmt.Printf("rollback failed for peer %s on %s: %v\n", pub.String(), req.Iface, rollbackErr)
+			}
+			return CreatePeerResponse{}, fmt.Errorf("insert peer: %w", err)
+		}
+	}
+
 	return CreatePeerResponse{
 		Iface:         req.Iface,
 		Name:          req.Name,
 		PublicKey:     pub.String(),
 		ConfigApplied: true,
+		ID:            id,
 	}, nil
 }
