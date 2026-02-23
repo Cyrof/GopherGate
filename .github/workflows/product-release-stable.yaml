@@ -29,8 +29,9 @@ jobs:
             exit 1
           fi
 
+          # Extract version without 'v' prefix first
           VERSION="$(grep -m1 -E '^## \[v?[0-9]+\.[0-9]+\.[0-9]+\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$' "$FILE" \
-            | sed -E 's/^## \[([^]]+)\].*/\1/')"
+            | sed -E 's/^## \[v?([^]]+)\].*/\1/')"
 
           if [ -z "$VERSION" ]; then
             echo "Could not parse version from $FILE." >&2
@@ -38,10 +39,18 @@ jobs:
             exit 1
           fi
 
-          if [[ "$VERSION" != v* ]]; then VERSION="v$VERSION"; fi
-          TAG="gophergate/$VERSION"
+          # Ensure version has v prefix for the tag
+          if [[ "$VERSION" != v* ]]; then 
+            TAG_VERSION="v${VERSION}"
+          else
+            TAG_VERSION="$VERSION"
+          fi
+          
+          # Create tag with gophergate/ prefix
+          TAG="gophergate/${TAG_VERSION}"
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "semver=$TAG_VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Check if product tag already exists (idempotent)
@@ -70,18 +79,20 @@ jobs:
           VERSION="${{ steps.ver.outputs.version }}"
           FILE="CHANGELOG.md"
 
-          NOTES="$(awk -v ver="## [${VERSION}]" '
+          # Extract notes - handle both [v1.2.3] and [1.2.3] formats
+          NOTES="$(awk -v ver="## [${VERSION}]" -v ver2="## [v${VERSION}]" '
             $0 ~ "^## \\[" { in_section=0 }
-            index($0, ver) == 1 { in_section=1; next }
+            index($0, ver) == 1 || index($0, ver2) == 1 { in_section=1; next }
             in_section { print }
           ' "$FILE" | sed -e '1{/^$/d}')"
 
           if [ -z "$NOTES" ]; then
-            echo "No changelog content found under ${VERSION} in ${FILE}" >&2
+            echo "No changelog content found under version ${VERSION} in ${FILE}" >&2
             exit 1
           fi
 
-          FOOTER="$(cat <<'EOF'
+          # Create footer without using command substitution
+          FOOTER="
 
 ---
 
@@ -93,24 +104,25 @@ Container images are published to Docker Hub:
 - **[gophergate](https://hub.docker.com/r/cyrof/gophergate)**
 
 Component image tags:
-- `cyrof/gophergate:gophergate-ui-<tag>`
-- `cyrof/gophergate:gophergate-wg-agent-<tag>`
+- \`cyrof/gophergate:gophergate-ui-${VERSION}\`
+- \`cyrof/gophergate:gophergate-wg-agent-${VERSION}\`
 
-> Replace `<tag>` with the desired image tag (e.g. `latest` or a versioned tag).
+> Replace \`<tag>\` with the desired image tag (e.g. \`latest\` or a versioned tag).
 
 ### Deployment (Helm Chart)
 The official Helm chart for deploying GopherGate is maintained here:
 
-- **[GopherGate Helm Chart](https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate)**
-EOF
-)"
+- **[GopherGate Helm Chart](https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate)**"
 
+          # Combine notes and footer
           BODY="${NOTES}${FOOTER}"
 
+          # Output to GITHUB_OUTPUT using heredoc with a unique delimiter
+          DELIMITER="EOF_$(date +%s | sha256sum | base64 | head -c 16)"
           {
-            echo "body<<EOF"
+            echo "body<<$DELIMITER"
             echo "$BODY"
-            echo "EOF"
+            echo "$DELIMITER"
           } >> "$GITHUB_OUTPUT"
 
       - name: Create annotated product tag on stable commit
@@ -119,6 +131,12 @@ EOF
         run: |
           set -euo pipefail
           TAG="${{ steps.ver.outputs.tag }}"
+          
+          # Configure git user for the tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create and push the tag
           git tag -a "$TAG" -m "Product release $TAG"
           git push origin "$TAG"
 
