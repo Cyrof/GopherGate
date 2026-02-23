@@ -1,0 +1,75 @@
+name: Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-modules:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.mods.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find modules
+        id: mods
+        shell: bash
+        run: |
+          set -euo pipefail
+          # list module dirs (strip /go.mod)
+          mapfile -t mods < <(git ls-files '**/go.mod' | sed 's#/go.mod##')
+          if [ ${#mods[@]} -eq 0 ]; then
+            echo "modules=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # build JSON array: ["dir1","dir2",...]
+          json='['
+          for m in "${mods[@]}"; do
+            json="$json\"$m\","
+          done
+          json="${json%,}]"
+          echo "modules=$json" >> "$GITHUB_OUTPUT"
+
+  lint-module:
+    needs: discover-modules
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug matrix value
+        run: |
+          echo "MODULE=${{ matrix.module }}"
+          ls -la
+          ls -la "${{ matrix.module }}"
+
+      - name: Set up Go from module
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache: false
+
+      - name: Cache Go build & mod
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles(format('{0}/go.sum', matrix.module)) }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: ${{ matrix.module }}
+          version: latest
+          args: --timeout=5m

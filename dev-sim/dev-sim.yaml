@@ -1,0 +1,45 @@
+services:
+  wireguard-dev:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard-dev
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Singapore
+      - SERVERURL=127.0.0.1
+      - SERVERPORT=51820
+      - PEERS=devpeer
+      - PEERDNS=auto
+      - LOG_CONFS=true
+    volumes:
+      - ./wireguard/config:/config
+      - /dev/net/tun:/dev/net/run
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: gg-postgres-dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: gg_admin
+      POSTGRES_DB: gophergate
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    volumes:
+      - ./dev/db_data:/var/lib/postgresql/data
+    secrets:
+      - pg_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gg_admin -d gophergate"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+secrets:
+  pg_password:
+    file: ./secrets/pg_password.txt

@@ -1,0 +1,34 @@
+# VCS
+.git
+.gitignore
+
+# Docs / metadata
+*.md
+CHANGELOG*
+README*
+
+# Environment / secrets
+.env
+.env.*
+*.env
+
+# Local builds / artifacts
+bin/
+dist/
+out/
+*.exe
+*.log
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+
+# Go build cache (usually not needed in context)
+.coverage
+*.test
+
+# Kubernetes / Helm manifests (optional, if kept elsewhere)
+*.yaml
+*.yml
+charts/
