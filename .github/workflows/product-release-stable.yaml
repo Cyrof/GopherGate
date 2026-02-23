@@ -45,7 +45,7 @@ jobs:
           else
             TAG_VERSION="$VERSION"
           fi
-          
+
           # Create tag with gophergate/ prefix
           TAG="gophergate/${TAG_VERSION}"
 
@@ -92,31 +92,11 @@ jobs:
 
           BODY_FILE="/tmp/gophergate_release_body.md"
 
-          {
-            echo "$NOTES"
-            cat <<'FOOTER'
+          # Write notes
+          printf "%s\n" "$NOTES" > "$BODY_FILE"
 
----
-
-## Distribution
-
-### Docker Images
-Container images are published to Docker Hub:
-
-- **[gophergate](https://hub.docker.com/r/cyrof/gophergate)**
-
-Component image tags:
-- `cyrof/gophergate:gophergate-ui-<tag>`
-- `cyrof/gophergate:gophergate-wg-agent-<tag>`
-
-> Replace `<tag>` with the desired image tag (e.g. `latest` or a versioned tag).
-
-### Deployment (Helm Chart)
-The official Helm chart for deploying GopherGate is maintained here:
-
-- **[GopherGate Helm Chart](https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate)**
-FOOTER
-          } > "$BODY_FILE"
+          # Append footer (no heredoc to avoid indentation issues)
+          printf "\n---\n\n## Distribution\n\n### Docker Images\nContainer images are published to Docker Hub:\n\n- **[gophergate](https://hub.docker.com/r/cyrof/gophergate)**\n\nComponent image tags:\n- \`cyrof/gophergate:gophergate-ui-<tag>\`\n- \`cyrof/gophergate:gophergate-wg-agent-<tag>\`\n\n> Replace \`<tag>\` with the desired image tag (e.g. \`latest\` or a versioned tag).\n\n### Deployment (Helm Chart)\nThe official Helm chart for deploying GopherGate is maintained here:\n\n- **[GopherGate Helm Chart](https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate)**\n" >> "$BODY_FILE"
 
           echo "body_path=$BODY_FILE" >> "$GITHUB_OUTPUT"
 
@@ -126,11 +106,11 @@ FOOTER
         run: |
           set -euo pipefail
           TAG="${{ steps.ver.outputs.tag }}"
-          
+
           # Configure git user for the tag
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Create and push the tag
           git tag -a "$TAG" -m "Product release $TAG"
           git push origin "$TAG"
