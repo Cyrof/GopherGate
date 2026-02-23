@@ -42,7 +42,7 @@ Modes:
 
 Stores:
 
-- Peeer metadata
+- Peer metadata
 - Key references
 - Future audit logs
 
@@ -87,8 +87,7 @@ Production deployments should use the official Helm chart repository.
 
 The production deployment for GopherGate is maintained in a separate repository:
 
-**Helm Chart Repository:**
-`https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate`
+**Helm Chart Repository:** [gophergate](https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate)
 
 The Helm chart deploys:
 
