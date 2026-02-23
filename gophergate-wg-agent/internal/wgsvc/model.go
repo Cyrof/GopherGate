@@ -62,6 +62,7 @@ type UpdatePeerResponse struct {
 type DeletePeerRequest struct {
 	Iface     string
 	PublicKey string
+	Repo      *data.Repository
 }
 
 type DeletePeerResponse struct {
@@ -69,4 +70,3 @@ type DeletePeerResponse struct {
 	PublicKey string `json:"public_key"`
 	Removed   bool   `json:"removed"`
 }
-

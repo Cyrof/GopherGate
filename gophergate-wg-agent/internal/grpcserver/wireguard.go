@@ -68,6 +68,7 @@ func (s *WireGuardService) DeletePeer(
 	svcReq := wgsvc.DeletePeerRequest{
 		Iface:     req.GetIface(),
 		PublicKey: req.GetPublicKey(),
+		Repo:      s.repo,
 	}
 
 	svcResp, err := wgsvc.DeletePeer(ctx, svcReq)
