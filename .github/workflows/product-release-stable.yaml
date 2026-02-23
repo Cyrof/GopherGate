@@ -79,7 +79,6 @@ jobs:
           VERSION="${{ steps.ver.outputs.version }}"
           FILE="CHANGELOG.md"
 
-          # Extract notes
           NOTES="$(awk -v ver="## [${VERSION}]" -v ver2="## [v${VERSION}]" '
             $0 ~ "^## \\[" { in_section=0 }
             index($0, ver) == 1 || index($0, ver2) == 1 { in_section=1; next }
@@ -91,14 +90,11 @@ jobs:
             exit 1
           fi
 
-          # Create temp file
-          TEMP_BODY=$(mktemp)
-          
-          # Write notes
-          echo "$NOTES" > "$TEMP_BODY"
-          
-          # Append footer - heredoc preserves all formatting and special characters
-          cat >> "$TEMP_BODY" << 'FOOTER'
+          BODY_FILE="/tmp/gophergate_release_body.md"
+
+          {
+            echo "$NOTES"
+            cat <<'FOOTER'
 
 ---
 
@@ -110,8 +106,8 @@ Container images are published to Docker Hub:
 - **[gophergate](https://hub.docker.com/r/cyrof/gophergate)**
 
 Component image tags:
-- `cyrof/gophergate:gophergate-ui-${VERSION}`
-- `cyrof/gophergate:gophergate-wg-agent-${VERSION}`
+- `cyrof/gophergate:gophergate-ui-<tag>`
+- `cyrof/gophergate:gophergate-wg-agent-<tag>`
 
 > Replace `<tag>` with the desired image tag (e.g. `latest` or a versioned tag).
 
@@ -120,15 +116,9 @@ The official Helm chart for deploying GopherGate is maintained here:
 
 - **[GopherGate Helm Chart](https://github.com/Cyrof/CyroStack/tree/main/gophergate-deploy/gophergate)**
 FOOTER
+          } > "$BODY_FILE"
 
-          # Read back and output
-          {
-            echo "body<<EOF"
-            cat "$TEMP_BODY"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          
-          rm "$TEMP_BODY"
+          echo "body_path=$BODY_FILE" >> "$GITHUB_OUTPUT"
 
       - name: Create annotated product tag on stable commit
         if: steps.tagcheck.outputs.exists != 'true'
@@ -151,6 +141,6 @@ FOOTER
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: ${{ steps.ver.outputs.tag }}
-          body: ${{ steps.notes.outputs.body }}
+          body_path: ${{ steps.notes.outputs.body_path }}
           draft: false
           prerelease: false
