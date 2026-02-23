@@ -1,5 +1,7 @@
 package wgsvc
 
+import "github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
+
 type DeviceStatus struct {
 	Interface    string       `json:"interface"`
 	ListenPort   int          `json:"list_port"`
@@ -26,6 +28,7 @@ type CreatePeerRequest struct {
 	Endpoint          string
 	KeepaliveSeconds  int
 	ReplaceAllowedIPs bool
+	Repo              *data.Repository
 }
 
 type CreatePeerResponse struct {
@@ -33,6 +36,7 @@ type CreatePeerResponse struct {
 	Name          string `json:"name,omitempty"`
 	PublicKey     string `json:"public_key"`
 	ConfigApplied bool   `json:"config_applied"`
+	ID            string
 }
 
 type UpdatePeerRequest struct {
@@ -42,6 +46,7 @@ type UpdatePeerRequest struct {
 	AppendAllowedCIDRs []string
 	Endpoint           string
 	KeepaliveSeconds   *int
+	Repo               *data.Repository
 }
 
 type UpdatePeerResponse struct {
@@ -55,13 +60,14 @@ type UpdatePeerResponse struct {
 	} `json:"changed"`
 }
 
-type DeletePeerRequest struct { 
-	Iface string
+type DeletePeerRequest struct {
+	Iface     string
 	PublicKey string
+	Repo      *data.Repository
 }
 
 type DeletePeerResponse struct {
-	Iface string `json:"iface"`
+	Iface     string `json:"iface"`
 	PublicKey string `json:"public_key"`
-	Removed bool `json:"removed"`
+	Removed   bool   `json:"removed"`
 }

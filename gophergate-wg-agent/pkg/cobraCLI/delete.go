@@ -11,7 +11,6 @@ import (
 
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
-	"github.com/jackc/pgx/v5"
 	"github.com/spf13/cobra"
 )
 
@@ -74,6 +73,7 @@ var deleteCmd = &cobra.Command{
 		req := wgsvc.DeletePeerRequest{
 			Iface:     delIface,
 			PublicKey: pubKey,
+			Repo:      repo,
 		}
 
 		resp, err := wgsvc.DeletePeer(ctx, req)
@@ -86,16 +86,6 @@ var deleteCmd = &cobra.Command{
 				Log.Errorw("delete peer failed", "iface", delIface, "err", err)
 			}
 			return err
-		}
-
-		if _, err := repo.DeleteByPublicKey(ctx, pubKey); err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				outf(cmd, "Note: no DB row matched for %s; removed from interface only\n", pubKey)
-				Log.Warnw("no DB row matched; removed from interface only", "pubKey", pubKey)
-			} else {
-				outf(cmd, "Warning: failed to delete peer from DB: %v\n", err)
-				Log.Errorw("failed to delete peer from DB", "pubKey", pubKey, "err", err)
-			}
 		}
 
 		outf(cmd, "Peer removed on %s: %s\n", resp.Iface, resp.PublicKey)

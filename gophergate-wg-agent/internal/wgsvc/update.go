@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -36,8 +37,10 @@ func UpdatePeer(ctx context.Context, req UpdatePeerRequest) (UpdatePeerResponse,
 	var (
 		allowed        []net.IPNet
 		replaceAllowed bool
+		setAllowed     bool
 	)
 	if len(req.SetAllowedCIDRs) > 0 || len(req.AppendAllowedCIDRs) > 0 {
+		setAllowed = true
 		var list []string
 		if len(req.SetAllowedCIDRs) > 0 {
 			list = req.SetAllowedCIDRs
@@ -57,8 +60,8 @@ func UpdatePeer(ctx context.Context, req UpdatePeerRequest) (UpdatePeerResponse,
 
 	var ep *net.UDPAddr
 	setEndpoint := false
-	if req.Endpoint != "" {
-		addr, err := net.ResolveUDPAddr("udp", req.Endpoint)
+	if strings.TrimSpace(req.Endpoint) != "" {
+		addr, err := net.ResolveUDPAddr("udp", strings.TrimSpace(req.Endpoint))
 		if err != nil {
 			return UpdatePeerResponse{}, fmt.Errorf("invalid endpoint %q: %w", req.Endpoint, err)
 		}
@@ -77,7 +80,7 @@ func UpdatePeer(ctx context.Context, req UpdatePeerRequest) (UpdatePeerResponse,
 	pc := wgtypes.PeerConfig{
 		PublicKey: pub,
 	}
-	if len(allowed) > 0 || replaceAllowed {
+	if setAllowed {
 		pc.ReplaceAllowedIPs = replaceAllowed
 		pc.AllowedIPs = allowed
 	}
@@ -91,6 +94,31 @@ func UpdatePeer(ctx context.Context, req UpdatePeerRequest) (UpdatePeerResponse,
 	cfg := wgtypes.Config{Peers: []wgtypes.PeerConfig{pc}}
 	if err := cli.ConfigureDevice(req.Iface, cfg); err != nil {
 		return UpdatePeerResponse{}, fmt.Errorf("configure device: %w", err)
+	}
+
+	if req.Repo != nil {
+		var endpointPtr *string
+		if setEndpoint {
+			epStr := strings.TrimSpace(req.Endpoint)
+			endpointPtr = &epStr
+		}
+
+		dbIn := data.UpdatePeerDBInput{
+			ReplaceAllowed: req.SetAllowedCIDRs,
+			AppendAllowed:  req.AppendAllowedCIDRs,
+			SetEndpoint:    setEndpoint,
+			Endpoint:       endpointPtr,
+			SetKeepalive:   setKA,
+		}
+
+		if setKA {
+			ka16 := int16(*req.KeepaliveSeconds)
+			dbIn.Keepalive = &ka16
+		}
+
+		if _, err := req.Repo.UpdateByPublicKey(ctx, pub.String(), dbIn); err != nil {
+			return UpdatePeerResponse{}, fmt.Errorf("peer updated on interface but failed to sync DB: %w", err)
+		}
 	}
 
 	var resp UpdatePeerResponse

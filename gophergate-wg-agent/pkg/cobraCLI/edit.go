@@ -77,32 +77,13 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 
 		var kaPtr *int
 		if upKeepaliveSet {
-			if upKeepalive > 0 {
-				ka := upKeepalive
-				kaPtr = &ka
-			} else {
-				kaPtr = nil
-			}
+			ka := upKeepalive
+			kaPtr = &ka
 		}
 
-		var endpointPtr *string
-		setEndpoint := false
-		if cmd.Flags().Changed("endpoint") {
-			setEndpoint = true
-			if strings.TrimSpace(upEndpoint) == "" {
-				endpointPtr = nil
-			} else {
-				ep := upEndpoint
-				endpointPtr = &ep
-			}
-		}
-
-		dbIn := data.UpdatePeerDBInput{
-			ReplaceAllowed: upSetAllowed,
-			AppendAllowed:  upAppendAllowed,
-			SetEndpoint:    setEndpoint,
-			Endpoint:       endpointPtr,
-			SetKeepalive:   upKeepaliveSet,
+		endpoint := ""
+		if cmd.Flags().Changed("endpoint") && strings.TrimSpace(upEndpoint) != "" {
+			endpoint = upEndpoint
 		}
 
 		req := wgsvc.UpdatePeerRequest{
@@ -110,8 +91,9 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 			PublicKey:          pubKey,
 			SetAllowedCIDRs:    upSetAllowed,
 			AppendAllowedCIDRs: upAppendAllowed,
-			Endpoint:           upEndpoint,
+			Endpoint:           endpoint,
 			KeepaliveSeconds:   kaPtr,
+			Repo:               repo,
 		}
 
 		resp, err := wgsvc.UpdatePeer(ctx, req)
@@ -124,17 +106,6 @@ Specify either --pubkey or --name (name resovles via DB). If both are provided, 
 				Log.Errorw("update peer failed", "iface", upIface, "err", err)
 			}
 			return err
-		}
-
-		if kaPtr != nil {
-			ka16 := int16(*kaPtr)
-			dbIn.Keepalive = &ka16
-		} else if upKeepaliveSet {
-			dbIn.Keepalive = nil
-		}
-		if _, err := repo.UpdateByPublicKey(ctx, pubKey, dbIn); err != nil {
-			errf(cmd, "Warning: failed to sync DB: %v\n", err)
-			Log.Errorw("failed to syunc DB after kernal update", "pubKey", pubKey, "err", err)
 		}
 
 		if upAsJSON {

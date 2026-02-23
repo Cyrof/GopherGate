@@ -8,15 +8,17 @@ import (
 	"google.golang.org/grpc/status"
 
 	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
 )
 
 type WireGuardService struct {
 	gatewayv1.UnimplementedWireGuardServiceServer
+	repo *data.Repository
 }
 
-func NewWireGuardService() *WireGuardService {
-	return &WireGuardService{}
+func NewWireGuardService(repo *data.Repository) *WireGuardService {
+	return &WireGuardService{repo: repo}
 }
 
 // CreatePeer handler for gRPC
@@ -34,6 +36,7 @@ func (s *WireGuardService) CreatePeer(
 		Endpoint:          req.GetEndpoint(),
 		KeepaliveSeconds:  int(req.GetKeepaliveSeconds()),
 		ReplaceAllowedIPs: req.GetReplaceAllowedIps(),
+		Repo:              s.repo,
 	}
 
 	svcResp, err := wgsvc.CreatePeer(ctx, svcReq)
@@ -65,6 +68,7 @@ func (s *WireGuardService) DeletePeer(
 	svcReq := wgsvc.DeletePeerRequest{
 		Iface:     req.GetIface(),
 		PublicKey: req.GetPublicKey(),
+		Repo:      s.repo,
 	}
 
 	svcResp, err := wgsvc.DeletePeer(ctx, svcReq)
@@ -172,6 +176,7 @@ func (s *WireGuardService) UpdatePeer(
 		AppendAllowedCIDRs: req.GetAppendAllowedCidrs(),
 		Endpoint:           req.GetEndpoint(),
 		KeepaliveSeconds:   keepalivePtr,
+		Repo:               s.repo,
 	}
 
 	svcResp, err := wgsvc.UpdatePeer(ctx, svcReq)

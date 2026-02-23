@@ -1,6 +1,8 @@
 package cobraCLI
 
 import (
+	"errors"
+
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/grpcserver"
 	"github.com/spf13/cobra"
 )
@@ -10,7 +12,10 @@ func newServeCmd() *cobra.Command {
 		Use:   "serve",
 		Short: "Start gRPC server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return grpcserver.Start(Log)
+			if DB == nil {
+				return errors.New("database not initialised; cannot start gRPC server")
+			}
+			return grpcserver.Start(Log, DB)
 		},
 	}
 }
