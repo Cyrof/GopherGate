@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc"
 
 	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func envOrDefault(key, def string) string {
@@ -17,7 +19,7 @@ func envOrDefault(key, def string) string {
 	return def
 }
 
-func Start(logger *zap.SugaredLogger) error {
+func Start(logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
 	listenAddr := envOrDefault("GRPC_ADDR", ":7443")
 
 	list, err := net.Listen("tcp", listenAddr)
@@ -28,7 +30,14 @@ func Start(logger *zap.SugaredLogger) error {
 
 	srv := grpc.NewServer()
 
-	gatewayv1.RegisterWireGuardServiceServer(srv, NewWireGuardService())
+	var repo *data.Repository
+	if pool != nil {
+		repo = data.NewRepository(pool)
+	} else {
+		logger.Warn("grpc started without db: create via grpc will not persist")
+	}
+
+	gatewayv1.RegisterWireGuardServiceServer(srv, NewWireGuardService(repo))
 
 	logger.Infow("grpc server started", "addr", listenAddr)
 	return srv.Serve(list)
