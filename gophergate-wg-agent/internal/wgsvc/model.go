@@ -46,6 +46,7 @@ type UpdatePeerRequest struct {
 	AppendAllowedCIDRs []string
 	Endpoint           string
 	KeepaliveSeconds   *int
+	Repo               *data.Repository
 }
 
 type UpdatePeerResponse struct {

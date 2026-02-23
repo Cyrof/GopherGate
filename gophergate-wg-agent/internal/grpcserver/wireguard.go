@@ -176,6 +176,7 @@ func (s *WireGuardService) UpdatePeer(
 		AppendAllowedCIDRs: req.GetAppendAllowedCidrs(),
 		Endpoint:           req.GetEndpoint(),
 		KeepaliveSeconds:   keepalivePtr,
+		Repo:               s.repo,
 	}
 
 	svcResp, err := wgsvc.UpdatePeer(ctx, svcReq)
