@@ -10,57 +10,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.4.4] - 2026-02-23
 
 ### Added
-- (fill)
+
+- No additions for this release.
 
 ### Changed
-- (fill)
+
+- Refactored create, update, and delete logic for improved database persistence handling.
+- Improved internal database interaction structure for better consistency and maintainability.
 
 ### Fixed
-- (fill)
+
+- Fixed persistence bug where create/update/delete operations were not properly reflected in the database.
 
 ### Removed
-- (fill)
+
+- No removals in this release.
 
 ## [v0.4.3] - 2025-12-20
 
 ### Added
+
 - No additions for this release.
 
 ### Changed
+
 - Updated runtime to use the kubernetes default/privileged user instead of a custom user.
 
 ### Fixed
+
 - No fixes for this release.
 
 ### Removed
+
 - Removed custom user configuration in favor of Kubernetes-managed privileges.
 
 ## [v0.4.2] - 2025-12-19
 
 ### Added
+
 - File-base logging support.
-ease
+  ease
+
 ### Changed
+
 - No changes in this release.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.4.1] - 2025-12-19
 
 ### Added
+
 - Updated the **Dockerfile** to build the agent binary dynamically based on target architecture, removing previously hard-coded architecture values.
 
 ### Changed
+
 - Resolved cross-architecture build issues that caused image incompatibility on non-matching platforms.
 
 ### Fixed
+
 - No additions in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.4.0] - 2025-12-14
