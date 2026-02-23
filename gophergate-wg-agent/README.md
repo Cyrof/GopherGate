@@ -1,18 +1,40 @@
 # GopherGate WireGuard Agent (development progress)
 
-The **Gophergate WireGuard Agent** is a lightweight management service that provides peer and interface CRUD opertaions for WireGuard networks via CLI and gRPC (upcoming).
+The **Gophergate WireGuard Agent** is a lightweight management service that provides peer and interface CRUD opertaions for WireGuard networks via CLI and gRPC.
 
 It forms the backend foundation for the [GopherGate project](https://github.com/Cyrof/GopherGate), handling secure peer provisioning, key registration, and server-side configuration management.
 
-This marks the **first complete functional release** of the agent. At this stage, all core features for peer creation are implemented and stable. Client configuration export (download/QR) will be added in an upcoming release.
+This marks the completion of Phase 1 &mdash; all core peer lifecycle operations (create, read, update, delete) are implemented, stable, and persisted to PostgreSQL.
 
-## Features
+Client configuration export (download/QR generation) will be introduced in a future phase.
 
-- Peer creation and registration on a live WireGuard interface
-- Integrated logging, environment, and path management via `gophergate-core`
-- Configuration validation with structured error handling
-- Designed for future gRPC integration
-- Tested with manual client setup (see below)
+## Architecture Overview
+
+The agent supports two operating modes:
+
+### CLI Mode
+
+Direct peer management via Cobra commands.
+
+### gRPC Server Mode
+
+Runs a persistent gRPC service (`serve` command) that allows the GopherGate UI to manage peers remotely.
+
+## Features (Phase 1 Complete)
+
+- Peer creation on a live WireGuard interface
+- Peer deletion and cleanup
+- Peer updates (AllowedIPs, endpoint, keepalive)
+- Peer retrieval (by public key or name)
+- Peer listing (joined with PostgreSQL metadata)
+- Full PostgreSQL persistence
+- Structured error handling
+- gRPC server (`serve`) for UI integration
+- Shared core utilities via `gophergate-core`
+    - Logging (`logx`)
+    - Environment loading (`envx`)
+    - Path management (`paths`)
+    - Database layer (`dbx`)
 
 ## Prerequisites
 
@@ -22,11 +44,29 @@ This marks the **first complete functional release** of the agent. At this stage
 
 ## Development Environment
 
+Instead of manually configuring WireGuard and Postgres, use the provided devleopment simulation environment at [dev-sim](../dev-sim/)
+
+This folder contains:
+
+- `dev-sim.yaml`
+- A local PostgreSQL container
+- A WireGuard container
+- Setup instructionss in its own README
+    > Follow the instructions inside `dev-sim/README` to spin up the full development stack.
+
+This environment is designed specifically for:
+
+- CLI testing
+- gRPC testing
+- UI integration testing
+
 Before running locally, ensure the environment is set up correctly.
 
-#### 1. `.env` file
+### Environment Configuration
 
-The agent uses the same environment configuration as defined in [gophergate-core](https://github.com/Cyrof/GopherGate/blob/dev/gophergate-core/README.md). A `.env` file is needed at the root of the project (or in your working directory) with entries such as:
+The agent uses the same environment configuration as defined in [gophergate-core](https://github.com/Cyrof/GopherGate/blob/dev/gophergate-core/README.md).
+
+Create a `.env` file in your working directory
 
 ```ini
 GOPHERGATE_ENV=dev
@@ -35,21 +75,43 @@ DATABASE_URL=postgres://gg_admin:<your_password>@127.0.0.1:5432/gophergate?sslmo
 
 > Refer to the [GopherGate Core README](https://github.com/Cyrof/GopherGate/blob/dev/gophergate-core/README.md) for the latest environment variable reference.
 
-#### 2. Database (development)
+## Running the Agent (Development)
 
-A Postgres environment for local testing is provided under [dev-sim](https://github.com/Cyrof/GopherGate/blob/dev/dev-sim/README.md). Follow the instruction in that folder's **README** to spin up the database container before running the agent.
+### CLI Testing Mode
 
-## Running (development)
-
-Ensure you WireGuard server interface exists and is up (e.g., `wg0`). See [wireguard-dev](https://github.com/Cyrof/GopherGate/tree/dev/wireguard-dev) for example setups.
-
-Run the agent in development mode:
+To run CLI commands directly:
 
 ```bash
-sudo go run ./cmd/gophergate-wg-agent
+sudo go run ./cmd/gophergate-wg-agent create ...
 ```
 
-Alternatively, build and grant the capability once (Linux):
+or
+
+```bash
+sudo go run ./cmd/gophergate-wg-agent/ list
+```
+
+You only need `serve` if testing gRPC.
+
+## gRPC Server Mode (UI Integration)
+
+To start the gRPC server:
+
+```bash
+sudo go run ./cmd/gophergate-wg-agent serve
+```
+
+This will:
+
+- Connect to PostgreSQL
+- Bind to the configured gRPC port
+- Allow the GopherGate UI to connect
+
+Once running, you may start the UI and connect it to this agent instance.
+
+> Refer to the [gophergate-ui](https://github.com/Cyrof/GopherGate/tree/dev/gophergate-ui) documentation for UI setup instructions.
+
+## Building Locally (Linux)
 
 ```bash
 go build -o gophergate-wg-agent ./cmd/gophergate-wg-agent/
@@ -57,7 +119,25 @@ sudo setcap cap_net_admin+ep ./gophergate-wg-agent
 ./gophergate-wg-agent
 ```
 
-> If you see `logger sync error: sync /dev/stdout: invalid argument` on exit, it's a harmless flush issue with stdout and will be handled in a future update.
+Root or `CAP_NET_ADMIN` is required for WireGuard operations.
+
+## Docker Image (Production Use)
+
+A production-ready agent image is available on Docker Hub:
+
+```
+https://hub.docker.com/repository/docker/cyrof/gophergate/general
+```
+
+The container:
+
+- Automatically runs the `serve` command
+- Is designed to be deployed alongside: - PostgreSQL - gophergate-ui - WireGuard interface
+    > This image is intended for integration deployment.
+
+Full production deployment documentation is available in the root GopherGate repository README.
+
+This README focuses only on the agent components.
 
 ## Command Overview
 
@@ -67,7 +147,7 @@ You can view all available commands and flags using:
 sudo go run ./cmd/gophergate-wg-agent --help
 ```
 
-Example output (abridged):
+Example output:
 
 ```sql
 The gophergate-wg-agent provides a simple Cobra-based CLI to manage
@@ -86,6 +166,7 @@ Available Commands:
   get         Retrieve details of a WireGuard peer (by public key or name)
   help        Help about any command
   list        List WireGuard peers (joined with DB names)
+  serve       Start gRPC server
   status      Show WireGuard dsice and peer status
 
 Flags:
@@ -94,39 +175,58 @@ Flags:
 Use "gophergate-wg-agent [command] --help" for more information about a command.
 ```
 
-## Manual client setup (temporary, for developers)
+## Manual Client Setup (Temporary &mdash; Developer Only)
 
-Because the agent doesn't export a file yet, developers must manually create a client tunnel and use its **public key** with `create`.
+Until configuration export is implemented, client tunnels must be manually created.
 
-1. Create a new, **empty** tunnel in your WireGuard client and copy its **PublicKey**.
-2. Run the `create` command (above) using that public key and an address (e.g., `10.13.13.3/32`).
-3. Manually fill the client tunnel configuration as below:
+### Step 1 &ndash; Generate Client Key
 
-    ```ini
-    # Client (developer) tunnel
-    [Interface]
-    PrivateKey = <CLIENT_PRIVATE_KEY>
-    Address = 10.13.13.3/32
-    DNS = 10.13.13.1
+Create a new empty WireGuard tunnel on your client device and copy its PublicKey.
 
+### Step 2 &ndash; Register Peer
 
-    [Peer]
-    PublicKey = <SERVER_PUBLIC_KEY>
-    AllowedIPs = 10.13.13.0/24
-    Endpoint = <SERVER_ADDR>:51820
-    PersistentKeepalive = 25
-    ```
+```bash
+sudo gophergate-wg-agent create \
+    --name <name_of_peer> \
+    --pubkey <CLIENT_PUBLIC_KEY> \
+    --address 10.13.13.3/32 \
+    --keepalive 25
+```
 
-- `<SERVER_ADDR>` is the IP/hostname of the machine running `gophergate-wg-agent`.
-- `<SERVER_PUBLIC_KEY>` is the server's WireGuard public key (e.g., from `wg show` or your server config).
+### Step 3 &ndash; Fill Client Config
+
+```ini
+# Client (developer) tunnel
+[Interface]
+PrivateKey = <CLIENT_PRIVATE_KEY>
+Address = 10.13.13.3/32
+
+[Peer]
+PublicKey = <SERVER_PUBLIC_KEY>
+AllowedIPs = 10.13.13.0/24
+Endpoint = <SERVER_ADDR>:51820
+PersistentKeepalive = 25
+```
+
+- `<SERVER_ADDR>` -> host running the agent
+- `<SERVER_PUBLIC_KEY>`-> from `wg show`
 - Ensure server-side forwarding/NAT is configured if you need egress via the server.
 
-## Notes for contributors
+## Production Notes
 
-- The project currently runs in **development mode only**; production hardening will follow.
-- Uses `gophergate-core` for:
-    - Logging (`logx`)
-    - Path management (`paths`)
-    - Environment loading (`envx`)
-    - Datebase and configuration foundations (`dbx`, future use)
-- gRPC layer and client configuration generation are under active devlopment.
+- Phase 1 focuses on core peer lifecycle + persistence
+- No auto key generation yet
+- No config export yet
+- No QR generation yet
+- Production hardening and security controls will follow in Phase 2+
+
+## Contributor Notes
+
+- Phase 1: Core lifecycle + persistence + gRPC server
+- Phase 2: QoL improvements, UI polish, automation
+- Future:
+    - Auto key generation
+    - Config file export
+    - QR code generation
+    - Role-based access
+    - Observability integration
