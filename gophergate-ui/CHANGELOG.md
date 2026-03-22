@@ -7,47 +7,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.5.0] - 2026-03-22
+
+### Added
+
+- Added GopherGate logo as tab (favicon) icon
+
+### Changed
+
+- Organised static assets into structured directories (e.g., CSS and images)
+- Improved project structure for better maintainability of frontend resources
+
+### Fixed
+
+- No fixes in this release
+
+### Removed
+
+- No removals in this release
+
 ## [v0.4.0] - 2025-12-14
 
 ### Added
+
 - Added a **Dockerfile** to enable containerised builds and deployments of the `gophergate-ui`
 
 ### Changed
+
 - Updated runtime configuration to support container-based execution.
 
 ### Fixed
+
 - (fill)
 
 ### Removed
+
 - (fill)
 
 ## [v0.3.1] - 2025-12-12
 
 ### Added
+
 - Updated **README** documentation to include latest startup guide and available API endpoint reference.
 
 ### Changed
+
 - Improved documentation clarity to reflect the current gRPC-based UI integration and workflows.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.3.0] - 2025-12-12
 
 ### Added
+
 - Integrated **gRPC** support into the UI to enable communication with the `gophergate-wg-agent`.
 - Added gRPC client logic to support remote backend operations from the UI.
 
 ### Changed
+
 - Updated UI templates and handlers to align with gRPC-based workflows instead of direct or local calls.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.2.1] - 2025-11-30
