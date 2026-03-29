@@ -1,0 +1,120 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@source "../../templates";
+@source "../../../internal";
+
+:root {
+    --bg: #0a1016;
+    --bg-elev: #121d29;
+    --card: #162636;
+    --line: #294158;
+    --text: #deebf7;
+    --muted: #97adc3;
+    --accent: #5bc2f0;
+    --accent-deep: #2f9fce;
+    --peach: #f6d6be;
+    --ok: #7fe3af;
+    --warn: #f4d281;
+    --down: #f08383;
+    --shadow: 0 16px 45px rgba(0, 0, 0, 0.35);
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+}
+
+/* daisyUI theme */
+@plugin "daisyui/theme" {
+    name: "gophergate";
+    default: true;
+    prefersdark: true;
+    color-scheme: dark;
+
+    --color-base-100: #0a1016;
+    --color-base-200: #121d29;
+    --color-base-300: #162636;
+    --color-base-content: #deebf7;
+
+    --color-primary: #5bc2f0;
+    --color-primary-content: #0a1016;
+
+    --color-secondary: #f6d6be;
+    --color-secondary-content: #0a1016;
+
+    --color-accent: #2f9fce;
+    --color-accent-content: #deebf7;
+
+    --color-neutral: #162636;
+    --color-neutral-content: #deebf7;
+
+    --color-info: #5bc2f0;
+    --color-info-content: #0a1016;
+
+    --color-success: #7fe3af;
+    --color-success-content: #0a1016;
+
+    --color-warning: #f4d281;
+    --color-warning-content: #0a1016;
+
+    --color-error: #f08383;
+    --color-error-content: #0a1016;
+
+    --radius-selector: 0.75rem;
+    --radius-field: 0.75rem;
+    --radius-box: 1rem;
+    --border: 1px;
+    --depth: 1;
+    --noise: 0;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+html {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+    @apply antialiased;
+    background:
+        radial-gradient(
+            600px circle at var(--mouse-x) var(--mouse-y),
+            rgba(91, 194, 240, 0.12),
+            transparent 40%
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.02),
+            rgba(255, 255, 255, 0)
+        ),
+        var(--bg);
+    color: var(--text);
+}
+
+/* reusable layout helpers */
+.page-shell {
+    @apply min-h-screen;
+}
+
+.page-container {
+    @apply mx-auto w-full max-w-7xl p-6;
+}
+
+.surface {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    border-radius: 1rem;
+}
+
+.card-surface {
+    background: var(--card);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    border-radius: 1rem;
+}
+
+.text-muted {
+    color: var(--muted);
+}

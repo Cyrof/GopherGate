@@ -1,0 +1,19 @@
+{
+    "name": "gophergate-ui",
+    "version": "1.0.0",
+    "description": "The **GopherGate UI** is the frontend interface for the GopherGate system. It provides a simple, lightweight web interface for managing WireGuard peers and interacting with the GopherGate backend services via gRPC.",
+    "main": "index.js",
+    "scripts": {
+        "build:css": "npx @tailwindcss/cli -i ./web/static/css/app.css -o ./web/static/css/styles.css",
+        "watch:css": "npx @tailwindcss/cli -i ./web/static/css/app.css -o ./web/static/css/styles.css --watch"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.2.2",
+        "daisyui": "^5.5.19",
+        "tailwindcss": "^4.2.2"
+    }
+}
