@@ -1,0 +1,29 @@
+{{ define "partials/navbar" }}
+<header class="sticky top-0 z-30 border-b border-base-300/70 bg-base-200/75 backdrop-blur">
+  <div class="navbar px-4 lg:px-6">
+    <div class="flex-none lg:hidden">
+      <label for="app-drawer" class="btn btn-square btn-ghost">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </label>
+    </div>
+
+    <div class="flex-1">
+      <a href="/" class="flex items-center gap-3 px-2">
+        <img src="/static/img/GopherGate-logo.png" alt="GopherGate" class="h-9 w-9 rounded-xl object-contain" />
+        <div class="hidden sm:block">
+          <div class="text-sm font-semibold leading-tight">GopherGate</div>
+          <div class="text-xs text-muted leading-tight">WireGuard Admin Portal</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="flex items-center gap-2">
+      {{ if .pageTitle }}
+      <span class="hidden md:inline text-sm text-muted">{{ .pageTitle }}</span>
+      {{ end }}
+    </div>
+  </div>
+</header>
+{{ end }}

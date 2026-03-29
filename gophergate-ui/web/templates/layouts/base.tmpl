@@ -1,0 +1,26 @@
+{{ define "layouts/base" }}
+<!doctype html>
+<html lang="en" data-theme="gophergate">
+<head>
+    {{ template "partials/head" . }}
+</head>
+<body class="page-shell">
+    <div>
+        <input id="app-drawer" tpye="checkbox" class="drawer-toggle" />
+
+        <div class="drawer-content flex min-h-screen flex-col">
+            {{ template "partials/navbar" . }}
+            <main class="page-container flex-1">
+                {{ block "content" . }}{{ end }}
+            </main>
+
+            {{ template "partials/footer" . }}
+        </div>
+
+        {{ template "partials/sidebar" . }}
+    </div>
+
+    {{ template "partials/scripts" }}
+</body>
+</html>
+{{ end }}

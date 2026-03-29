@@ -1,14 +1,17 @@
 package handlers
 
-import(
+import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-func Home() gin.HandlerFunc{
+func Home() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.HTML(200, "index.tmpl", gin.H{
-			"title": "GopherGate UI",
-			"message": "Hello from Gin (Zap logger wired).",
+		c.HTML(http.StatusOK, "layouts/base", gin.H{
+			"title":      "Home",
+			"pageTitle":  "Home",
+			"activePage": "dashboard",
 		})
 	}
 }

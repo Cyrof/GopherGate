@@ -1,0 +1,15 @@
+{{ define "partials/scripts" }}
+<script>
+  (() => {
+    const root = document.documentElement;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!reduceMotion) {
+      window.addEventListener("mousemove", (e) => {
+        root.style.setProperty("--mouse-x", `${e.clientX}px`);
+        root.style.setProperty("--mouse-y", `${e.clientY}px`);
+      });
+    }
+  })();
+</script>
+{{ end }}
