@@ -2,6 +2,5 @@ package web
 
 import "embed"
 
-//go:embed templates/*.tmpl
-//go:embed static/**
+//go:embed static templates
 var FS embed.FS

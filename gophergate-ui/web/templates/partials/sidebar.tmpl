@@ -1,0 +1,40 @@
+{{ define "partials/sidebar" }}
+<div class="drawer-side z-40">
+  <label for="app-drawer" class="drawer-overlay"></label>
+
+  <aside class="min-h-full w-72 border-r border-base-300/70 bg-base-200/85 backdrop-blur">
+    <div class="p-4">
+      <div class="mb-6 flex items-center gap-3 rounded-2xl surface p-3">
+        <img src="/static/img/GopherGate-logo.png" alt="GopherGate" class="h-10 w-10 rounded-xl object-contain" />
+        <div>
+          <p class="font-semibold">GopherGate</p>
+          <p class="text-sm text-muted">Secure admin console</p>
+        </div>
+      </div>
+
+      <ul class="menu gap-1 rounded-box">
+        <li>
+          <a href="/" class="{{ if eq .activePage "dashboard" }}active{{ end }}">
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/peers" class="{{ if eq .activePage "peers" }}active{{ end }}">
+            Peers
+          </a>
+        </li>
+        <li>
+          <a href="/traffic" class="{{ if eq .activePage "traffic" }}active{{ end }}">
+            Traffic
+          </a>
+        </li>
+        <li>
+          <a href="/settings" class="{{ if eq .activePage "settings" }}active{{ end }}">
+            Settings
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{{ end }}

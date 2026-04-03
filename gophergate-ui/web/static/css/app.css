@@ -1,0 +1,221 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@source "../../templates";
+@source "../../../internal";
+
+:root {
+    --bg: #0a1016;
+    --bg-elev: #121d29;
+    --card: #162636;
+    --line: #294158;
+    --text: #deebf7;
+    --muted: #97adc3;
+    --accent: #5bc2f0;
+    --accent-deep: #2f9fce;
+    --peach: #f6d6be;
+    --ok: #7fe3af;
+    --warn: #f4d281;
+    --down: #f08383;
+    --shadow: 0 16px 45px rgba(0, 0, 0, 0.35);
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+}
+
+/* daisyUI theme */
+@plugin "daisyui/theme" {
+    name: "gophergate";
+    default: true;
+    prefersdark: true;
+    color-scheme: dark;
+
+    --color-base-100: #0a1016;
+    --color-base-200: #121d29;
+    --color-base-300: #162636;
+    --color-base-content: #deebf7;
+
+    --color-primary: #5bc2f0;
+    --color-primary-content: #0a1016;
+
+    --color-secondary: #f6d6be;
+    --color-secondary-content: #0a1016;
+
+    --color-accent: #2f9fce;
+    --color-accent-content: #deebf7;
+
+    --color-neutral: #162636;
+    --color-neutral-content: #deebf7;
+
+    --color-info: #5bc2f0;
+    --color-info-content: #0a1016;
+
+    --color-success: #7fe3af;
+    --color-success-content: #0a1016;
+
+    --color-warning: #f4d281;
+    --color-warning-content: #0a1016;
+
+    --color-error: #f08383;
+    --color-error-content: #0a1016;
+
+    --radius-selector: 0.75rem;
+    --radius-field: 0.75rem;
+    --radius-box: 1rem;
+    --border: 1px;
+    --depth: 1;
+    --noise: 0;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+html {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+    @apply antialiased;
+    color: var(--text);
+    position: relative;
+    overflow-x: hidden;
+
+    background-color: var(--bg);
+    background-image:
+        linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.045) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.045) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            180deg,
+            rgba(10, 16, 22, 0.96) 0%,
+            rgba(10, 16, 22, 0.99) 100%
+        );
+    background-size:
+        32px 32px,
+        32px 32px,
+        100% 100%;
+    background-position: center center;
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+body::before {
+    z-index: 0;
+    background:
+        radial-gradient(
+            520px circle at var(--mouse-x) var(--mouse-y),
+            rgba(91, 194, 240, 0.12),
+            transparent 38%
+        ),
+        radial-gradient(
+            900px circle at 15% 20%,
+            rgba(47, 159, 206, 0.07),
+            transparent 40%
+        ),
+        radial-gradient(
+            700px circle at 85% 10%,
+            rgba(91, 194, 240, 0.04),
+            transparent 42%
+        );
+}
+
+body::after {
+    z-index: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.015) 0%,
+        rgba(255, 255, 255, 0) 30%
+    );
+}
+
+/* Optional extra reusable background wrapper if needed */
+.page-shell {
+    @apply min-h-screen relative;
+    z-index: 1;
+}
+
+.page-container {
+    @apply mx-auto w-full max-w-7xl p-6;
+}
+
+/* Surfaces */
+.surface {
+    background: rgba(18, 29, 41, 0.82);
+    border: 1px solid rgba(41, 65, 88, 0.9);
+    box-shadow: var(--shadow);
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.card-surface {
+    background: rgba(22, 38, 54, 0.82);
+    border: 1px solid rgba(41, 65, 88, 0.95);
+    box-shadow: var(--shadow);
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.panel-glow {
+    position: relative;
+    overflow: hidden;
+}
+
+.panel-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(91, 194, 240, 0.16),
+        transparent 20%,
+        transparent 80%,
+        rgba(47, 159, 206, 0.12)
+    );
+    opacity: 0.6;
+}
+
+.text-muted {
+    color: var(--muted);
+}
+
+/* Better default tables/sections feel */
+.section-title {
+    @apply text-2xl font-semibold tracking-tight;
+}
+
+.section-subtitle {
+    color: var(--muted);
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+    body::after {
+        background:
+            radial-gradient(
+                700px circle at 50% 20%,
+                rgba(91, 194, 240, 0.09),
+                transparent 40%
+            ),
+            linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.02) 0%,
+                rgba(255, 255, 255, 0) 30%
+            );
+    }
+}
