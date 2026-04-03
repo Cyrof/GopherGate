@@ -10,16 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.6.0] - 2026-04-03
 
 ### Added
-- (fill)
+
+- Integrated Tailwind CSS for utility-first styling
+- Added DaisyUI component library for consistent UI components
+- Introduced base template layout for shared UI structure across pages
 
 ### Changed
-- (fill)
+
+- Standardised UI foundation using tailwind and DaisyUI
+- Applied global background design (including mouse-responsive lighting effect) across all pages
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.5.0] - 2026-03-22
 
