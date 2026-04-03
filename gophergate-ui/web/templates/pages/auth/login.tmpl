@@ -1,0 +1,105 @@
+{{ define "pages/auth/login" }}
+<section class="relative flex min-h-screen items-center justify-center px-6 py-12">
+  <div class="auth-shell w-full max-w-6xl overflow-hidden rounded-[2rem]">
+    <div class="grid min-h-[460px] lg:grid-cols-[1.5fr_1fr]">
+      <div class="flex flex-col justify-between border-b border-base-300/60 p-7 lg:border-b-0 lg:border-r lg:px-8 lg:py-7">
+        <div class="space-y-6">
+          <p class="text-sm font-medium uppercase tracking-[0.18em] text-muted">
+            Admin Access Portal
+          </p>
+
+          <div class="space-y-4">
+            <h1 class="max-w-md text-3xl font-semibold leading-tight text-base-content lg:text-5xl">
+              Secure Control Starts At Sign-In
+            </h1>
+
+            <p class="max-w-lg text-lg leading-relaxed text-muted">
+              Futuristic admin gateway for encrypted mesh operations, live traffic controls, and policy-level enforcement.
+            </p>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <div class="card feature-card shadow-sm">
+              <div class="card-body p-4">
+                <h2 class="card-title text-lg">Live Threat Aware</h2>
+                <p class="text-sm text-muted">
+                  Continuous checks for unusual handshake and route behavior.
+                </p>
+              </div>
+            </div>
+
+            <div class="card feature-card shadow-sm">
+              <div class="card-body p-4">
+                <h2 class="card-title text-lg">Role-Gated Access</h2>
+                <p class="text-sm text-muted">
+                  Operator, reviewer, and owner permissions segmented by scope.
+                </p>
+              </div>
+            </div>
+
+            <div class="card feature-card shadow-sm">
+              <div class="card-body p-4">
+                <h2 class="card-title text-lg">Audit Stream Ready</h2>
+                <p class="text-sm text-muted">
+                  Every config action can be logged and replayed by timestamp.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center p-7 lg:px-8 lg:py-7">
+        <div class="w-full max-w-md">
+          <div class="mb-8 flex items-center gap-4">
+            <div class="rounded-2xl border border-base-300/70 bg-base-100/40 p-2 shadow-lg">
+              <img
+                src="/static/img/GopherGate-logo.png"
+                alt="GopherGate"
+                class="h-12 w-12 rounded-xl object-contain"
+              />
+            </div>
+
+            <div>
+              <h2 class="text-3xl font-semibold leading-tight">GopherGate Admin</h2>
+              <p class="text-muted">Authorized Operators Only</p>
+            </div>
+          </div>
+
+          <form action="/dashboard" method="get" class="space-y-5">
+            <label class="form-control w-full">
+              <div class="label px-0">
+                <span class="label-text text-base-content">Secure User</span>
+              </div>
+              <input
+                type="text"
+                name="username"
+                placeholder="user@gophergate.io"
+                class="input input-bordered auth-input h-14 w-full rounded-2xl"
+              />
+            </label>
+
+            <label class="form-control w-full">
+              <div class="label px-0">
+                <span class="label-text text-base-content">Password</span>
+              </div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                class="input input-bordered auth-input h-14 w-full rounded-2xl"
+              />
+            </label>
+
+            <div class="flex justify-end pt-4">
+              <button type="submit" class="btn auth-button h-12 min-w-48 rounded-2xl px-8 text-base font-semibold">
+                Access Console
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

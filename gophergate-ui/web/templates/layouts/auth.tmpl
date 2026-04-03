@@ -1,0 +1,15 @@
+{{ define "layouts/auth" }}
+<!doctype html>
+<html lang="en" data-theme="gophergate">
+<head>
+    {{ template "partials/head" . }}
+</head>
+<body class="page-shell">
+    <main class="relative min-h-screen overflow-hidden">
+            {{ template "pages/auth/login" . }}
+    </main>
+
+    {{ template "partials/scripts" . }}
+</body>
+</html>
+{{ end }}

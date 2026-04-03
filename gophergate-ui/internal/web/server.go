@@ -11,99 +11,122 @@ import (
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/config"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/grpcclient"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/handlers"
-	"github.com/Cyrof/GopherGate/gophergate-ui/web"
+	assetweb "github.com/Cyrof/GopherGate/gophergate-ui/web"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 func Run(cfg *config.Config, log *zap.SugaredLogger) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("panic recovered: %v", r)
-			fmt.Printf("PANIC: %v\n", r)
-		}
-	}()
+	defer recoverRunPanic(log, &err)
 
-	log.Infow("starting web.Run")
+	log.Infow("starting web server", "http", cfg.HTTPAddr, "grpc", cfg.GRPCAddr)
 	// Initialised gRPC client
 	grpcClient, err := grpcclient.New(cfg.GRPCAddr, cfg.TLS, log)
 	if err != nil {
-		return err
+		return fmt.Errorf("init grpc client: %w", err)
 	}
 	defer grpcClient.Close()
-	log.Infow("grpc client initialised")
 
-	r := gin.New()
-	r.Use(ZapLogger(log), ZapRecovery(log))
-	log.Infow("gin router initialised")
+	router := gin.New()
+	router.Use(ZapLogger(log), ZapRecovery(log))
 
-	staticFS, err := fs.Sub(web.FS, "static")
+	log.Infow("mounting static files...")
+	if err := mountStatic(router); err != nil {
+		return fmt.Errorf("mount static files: %w", err)
+	}
+
+	log.Infow("loading templates...")
+	if err := loadTemplates(router); err != nil {
+		return fmt.Errorf("load templates: %w", err)
+	}
+
+	log.Infow("registering routes...")
+	if err := registerRoutes(router, cfg, log, *grpcClient); err != nil {
+		return fmt.Errorf("register routes: %w", err)
+	}
+
+	log.Infow("server starting", "addr", cfg.HTTPAddr)
+	if err := router.Run(cfg.HTTPAddr); err != nil {
+		log.Errorw("gin server run failed", "error", err)
+		return fmt.Errorf("run gin server: %w", err)
+	}
+
+	return nil
+}
+
+func recoverRunPanic(log *zap.SugaredLogger, errp *error) {
+	if r := recover(); r != nil {
+		recErr := fmt.Errorf("panic recovered: %v", r)
+		log.Errorw("panic recovered in web.Run", "err", recErr)
+		*errp = recErr
+	}
+}
+
+func mountStatic(router *gin.Engine) error {
+	staticFS, err := fs.Sub(assetweb.FS, "static")
 	if err != nil {
-		log.Errorw("failed to get static sud FS", "error", err)
-		fmt.Printf("ERROR: failed to get static sub FS: %v\n", err)
 		return err
 	}
-	r.StaticFS("/static", http.FS(staticFS))
-	log.Infow("static FS mounted")
+	router.StaticFS("/static", http.FS(staticFS))
+	return nil
+}
 
-	if _, err := fs.Stat(web.FS, "templates"); err != nil {
-		log.Errorw("templates directory not found", "error", err)
-		fmt.Printf("ERROR: templates directory not found: %v\n", err)
+func loadTemplates(router *gin.Engine) error {
+	if _, err := fs.Stat(assetweb.FS, "templates"); err != nil {
 		return err
 	}
-
-	// tmpl, err := template.ParseFS(web.FS, "templates/*.tmpl")
 	tmpl, err := template.ParseFS(
-		web.FS,
+		assetweb.FS,
 		"templates/layouts/*.tmpl",
 		"templates/partials/*.tmpl",
 		"templates/pages/*.tmpl",
 		"templates/pages/peers/*.tmpl",
+		"templates/pages/auth/*.tmpl",
 	)
 	if err != nil {
-		log.Errorw("failed to parse templates", "error", err)
-		fmt.Printf("ERROR: failed to parse templates: %v\n", err)
 		return err
 	}
-	r.SetHTMLTemplate(tmpl)
-	log.Infow("templates loaded")
 
-	homeHandler := handlers.Home()
-	if homeHandler == nil {
-		err := fmt.Errorf("handlers.Home() return nil")
-		log.Errorw("handler error", "error", err)
-		fmt.Printf("ERROR: %v\n", err)
-		return err
+	router.SetHTMLTemplate(tmpl)
+	return nil
+}
+
+func registerRoutes(
+	router *gin.Engine,
+	cfg *config.Config,
+	log *zap.SugaredLogger,
+	grpcClient grpcclient.Client,
+) error {
+	loginHandler := handlers.Login()
+	if loginHandler == nil {
+		return fmt.Errorf("handlers.Login() returned nil")
 	}
-	r.GET("/", homeHandler)
-	log.Infow("home route registered")
+	router.GET("/", loginHandler)
+	log.Infow("login route registered")
 
-	peer := handlers.NewPeers(log, grpcClient, cfg.WGIface)
+	dashboardHandler := handlers.Dashboard()
+	if dashboardHandler == nil {
+		return fmt.Errorf("handlers.Dashboard() returned nil")
+	}
+	router.GET("/dashboard", dashboardHandler)
+	log.Infow("dashboard router registered")
+
+	peer := handlers.NewPeers(log, &grpcClient, cfg.WGIface)
 	if peer == nil {
-		err := fmt.Errorf("handlers.NewPeers() returned nil")
-		log.Errorw("handler error", "error", err)
-		fmt.Printf("ERROR: %v\n", err)
-		return err
+		return fmt.Errorf("handlers.NewPeers() returned nil")
 	}
-	r.GET("/peers", peer.List)
-	r.POST("/peers", peer.Create)
-	r.GET("/peers/edit", peer.EditForm)
-	r.POST("/peers/edit", peer.Edit)
-	r.POST("/peers/delete", peer.Delete)
-	log.Infow("peer routes registerd")
 
-	r.GET("/api/health", func(c *gin.Context) {
+	router.GET("/peers", peer.List)
+	router.POST("/peers", peer.Create)
+	router.GET("/peers/edit", peer.EditForm)
+	router.POST("/peers/edit", peer.Edit)
+	router.POST("/peers/delete", peer.Delete)
+	log.Infow("peer routes registed")
+
+	router.GET("/api/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 	})
 	log.Infow("health route registered")
-
-	log.Infow("starting server", "addr", cfg.HTTPAddr)
-
-	if err := r.Run(cfg.HTTPAddr); err != nil {
-		log.Errorw("server failed to start", "error", err)
-		fmt.Printf("ERROR: server failed to start: %v\n", err)
-		return err
-	}
 
 	return nil
 }

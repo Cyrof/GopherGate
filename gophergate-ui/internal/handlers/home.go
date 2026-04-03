@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Home() gin.HandlerFunc {
+func Dashboard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layouts/base", gin.H{
-			"title":      "Home",
-			"pageTitle":  "Home",
+			"title":      "Dashboard",
+			"pageTitle":  "Dashboard",
 			"activePage": "dashboard",
 		})
 	}
