@@ -1,0 +1,30 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/ui ./cmd/ui/main.go"
+bin = "./tmp/ui"
+full_bin = "./tmp/ui"
+include_ext = ["go", "tmpl", "html", "css"]
+exclude_dir = ["tmp", "node_modules"]
+exclude_file = []
+exclude_regex = []
+exclude_unchanged = false
+follow_symlink = false
+log = "build-errors.log"
+delay = 300
+stop_on_error = true
+send_interrupt = true
+kill_delay = 500
+
+[color]
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[log]
+time = true
+
+[misc]
+clean_on_exit = true
