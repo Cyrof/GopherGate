@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ### Changed
 
-- Standardised UI foundation using tailwind and DaisyUI
+- Standardised UI foundation using Tailwind and DaisyUI
 - Applied global background design (including mouse-responsive lighting effect) across all pages
 
 ### Fixed
