@@ -22,7 +22,7 @@ func DeletePeer(ctx context.Context, req DeletePeerRequest) (DeletePeerResponse,
 	if err != nil {
 		return DeletePeerResponse{}, fmt.Errorf("wgctrl new: %w", err)
 	}
-	defer cli.Close()
+	defer func() { _ = cli.Close() }()
 
 	pub, err := wgtypes.ParseKey(req.PublicKey)
 	if err != nil {

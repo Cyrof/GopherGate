@@ -12,7 +12,7 @@ func GetPeerByPublicKey(iface, pubkey string) (*PeerStatus, error) {
 	if err != nil {
 		return nil, fmt.Errorf("wgctrl init error: %w", err)
 	}
-	defer ctx.Close()
+	defer func() { _ = ctx.Close() }()
 
 	dev, err := ctx.Device(iface)
 	if err != nil {

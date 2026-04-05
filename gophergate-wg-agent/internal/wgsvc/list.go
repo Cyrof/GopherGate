@@ -15,7 +15,7 @@ func ListPeers(iface string) ([]PeerStatus, error) {
 	if err != nil {
 		return nil, fmt.Errorf("wgctrl new: %w", err)
 	}
-	defer cli.Close()
+	defer func() { _ = cli.Close() }()
 
 	dev, err := cli.Device(iface)
 	if err != nil {
