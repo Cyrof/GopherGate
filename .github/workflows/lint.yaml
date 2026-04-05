@@ -52,7 +52,7 @@ jobs:
           ls -la "${{ matrix.module }}"
 
       - name: Set up Go from module
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: ${{ matrix.module }}/go.mod
           cache: false
@@ -68,7 +68,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           working-directory: ${{ matrix.module }}
           version: latest
