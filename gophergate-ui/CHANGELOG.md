@@ -10,16 +10,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.7.0] - 2026-04-05
 
 ### Added
-- (fill)
+
+- Complete session-based authentication system using `gin-contrib/sessions` and `bcrypt`
+- Default admin user auto-generation on first startup with random password
+- `internal/auth/session.go` for session middleware and helpers
+- `internal/auth/seed.go` for admin seeding logic
+- `internal/handlers/login.go` with login POST and logout handlers
+- `migrations/001_create_users.sql` to create `users` table in PostgreSQL
+- `migrations/embed.go` for embedded SQL migrations
+- Auth-protected routes using `auth.RequireAuth()` middleware
+- Error message display on login page for failed attempts
+- `SESSION_SECRET` environment variable for session cookie signing
+- Database connection, migration, and admin seeding in application startup
 
 ### Changed
-- (fill)
+
+- Updated login page form to POST to `/login` endpoint
+- Updated `internal/web/server.go` to include session middleware and route protection
+- Updated `internal/config/config.go` with database and session configuration
+- Updated `cmd/ui/main.go` with database initialization and admin seeding flow
+- Dashboard and peer management routes now require authentication
+- Unauthenticated users are redirected to the login page
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.6.0] - 2026-04-03
 
