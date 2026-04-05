@@ -10,16 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.7.1] - 2026-04-05
 
 ### Added
-- (fill)
+
+- No additionals in this release
 
 ### Changed
-- (fill)
+
+- Updated runtime stage base image from `alpine:3.20` to `alpine:3.21` for latest security patches
 
 ### Fixed
-- (fill)
+
+- Fixed CI/CD build failure by updating `gophergate-ui` Dockerfile base image from `golang:1.24-alpine` to `goland:1.25-alpine` to match `go.mod` requirement of `go >= 1.25.0`
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.7.0] - 2026-04-05
 
