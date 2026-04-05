@@ -6,15 +6,18 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Cyrof/GopherGate/gophergate-core/dbx"
 	"go.uber.org/zap"
 )
 
 type Config struct {
-	Env      string
-	HTTPAddr string
-	GRPCAddr string
-	TLS      bool
-	WGIface string
+	Env           string
+	HTTPAddr      string
+	GRPCAddr      string
+	TLS           bool
+	WGIface       string
+	DB            dbx.Config
+	SessionSecret string
 }
 
 func Load(logger *zap.SugaredLogger) (*Config, error) {
@@ -24,6 +27,11 @@ func Load(logger *zap.SugaredLogger) (*Config, error) {
 		GRPCAddr: getenv(logger, "GRPC_ADDR", "127.0.0.1:5051"),
 		TLS:      getbool(logger, "GRPC_TLS_ENABLE", false),
 		WGIface:  getenv(logger, "WG_IFACE", "wg0"),
+		DB: dbx.Config{
+			App: "ui",
+		},
+
+		SessionSecret: getenv(logger, "SESSION_SECRET", "gophergate-dev-secret-change-me"),
 	}
 	return c, nil
 }
@@ -50,4 +58,3 @@ func getbool(log *zap.SugaredLogger, key string, def bool) bool {
 	log.Infow("config getbool", "key", key, "value", def, "source", "default")
 	return def
 }
-
