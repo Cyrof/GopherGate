@@ -6,15 +6,18 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Cyrof/GopherGate/gophergate-core/dbx"
 	"go.uber.org/zap"
 )
 
 type Config struct {
-	Env      string
-	HTTPAddr string
-	GRPCAddr string
-	TLS      bool
-	WGIface string
+	Env           string
+	HTTPAddr      string
+	GRPCAddr      string
+	TLS           bool
+	WGIface       string
+	DB            dbx.Config
+	SessionSecret string
 }
 
 func Load(logger *zap.SugaredLogger) (*Config, error) {
@@ -24,6 +27,11 @@ func Load(logger *zap.SugaredLogger) (*Config, error) {
 		GRPCAddr: getenv(logger, "GRPC_ADDR", "127.0.0.1:5051"),
 		TLS:      getbool(logger, "GRPC_TLS_ENABLE", false),
 		WGIface:  getenv(logger, "WG_IFACE", "wg0"),
+		DB: dbx.Config{
+			App: "ui",
+		},
+
+		SessionSecret: getenv(logger, "SESSION_SECRET", "gophergate-dev-secret-change-me"),
 	}
 	return c, nil
 }
@@ -51,3 +59,16 @@ func getbool(log *zap.SugaredLogger, key string, def bool) bool {
 	return def
 }
 
+func getint(log *zap.SugaredLogger, key string, def int) int {
+	if v, ok := os.LookupEnv(key); ok {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			log.Warnw("config getint invalid", "key", key, "raw", v, "err", err, "using", def)
+			return def
+		}
+		log.Infow("config getint", "key", key, "value", i, "source", "env")
+		return i
+	}
+	log.Infow("config getint", "key", key, "value", def, "source", "default")
+	return def
+}

@@ -8,15 +8,19 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/Cyrof/GopherGate/gophergate-ui/internal/auth"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/config"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/grpcclient"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/handlers"
 	assetweb "github.com/Cyrof/GopherGate/gophergate-ui/web"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
-func Run(cfg *config.Config, log *zap.SugaredLogger) (err error) {
+func Run(cfg *config.Config, log *zap.SugaredLogger, db *pgxpool.Pool) (err error) {
 	defer recoverRunPanic(log, &err)
 
 	log.Infow("starting web server", "http", cfg.HTTPAddr, "grpc", cfg.GRPCAddr)
@@ -30,6 +34,16 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) (err error) {
 	router := gin.New()
 	router.Use(ZapLogger(log), ZapRecovery(log))
 
+	// setup session middleware
+	store := cookie.NewStore([]byte(cfg.SessionSecret))
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   7200,
+		HttpOnly: true,
+		Secure:   false,
+	})
+	router.Use(sessions.Sessions("gophergate-session", store))
+
 	log.Infow("mounting static files...")
 	if err := mountStatic(router); err != nil {
 		return fmt.Errorf("mount static files: %w", err)
@@ -41,7 +55,7 @@ func Run(cfg *config.Config, log *zap.SugaredLogger) (err error) {
 	}
 
 	log.Infow("registering routes...")
-	if err := registerRoutes(router, cfg, log, *grpcClient); err != nil {
+	if err := registerRoutes(router, cfg, log, *grpcClient, db); err != nil {
 		return fmt.Errorf("register routes: %w", err)
 	}
 
@@ -96,37 +110,43 @@ func registerRoutes(
 	cfg *config.Config,
 	log *zap.SugaredLogger,
 	grpcClient grpcclient.Client,
+	db *pgxpool.Pool,
 ) error {
-	loginHandler := handlers.Login()
-	if loginHandler == nil {
-		return fmt.Errorf("handlers.Login() returned nil")
-	}
-	router.GET("/", loginHandler)
-	log.Infow("login route registered")
+	authHandler := handlers.NewAuthHandler(db, log)
+	router.GET("/", authHandler.LoginPage())
+	router.POST("/login", authHandler.LoginPost())
+	router.POST("/logout", authHandler.Logout())
+	router.GET("/logout", authHandler.Logout()) // temp for dev
+	log.Infow("auth route registered")
 
-	dashboardHandler := handlers.Dashboard()
-	if dashboardHandler == nil {
-		return fmt.Errorf("handlers.Dashboard() returned nil")
-	}
-	router.GET("/dashboard", dashboardHandler)
-	log.Infow("dashboard router registered")
-
-	peer := handlers.NewPeers(log, &grpcClient, cfg.WGIface)
-	if peer == nil {
-		return fmt.Errorf("handlers.NewPeers() returned nil")
-	}
-
-	router.GET("/peers", peer.List)
-	router.POST("/peers", peer.Create)
-	router.GET("/peers/edit", peer.EditForm)
-	router.POST("/peers/edit", peer.Edit)
-	router.POST("/peers/delete", peer.Delete)
-	log.Infow("peer routes registed")
-
+	// health check
 	router.GET("/api/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 	})
-	log.Infow("health route registered")
+	log.Infow("health route registerd")
+
+	// Protected route (auth required)
+	protected := router.Group("/")
+	protected.Use(auth.RequireAuth())
+	{
+		dashboardHandler := handlers.Dashboard()
+		if dashboardHandler == nil {
+			return fmt.Errorf("handlers.Dashboard() returned nil")
+		}
+		protected.GET("/dashboard", dashboardHandler)
+		log.Infow("dashboard route registered")
+
+		peer := handlers.NewPeers(log, &grpcClient, cfg.WGIface)
+		if peer == nil {
+			return fmt.Errorf("handlers.NewPeers() returned nil")
+		}
+		protected.GET("/peers", peer.List)
+		protected.POST("/peers", peer.Create)
+		protected.GET("/peers/edit", peer.EditForm)
+		protected.POST("/peers/edit", peer.Edit)
+		protected.POST("/peers/delete", peer.Delete)
+		log.Infow("peer routes registered")
+	}
 
 	return nil
 }
