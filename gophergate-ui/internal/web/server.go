@@ -29,7 +29,7 @@ func Run(cfg *config.Config, log *zap.SugaredLogger, db *pgxpool.Pool) (err erro
 	if err != nil {
 		return fmt.Errorf("init grpc client: %w", err)
 	}
-	defer grpcClient.Close()
+	defer func() { _ = grpcClient.Close() }()
 
 	router := gin.New()
 	router.Use(ZapLogger(log), ZapRecovery(log))

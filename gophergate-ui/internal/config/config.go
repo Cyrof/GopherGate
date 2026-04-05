@@ -58,17 +58,3 @@ func getbool(log *zap.SugaredLogger, key string, def bool) bool {
 	log.Infow("config getbool", "key", key, "value", def, "source", "default")
 	return def
 }
-
-func getint(log *zap.SugaredLogger, key string, def int) int {
-	if v, ok := os.LookupEnv(key); ok {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			log.Warnw("config getint invalid", "key", key, "raw", v, "err", err, "using", def)
-			return def
-		}
-		log.Infow("config getint", "key", key, "value", i, "source", "env")
-		return i
-	}
-	log.Infow("config getint", "key", key, "value", def, "source", "default")
-	return def
-}
