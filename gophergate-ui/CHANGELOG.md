@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.7.2] - 2026-04-06
+
+### Added
+
+- Added `npm run build:css` to the Docker build process
+
+### Changed
+
+- Updated the Dockerfile to ensure CSS assets are built during image creation
+
+### Fixed
+
+- Fixed missing CSS build step in the Dockerfile
+
+### Removed
+
+- No removals in this release
+
 ## [v0.7.1] - 2026-04-05
 
 ### Added
