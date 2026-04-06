@@ -10,16 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.7.3] - 2026-04-06
 
 ### Added
-- (fill)
+
+- No additions in this release
 
 ### Changed
-- (fill)
+
+- Updated the Dockerfile to correct the container build process
 
 ### Fixed
-- (fill)
+
+- Fixed broken Dockerfile that cause build issues
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.7.2] - 2026-04-06
 
