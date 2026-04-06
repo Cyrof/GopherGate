@@ -2,12 +2,17 @@ FROM golang:1.25-alpine AS builder
 
 WORKDIR /src
 
-RUN apk add --no-cache ca-certificates git
+RUN apk add --no-cache ca-certificates git nodejs npm
 
 COPY ./go.mod ./go.sum ./
 RUN go mod download -x
 
+COPY package.json package-lock.json ./
+RUN npm ci
+
 COPY . .
+
+RUN npm run build:css
 
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
     -o /out/ui ./cmd/ui
