@@ -6,15 +6,8 @@ on:
     types: [closed]
   workflow_dispatch:
     inputs:
-      module:
-        description: "Module to build (e.g. gophergate-ui or gophergate-wg-agent)"
-        required: true
-        type: choice
-        options:
-          - gophergate-ui
-          - gophergate-wg-agent
-      version:
-        description: "Version without v prefix (e.g. 0.6.1)"
+      tag:
+        description: "Release tag to rebuild (e.g. gophergate-ui/v0.7.3)"
         required: true
         type: string
 
@@ -75,18 +68,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Parse release branch
+      - name: Parse release target
         id: parse
         shell: bash
         run: |
           set -euo pipefail
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            MOD="${{ inputs.module }}"
-            VER="${{ inputs.version }}"
-            echo "module_path=$MOD" >> "$GITHUB_OUTPUT"
-            echo "version=$VER" >> "$GITHUB_OUTPUT"
-            echo "Parsed manual module=$MOD version=$VER"
+            TAG="${{ inputs.tag }}"
+            if [[ "$TAG" =~ ^(gophergate-ui|gophergate-wg-agent)/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+              MOD="${BASH_REMATCH[1]}"
+              VER="${BASH_REMATCH[2]}"
+              REF="$TAG"
+              echo "module_path=$MOD" >> "$GITHUB_OUTPUT"
+              echo "version=$VER" >> "$GITHUB_OUTPUT"
+              echo "checkout_ref=$REF" >> "$GITHUB_OUTPUT"
+              echo "Parsed manual tag=$TAG module=$MOD version=$VER"
+            else
+              echo "Tag not in expected format: $TAG"
+              echo "Expected: <module>/vX.Y.Z"
+              exit 1
+            fi
             exit 0
           fi
 
@@ -94,9 +96,11 @@ jobs:
           if [[ "$BR" =~ ^release/([^/]+)/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             MOD="${BASH_REMATCH[1]}"
             VER="${BASH_REMATCH[2]}"
+            REF="${{ github.event.pull_request.merge_commit_sha }}"
             echo "module_path=$MOD" >> "$GITHUB_OUTPUT"
             echo "version=$VER" >> "$GITHUB_OUTPUT"
-            echo "Parsed module=$MOD version=$VER"
+            echo "checkout_ref=$REF" >> "$GITHUB_OUTPUT"
+            echo "Parsed branch=$BR module=$MOD version=$VER"
           else
             echo "Branch name not in expected format: $BR"
             echo "Expected: release/<module>/vX.Y.Z"
@@ -122,7 +126,7 @@ jobs:
         if: ${{ steps.decide.outputs.publish == 'true' }}
         with:
           fetch-depth: 0
-          ref: dev
+          ref: ${{ steps.parse.outputs.checkout_ref }}
 
       - name: Set up QEMU
         if: ${{ steps.decide.outputs.publish == 'true' }}
