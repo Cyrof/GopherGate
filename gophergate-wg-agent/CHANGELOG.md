@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.4.6] - 2026-04-06
+
+### Added
+
+- No additions in this release
+
+### Changed
+
+- Minor code cleanup to improve linting compliance
+
+### Fixed
+
+- Fixed code issues that caused linting errors during checks
+
+### Removed
+
+- No removals in this release
+
 ## [v0.4.5] - 2026-02-23
 
 ### Added
