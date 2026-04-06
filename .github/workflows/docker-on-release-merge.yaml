@@ -4,7 +4,19 @@ on:
   pull_request:
     branches: [dev]
     types: [closed]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      module:
+        description: "Module to build (e.g. gophergate-ui or gophergate-wg-agent)"
+        required: true
+        type: choice
+        options:
+          - gophergate-ui
+          - gophergate-wg-agent
+      version:
+        description: "Version without v prefix (e.g. 0.6.1)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -20,12 +32,12 @@ jobs:
       - id: chk
         shell: bash
         run: |
+          set -euo pipefail
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "head_ref=" >> "$GITHUB_OUTPUT}"
-            echo "base_ref=" >> "$GITHUB_OUTPUT"
-            echo "Manual trigger is enabled but not supported by this workflow without inputs."
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "head_ref=manual" >> "$GITHUB_OUTPUT"
+            echo "base_ref=dev" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -68,6 +80,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MOD="${{ inputs.module }}"
+            VER="${{ inputs.version }}"
+            echo "module_path=$MOD" >> "$GITHUB_OUTPUT"
+            echo "version=$VER" >> "$GITHUB_OUTPUT"
+            echo "Parsed manual module=$MOD version=$VER"
+            exit 0
+          fi
+
           BR="${{ github.event.pull_request.head.ref }}"
           if [[ "$BR" =~ ^release/([^/]+)/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             MOD="${BASH_REMATCH[1]}"
@@ -100,6 +122,7 @@ jobs:
         if: ${{ steps.decide.outputs.publish == 'true' }}
         with:
           fetch-depth: 0
+          ref: dev
 
       - name: Set up QEMU
         if: ${{ steps.decide.outputs.publish == 'true' }}
