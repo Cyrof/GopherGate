@@ -1,12 +1,13 @@
 package web
 
-// this file should hold the initialisation function for the httpserver using gin as the framework
-
 import (
 	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/auth"
 	"github.com/Cyrof/GopherGate/gophergate-ui/internal/config"
@@ -24,7 +25,6 @@ func Run(cfg *config.Config, log *zap.SugaredLogger, db *pgxpool.Pool) (err erro
 	defer recoverRunPanic(log, &err)
 
 	log.Infow("starting web server", "http", cfg.HTTPAddr, "grpc", cfg.GRPCAddr)
-	// Initialised gRPC client
 	grpcClient, err := grpcclient.New(cfg.GRPCAddr, cfg.TLS, log)
 	if err != nil {
 		return fmt.Errorf("init grpc client: %w", err)
@@ -34,7 +34,6 @@ func Run(cfg *config.Config, log *zap.SugaredLogger, db *pgxpool.Pool) (err erro
 	router := gin.New()
 	router.Use(ZapLogger(log), ZapRecovery(log))
 
-	// setup session middleware
 	store := cookie.NewStore([]byte(cfg.SessionSecret))
 	store.Options(sessions.Options{
 		Path:     "/",
@@ -89,7 +88,17 @@ func loadTemplates(router *gin.Engine) error {
 	if _, err := fs.Stat(assetweb.FS, "templates"); err != nil {
 		return err
 	}
-	tmpl, err := template.ParseFS(
+
+	funcMap := template.FuncMap{
+		"humanBytes":       humanBytes,
+		"formatClock":      formatClock,
+		"timeAgo":          timeAgo,
+		"handshakeDisplay": handshakeDisplay,
+		"stateDisplay":     stateDisplay,
+		"statePillClass":   statePillClass,
+	}
+
+	tmpl, err := template.New("").Funcs(funcMap).ParseFS(
 		assetweb.FS,
 		"templates/layouts/*.tmpl",
 		"templates/partials/*.tmpl",
@@ -116,20 +125,18 @@ func registerRoutes(
 	router.GET("/", authHandler.LoginPage())
 	router.POST("/login", authHandler.LoginPost())
 	router.POST("/logout", authHandler.Logout())
-	router.GET("/logout", authHandler.Logout()) // temp for dev
+	router.GET("/logout", authHandler.Logout())
 	log.Infow("auth route registered")
 
-	// health check
 	router.GET("/api/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 	})
 	log.Infow("health route registerd")
 
-	// Protected route (auth required)
 	protected := router.Group("/")
 	protected.Use(auth.RequireAuth())
 	{
-		dashboardHandler := handlers.Dashboard()
+		dashboardHandler := handlers.Dashboard(&grpcClient, cfg.WGIface)
 		if dashboardHandler == nil {
 			return fmt.Errorf("handlers.Dashboard() returned nil")
 		}
@@ -149,4 +156,119 @@ func registerRoutes(
 	}
 
 	return nil
+}
+
+func humanBytes(n uint64) string {
+	const unit = 1024
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+
+	div, exp := uint64(unit), 0
+	for v := n / unit; v >= unit; v /= unit {
+		div *= unit
+		exp++
+	}
+
+	value := float64(n) / float64(div)
+	suffixes := []string{"KB", "MB", "GB", "TB", "PB"}
+	if exp >= len(suffixes) {
+		exp = len(suffixes) - 1
+	}
+
+	if value >= 100 {
+		return fmt.Sprintf("%.0f %s", value, suffixes[exp])
+	}
+	if value >= 10 {
+		return fmt.Sprintf("%.1f %s", value, suffixes[exp])
+	}
+	return fmt.Sprintf("%.2f %s", value, suffixes[exp])
+}
+
+func formatClock(s string) string {
+	if s == "" {
+		return "—"
+	}
+
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return "—"
+	}
+
+	return t.Local().Format("15:04:05")
+}
+
+func timeAgo(s string) string {
+	if s == "" {
+		return "—"
+	}
+
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return "—"
+	}
+
+	d := time.Since(t)
+	if d < 0 {
+		d = 0
+	}
+
+	switch {
+	case d < time.Minute:
+		secs := int(d.Seconds())
+		if secs <= 1 {
+			return "just now"
+		}
+		return fmt.Sprintf("%ds ago", secs)
+	case d < time.Hour:
+		mins := int(d.Minutes())
+		return fmt.Sprintf("%dm ago", mins)
+	case d < 24*time.Hour:
+		hrs := int(d.Hours())
+		return fmt.Sprintf("%dh ago", hrs)
+	default:
+		days := int(d.Hours() / 24)
+		return fmt.Sprintf("%dd ago", days)
+	}
+}
+
+func handshakeDisplay(s string) string {
+	if s == "" {
+		return "—"
+	}
+	return timeAgo(s)
+}
+
+func stateDisplay(s string) string {
+	switch strings.ToUpper(strings.TrimSpace(s)) {
+	case "CONNECTED":
+		return "Connected"
+	case "INTERMITTENT":
+		return "Intermittent"
+	case "DOWN":
+		return "Down"
+	default:
+		if s == "" {
+			return "Unknown"
+		}
+		return strings.Title(strings.ToLower(s))
+	}
+}
+
+func statePillClass(s string) string {
+	switch strings.ToUpper(strings.TrimSpace(s)) {
+	case "CONNECTED":
+		return "border-success/40 bg-success/10 text-success"
+	case "INTERMITTENT":
+		return "border-warning/40 bg-warning/10 text-warning"
+	case "DOWN":
+		return "border-error/40 bg-error/10 text-error"
+	default:
+		return "border-base-300 bg-base-200/70 text-base-content/80"
+	}
+}
+
+// Optional helper if you later want counts or formatted ints in templates.
+func formatInt(v int64) string {
+	return strconv.FormatInt(v, 10)
 }
