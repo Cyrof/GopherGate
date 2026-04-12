@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
+	gatewayv2 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -38,6 +39,7 @@ func Start(logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
 	}
 
 	gatewayv1.RegisterWireGuardServiceServer(srv, NewWireGuardService(repo))
+	gatewayv2.RegisterWireGuardServiceServer(srv, NewWireGuardServiceV2(repo))
 
 	logger.Infow("grpc server started", "addr", listenAddr)
 	return srv.Serve(list)
