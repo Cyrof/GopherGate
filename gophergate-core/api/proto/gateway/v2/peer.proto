@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package gateway.v2;
+
+option go_package = "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2;gatewayv2";
+
+// =================================
+// Core Data Types
+// =================================
+
+// raw peer status
+message PeerStatus {
+    string public_key           = 1;
+    string name                 = 2;
+    string endpoint             = 3;
+    repeated string allowed_ips = 4;
+    string handshake            = 5;
+    uint64 rx_bytes             = 6;
+    uint64 tx_bytes             = 7;
+    string keepalive            = 8;
+}
+
+// overall wiregaurd state
+message DeviceStatus {
+    string iface              = 1;
+    int32 listen_port         = 2;
+    int32 firewall_mark       = 3;
+    string public_key         = 4;
+    repeated PeerStatus peers = 5;
+}
+
+// UI/dashboard friendly peer model.
+message PeerOverview {
+  string public_key             = 1;
+  string name                   = 2;
+  string endpoint               = 3;
+  repeated string allowed_ips   = 4;
+  uint64 rx_bytes               = 5;
+  uint64 tx_bytes               = 6;
+  string last_handshake         = 7;
+  string latency                = 8;
+  string state                  = 9; // CONNECTED / INTERMITTENT / DOWN
+  string state_reason           = 10; // optional
+}
+
+// =================================
+// Dashboard Models
+// =================================
+
+message DashboardSummary {
+  int32 peers_online            = 1;
+  int32 peers_total             = 2;
+  int32 peers_changed_last_hour = 3;
+  uint64 total_rx_bytes         = 4;
+  uint64 total_tx_bytes         = 5;
+  uint64 total_traffic_bytes    = 6;
+  string last_sync              = 7;
+  string agent_status           = 8; // UP / DEGRADED / DOWN
+  int32 degraded_nodes          = 9;
+}
+
+message DashboardNote {
+  string title                  = 1;
+  string body                   = 2;
+  string level                  = 3; // INFO / WARNING / ERROR
+}
+
+message DashboardAlert {
+  string id                     = 1;
+  string title                  = 2;
+  string body                   = 3;
+  string severity               = 4; // INFO / WARNING / CRITICAL
+}
+
+message GetDashboardRequest {
+  string iface                  = 1;
+}
+
+message GetDashboardResponse {
+  DashboardSummary summary          = 1;
+  repeated DashboardNote notes      = 2;
+  repeated DashboardAlert alerts    = 3;
+  repeated PeerOverview peers       = 4;
+}
+
+// =================================
+// Create
+// =================================
+
+message CreatePeerRequest {
+    string iface                  = 1;
+    string name                   = 2;
+    string public_key             = 3;
+    repeated string allowed_cidrs = 4;
+    string endpoint               = 5;
+    int32 keepalive_seconds       = 6;
+    bool replace_allowed_ips      = 7;
+}
+
+message CreatePeerResponse {
+    string iface        = 1;
+    string name         = 2;
+    string public_key   = 3;
+    bool config_applied = 4;
+}
+
+// =================================
+// Read
+// =================================
+
+message GetPeerRequest {
+    string iface      = 1;
+    string public_key = 2;
+}
+
+message GetPeerResponse { 
+  PeerStatus peer = 1;
+}
+
+message ListPeerRequest { 
+  string iface = 1;
+}
+
+message ListPeerResponse { 
+  repeated PeerStatus peers = 1;
+}
+
+// =================================
+// Update
+// =================================
+
+message UpdatePeerRequest {
+    string iface                         = 1;
+    string public_key                    = 2;
+    repeated string set_allowed_cidrs    = 3;
+    repeated string append_allowed_cidrs = 4;
+    string endpoint                      = 5;
+    int32 keepalive_seconds              = 6;
+}
+
+message UpdatePeerResponse {
+    string iface      = 1;
+    string public_key = 2;
+
+    message Changed {
+        bool allowed_ips = 1;
+        bool endpoint    = 2;
+        bool keepalive   = 3;
+    }
+
+    Changed changed = 3;
+}
+
+// =================================
+// Delete
+// =================================
+
+message DeletePeerRequest {
+    string iface      = 1;
+    string public_key = 2;
+}
+
+message DeletePeerResponse {
+    string iface      = 1;
+    string public_key = 2;
+    bool removed      = 3;
+}
+
+// =================================
+// Service
+// =================================
+
+// Wireguard Services
+service WireGuardService {
+    rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+    rpc CreatePeer(CreatePeerRequest) returns (CreatePeerResponse);
+    rpc GetPeer(GetPeerRequest) returns (GetPeerResponse);
+    rpc ListPeer(ListPeerRequest) returns (ListPeerResponse);
+    rpc UpdatePeer(UpdatePeerRequest) returns (UpdatePeerResponse);
+    rpc DeletePeer(DeletePeerRequest) returns (DeletePeerResponse);
+}

@@ -1,5 +1,7 @@
-PROTO_DIR := api/proto
-OUT_DIR := pkg/gen
+PROTO_DIR ?= api/proto
+OUT_DIR ?= pkg/gen
+PROTO_SUBDIR ?= gateway/v1
+PROTO_FILES ?= $(PROTO_DIR)/$(PROTO_SUBDIR)/*.proto
 
 .PHONY: test itest
 
@@ -17,8 +19,11 @@ itest:
 
 proto:
 	@echo "Generating gRPC stubs..."
+	@echo "PROTO_DIR=$(PROTO_DIR)"
+	@echo "OUT_DIR=$(OUT_DIR)"
+	@echo "PROTO_FILES=$(PROTO_FILES)"
 	protoc \
 		--proto_path=$(PROTO_DIR) \
 		--go_out=$(OUT_DIR) --go_opt=paths=source_relative \
 		--go-grpc_out=$(OUT_DIR) --go-grpc_opt=paths=source_relative \
-		$(PROTO_DIR)/gateway/v1/*.proto
+		$(PROTO_FILES)
