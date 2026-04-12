@@ -36,7 +36,7 @@ import (
 ### Changed
 
 - Expanded the core protobuf contract to support the new dashboard data flow
-- Upddated shared information definitions to align with backend requirements for v2
+- Updated shared information definitions to align with backend requirements for v2
 
 ### Fixed
 
