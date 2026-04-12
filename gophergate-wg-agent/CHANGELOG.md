@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.5.0] - 2026-04-12
+
+### Added
+
+- Added backend support for protobuf v2 dashboard functionality
+- Implemented the required dashboard-related handlers and service logic in the wg-agent
+
+### Changed
+
+- Updated the wg-agent backend to align with the new protobuf v2 definitions
+- Extended internal service flow to support dashboard data handling
+
+### Fixed
+
+- No fixes in this release
+
+### Removed
+
+- No removals in this release
+
 ## [v0.4.6] - 2026-04-06
 
 ### Added
