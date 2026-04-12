@@ -29,57 +29,75 @@ import (
 ## [v0.5.0] - 2026-04-12
 
 ### Added
-- (fill)
+
+- Added protobuf v2 definitions for dashboard-related backend support
+- Introduced the required message and service structure for upcoming dashboard functionality
 
 ### Changed
-- (fill)
+
+- Expanded the core protobuf contract to support the new dashboard data flow
+- Upddated shared information definitions to align with backend requirements for v2
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.4.3] - 2025-12-20
 
 ### Added
+
 - Kubernetes-specific logging environment override to force stdout logging for containerised deployments.
 
 ### Changed
+
 - No changes for this release.
 
 ### Fixed
+
 - No fixes for this release.
 
 ### Removed
+
 - No removals for this release.
 
 ## [v0.4.2] - 2025-12-14
 
 ### Added
+
 - No additions in this release.
 
 ### Changed
+
 - Updated **README.md** to include minor explaination of gRPC and proto files.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.4.1] - 2025-11-19
 
 ### Added
+
 - Updated **README** documentation to include the latest gRPC integration details, directory structure (`api`, `pkg`), and Makefile usage for protobuf regeneration.
 
 ### Changed
+
 - Improved general documentation clarity to better reflect the current module architecture and setup instructions.
 
 ### Fixed
+
 - No fixes in this release.
 
 ### Removed
+
 - No removals in this release.
 
 ## [v0.4.0] - 2025-11-02
