@@ -1,28 +1,83 @@
 {{ define "partials/navbar" }}
-<header class="sticky top-0 z-30 border-b border-base-300/70 bg-base-200/75 backdrop-blur">
-  <div class="navbar px-4 lg:px-6">
-    <div class="flex-none lg:hidden">
-      <label for="app-drawer" class="btn btn-square btn-ghost">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </label>
-    </div>
+<header class="sticky top-0 z-30 px-3 pt-3 lg:px-4">
+  <div class="mx-auto max-w-330">
+    <div class="nav-shell rounded-[26px]">
+      <div class="flex h-17 items-center gap-5 px-4 lg:px-5">
 
-    <div class="flex-1">
-      <a href="/" class="flex items-center gap-3 px-2">
-        <img src="/static/img/GopherGate-logo.png" alt="GopherGate" class="h-9 w-9 rounded-xl object-contain" />
-        <div class="hidden sm:block">
-          <div class="text-sm font-semibold leading-tight">GopherGate</div>
-          <div class="text-xs text-muted leading-tight">WireGuard Admin Portal</div>
+        <!-- Mobile menu -->
+        <div class="flex-none lg:hidden">
+          <label for="app-drawer" class="btn btn-square btn-ghost btn-sm rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </label>
         </div>
-      </a>
-    </div>
 
-    <div class="flex items-center gap-2">
-      {{ if .pageTitle }}
-      <span class="hidden md:inline text-sm text-muted">{{ .pageTitle }}</span>
-      {{ end }}
+        <!-- Brand -->
+        <a href="/dashboard" class="flex min-w-0 flex-none items-center gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+            <img
+              src="/static/img/GopherGate-logo.png"
+              alt="GopherGate"
+              class="h-8 w-8 object-contain"
+            />
+          </div>
+
+          <div class="leading-tight">
+            <div class="text-[17px] font-semibold tracking-[-0.02em] text-[#dce9f5]">
+              GopherGate
+            </div>
+            <div class="mt-0.5 text-[10.5px] uppercase tracking-[0.20em] text-[#8a9aab]">
+              Secure Mesh Gateway
+            </div>
+          </div>
+        </a>
+
+        <!-- Nav -->
+        <nav class="hidden flex-1 items-center lg:flex">
+          {{ $navBase := "nav-tab inline-flex h-[36px] items-center rounded-[13px] px-5 text-[14px] font-medium" }}
+          {{ $navActive := "nav-tab-active" }}
+
+          <ul class="flex items-center gap-3">
+            <li>
+              <a href="/dashboard"
+                 class="{{ $navBase }} {{ if eq .activeNav "dashboard" }}{{ $navActive }}{{ end }}">
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a href="/peers"
+                 class="{{ $navBase }} {{ if eq .activeNav "peers" }}{{ $navActive }}{{ end }}">
+                Peers
+              </a>
+            </li>
+            <li>
+              <a href="/traffic"
+                 class="{{ $navBase }} {{ if eq .activeNav "traffic" }}{{ $navActive }}{{ end }}">
+                Traffic
+              </a>
+            </li>
+            <li>
+              <a href="/settings"
+                 class="{{ $navBase }} {{ if eq .activeNav "settings" }}{{ $navActive }}{{ end }}">
+                Settings
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Right side -->
+        <div class="hidden flex-none items-center gap-3 md:flex">
+          <div class="nav-status inline-flex h-9 items-center rounded-full px-4 text-[14px] font-medium">
+            {{ .statusText }}
+          </div>
+
+          <a href="/logout"
+             class="nav-logout inline-flex h-9 items-center rounded-[13px] px-4 text-[14px] font-semibold transition-all duration-200">
+            Logout
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </header>

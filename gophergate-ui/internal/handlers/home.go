@@ -11,7 +11,8 @@ func Dashboard() gin.HandlerFunc {
 		c.HTML(http.StatusOK, "layouts/base", gin.H{
 			"title":      "Dashboard",
 			"pageTitle":  "Dashboard",
-			"activePage": "dashboard",
+			"activeNav":  "dashboard",
+			"statusText": "All Systems Operational",
 		})
 	}
 }
