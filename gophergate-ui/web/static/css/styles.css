@@ -20,8 +20,6 @@
     --text-base--line-height: calc(1.5 / 1);
     --text-lg: 1.125rem;
     --text-lg--line-height: calc(1.75 / 1.125);
-    --text-xl: 1.25rem;
-    --text-xl--line-height: calc(1.75 / 1.25);
     --text-2xl: 1.5rem;
     --text-2xl--line-height: calc(2 / 1.5);
     --text-3xl: 1.875rem;
@@ -33,8 +31,6 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --tracking-tight: -0.025em;
-    --tracking-wide: 0.025em;
-    --tracking-wider: 0.05em;
     --tracking-widest: 0.1em;
     --leading-tight: 1.25;
     --leading-relaxed: 1.625;
@@ -1495,6 +1491,9 @@
   .rounded-\[1\.45rem\] {
     border-radius: 1.45rem;
   }
+  .rounded-\[1rem\] {
+    border-radius: 1rem;
+  }
   .rounded-\[2rem\] {
     border-radius: 2rem;
   }
@@ -1723,18 +1722,11 @@
     font-size: var(--text-sm);
     line-height: var(--tw-leading, var(--text-sm--line-height));
   }
-  .text-xl {
-    font-size: var(--text-xl);
-    line-height: var(--tw-leading, var(--text-xl--line-height));
-  }
   .text-\[0\.82rem\] {
     font-size: 0.82rem;
   }
   .text-\[2rem\] {
     font-size: 2rem;
-  }
-  .text-\[3rem\] {
-    font-size: 3rem;
   }
   .text-\[10\.5px\] {
     font-size: 10.5px;
@@ -1777,10 +1769,6 @@
     --tw-tracking: 0.14em;
     letter-spacing: 0.14em;
   }
-  .tracking-\[0\.16em\] {
-    --tw-tracking: 0.16em;
-    letter-spacing: 0.16em;
-  }
   .tracking-\[0\.18em\] {
     --tw-tracking: 0.18em;
     letter-spacing: 0.18em;
@@ -1792,14 +1780,6 @@
   .tracking-tight {
     --tw-tracking: var(--tracking-tight);
     letter-spacing: var(--tracking-tight);
-  }
-  .tracking-wide {
-    --tw-tracking: var(--tracking-wide);
-    letter-spacing: var(--tracking-wide);
-  }
-  .tracking-wider {
-    --tw-tracking: var(--tracking-wider);
-    letter-spacing: var(--tracking-wider);
   }
   .tracking-widest {
     --tw-tracking: var(--tracking-widest);
@@ -2022,7 +2002,7 @@ body::before, body::after {
 }
 body::before {
   z-index: 0;
-  background: radial-gradient( 520px circle at var(--mouse-x) var(--mouse-y), rgba(91, 194, 240, 0.12), transparent 38% ), radial-gradient( 1100px circle at 15% 20%, rgba(47, 159, 206, 0.15) 0%, rgba(47, 159, 206, 0.08) 30%, transparent 54% ), radial-gradient( 900px circle at 85% 10%, rgba(91, 194, 240, 0.11) 0%, rgba(91, 194, 240, 0.06) 34%, transparent 54% ), radial-gradient( 800px circle at 50% 85%, rgba(91, 194, 240, 0.06) 0%, transparent 60% );
+  background: radial-gradient( 980px circle at var(--mouse-x) var(--mouse-y), rgba(91, 194, 240, 0.3) 0%, rgba(91, 194, 240, 0.18) 14%, rgba(91, 194, 240, 0.09) 28%, rgba(91, 194, 240, 0.04) 42%, transparent 58% ), radial-gradient( 1100px circle at 15% 20%, rgba(47, 159, 206, 0.15) 0%, rgba(47, 159, 206, 0.08) 30%, transparent 54% ), radial-gradient( 900px circle at 85% 10%, rgba(91, 194, 240, 0.11) 0%, rgba(91, 194, 240, 0.06) 34%, transparent 54% ), radial-gradient( 800px circle at 50% 85%, rgba(91, 194, 240, 0.06) 0%, transparent 60% );
 }
 body::after {
   z-index: 0;
@@ -2227,6 +2207,46 @@ body::after {
   border: 1px solid rgba(41, 65, 88, 0.62);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
   backdrop-filter: blur(10px);
+}
+.dashboard-card {
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 220ms ease, box-shadow 240ms ease, background 220ms ease;
+}
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(220, 228, 236, 0.28);
+  background: rgba(24, 39, 56, 0.9);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(210, 220, 230, 0.06);
+}
+.dashboard-card:active {
+  transform: translateY(-1px);
+}
+.peer-row td {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: color 180ms ease, border-color 200ms ease;
+}
+.peer-row td::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(38, 61, 84, 0.82);
+  opacity: 0;
+  transform: translateY(0);
+  transition: opacity 220ms ease, background 220ms ease;
+}
+.peer-row:hover td::before {
+  opacity: 1;
+}
+.peer-row:last-child td {
+  border-bottom: 1px solid rgba(91, 194, 240, 0.12);
+}
+.peer-row:last-child:hover td:first-child::before {
+  border-bottom-left-radius: 1rem;
+}
+.peer-row:last-child:hover td:last-child::before {
+  border-bottom-right-radius: 1rem;
 }
 @layer base {
   :where(:root),:root:has(input.theme-controller[value=light]:checked),[data-theme=light] {
