@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -251,7 +250,8 @@ func stateDisplay(s string) string {
 		if s == "" {
 			return "Unknown"
 		}
-		return strings.Title(strings.ToLower(s))
+		s = strings.ToLower(s)
+		return strings.ToUpper(s[:1]) + s[1:]
 	}
 }
 
@@ -266,9 +266,4 @@ func statePillClass(s string) string {
 	default:
 		return "border-base-300 bg-base-200/70 text-base-content/80"
 	}
-}
-
-// Optional helper if you later want counts or formatted ints in templates.
-func formatInt(v int64) string {
-	return strconv.FormatInt(v, 10)
 }
