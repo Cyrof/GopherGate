@@ -1,17 +1,186 @@
-{{ define "content" }}
-<section class="space-y-4">
-  <div>
-    <h1 class="section-title">GopherGate</h1>
-    <p class="section-subtitle">Secure WireGuard admin portal.</p>
-  </div>
+{{ define "pages/index.tmpl" }}
+  {{ template "layouts/base" . }}
+{{ end }}
 
-  <div class="card card-surface panel-glow max-w-2xl">
-    <div class="card-body">
-      <h2 class="card-title">UI Foundation Ready</h2>
-      <p class="text-muted">
-        Tailwind CSS, daisyUI, shared layout partials, and the global background system are now active.
-      </p>
+{{ define "content" }}
+<section>
+  <div class="dashboard-shell w-full rounded-[26px] px-4 py-5 lg:px-5 lg:py-6">
+    <div>
+      <div class="text-md uppercase tracking-widest text-muted">
+        Network Overview
+      </div>
+      <h1 class="mt-1 text-4xl font-semibold tracking-tight text-base-content">
+        Dashboard
+      </h1>
     </div>
+
+    {{ if .error }}
+    <div class="mt-4 card-surface rounded-[1.35rem] border border-error/30 p-4">
+      <div class="text-lg font-semibold text-error">Dashboard unavailable</div>
+      <p class="mt-2 text-sm text-muted">{{ .error }}</p>
+    </div>
+    {{ else }}
+
+    <div class="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-4">
+      <div class="dashboard-card card-surface rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
+        <div class="text-sm text-muted">Peers Online</div>
+        <div class="mt-2 text-3xl font-semibold tracking-tight text-base-content">
+          {{ .summary.PeersOnline }}<span class="text-muted">/{{ .summary.PeersTotal }}</span>
+        </div>
+        <div class="mt-2 text-sm text-muted">
+          {{ .summary.DegradedNodes }} degraded node{{ if ne .summary.DegradedNodes 1 }}s{{ end }}
+        </div>
+      </div>
+
+      <div class="dashboard-card card-surface rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
+        <div class="text-sm text-muted">Total Traffic</div>
+        <div class="mt-2 text-3xl font-semibold tracking-tight text-base-content">
+          {{ humanBytes .summary.TotalTrafficBytes }}
+        </div>
+        <div class="mt-2 text-sm text-muted">
+          Rx {{ humanBytes .summary.TotalRxBytes }} · Tx {{ humanBytes .summary.TotalTxBytes }}
+        </div>
+      </div>
+
+      <div class="dashboard-card card-surface rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
+        <div class="text-sm text-muted">Last Sync</div>
+        <div class="mt-2 text-3xl font-semibold tracking-tight text-base-content">
+          {{ formatClock .summary.LastSync }}
+        </div>
+        <div class="mt-2 text-sm text-muted">
+          {{ timeAgo .summary.LastSync }}
+        </div>
+      </div>
+
+      <div class="dashboard-card card-surface rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
+        <div class="text-sm text-muted">Agent Status</div>
+        <div class="mt-2 text-3xl font-semibold tracking-tight text-base-content">
+          {{ .summary.AgentStatus }}
+        </div>
+        <div class="mt-2 text-sm text-muted">
+          {{ .summary.DegradedNodes }} degraded node{{ if ne .summary.DegradedNodes 1 }}s{{ end }}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-3">
+      <div class="dashboard-card card-surface rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4 xl:col-span-2">
+        <div class="text-[0.82rem] uppercase tracking-[0.14em] text-muted">
+          Realtime Notes
+        </div>
+
+        {{ if .notes }}
+          {{ $note := index .notes 0 }}
+          <div class="mt-4 text-[2rem] font-semibold tracking-tight text-base-content">
+            {{ $note.Title }}
+          </div>
+          <p class="mt-4 max-w-4xl text-lg leading-8 text-base-content/90">
+            {{ $note.Body }}
+          </p>
+        {{ else }}
+          <div class="mt-4 text-[2rem] font-semibold tracking-tight text-base-content">
+            No notes available
+          </div>
+          <p class="mt-4 text-lg leading-8 text-muted">
+            No realtime notes were returned by the backend.
+          </p>
+        {{ end }}
+      </div>
+
+      <div class="dashboard-card card-surface rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
+        <div class="text-[0.82rem] uppercase tracking-[0.14em] text-muted">
+          Alerts
+        </div>
+
+        {{ if .alerts }}
+          <div class="mt-4 text-[2rem] font-semibold tracking-tight text-base-content">
+            {{ len .alerts }} Warning{{ if ne (len .alerts) 1 }}s{{ end }}
+          </div>
+          <div class="mt-4 space-y-4">
+            {{ range .alerts }}
+            <div>
+              <div class="text-base font-semibold text-base-content">
+                {{ .Title }}
+              </div>
+              <p class="mt-2 text-base leading-7 text-base-content/90">
+                {{ .Body }}
+              </p>
+            </div>
+            {{ end }}
+          </div>
+        {{ else }}
+          <div class="mt-4 text-[2rem] font-semibold tracking-tight text-base-content">
+            0 Warnings
+          </div>
+          <p class="mt-4 text-base leading-7 text-muted">
+            No active alerts detected.
+          </p>
+        {{ end }}
+      </div>
+    </div>
+
+    <div class="mt-3 card-surface rounded-[1.45rem] border border-[rgba(91,194,240,0.20)] p-4">
+      <div class="flex items-center justify-between gap-4">
+        <h2 class="text-[2rem] font-semibold tracking-tight text-base-content">
+          Peer Table
+        </h2>
+
+        <div class="rounded-full border border-[rgba(246,214,190,0.22)] bg-[rgba(246,214,190,0.08)] px-3 py-1 text-sm font-medium text-secondary">
+          Live
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-x-auto rounded-[1rem]">
+        <table class="table">
+          <thead>
+            <tr class="border-b border-[rgba(91,194,240,0.16)] text-sm text-muted">
+              <th class="pb-4 font-medium">Name</th>
+              <th class="pb-4 font-medium">Endpoint</th>
+              <th class="pb-4 font-medium">Rx/Tx</th>
+              <th class="pb-4 font-medium">Latency</th>
+              <th class="pb-4 font-medium">Last Handshake</th>
+              <th class="pb-4 font-medium">State</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ if .peers }}
+              {{ range .peers }}
+              <tr class="peer-row border-b border-[rgba(91,194,240,0.12)]">
+                <td class="py-4 text-lg font-medium text-base-content">
+                  {{ .Name }}
+                </td>
+                <td class="py-4 text-base text-base-content/90">
+                  {{ if .Endpoint }}{{ .Endpoint }}{{ else }}—{{ end }}
+                </td>
+                <td class="py-4 text-base text-base-content/90">
+                  {{ humanBytes .RxBytes }} / {{ humanBytes .TxBytes }}
+                </td>
+                <td class="py-4 text-base text-base-content/90">
+                  {{ if .Latency }}{{ .Latency }}{{ else }}—{{ end }}
+                </td>
+                <td class="py-4 text-base text-base-content/90">
+                  {{ handshakeDisplay .LastHandshake }}
+                </td>
+                <td class="py-4">
+                  <span class="{{ statePillClass .State }} inline-flex rounded-full border px-3 py-1 text-sm font-medium">
+                    {{ stateDisplay .State }}
+                  </span>
+                </td>
+              </tr>
+              {{ end }}
+            {{ else }}
+              <tr>
+                <td colspan="6" class="py-8 text-center text-muted">
+                  No peers available.
+                </td>
+              </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {{ end }}
   </div>
 </section>
 {{ end }}

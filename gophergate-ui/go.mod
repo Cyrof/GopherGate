@@ -3,7 +3,7 @@ module github.com/Cyrof/GopherGate/gophergate-ui
 go 1.25.0
 
 require (
-	github.com/Cyrof/GopherGate/gophergate-core v0.4.1
+	github.com/Cyrof/GopherGate/gophergate-core v0.5.0
 	github.com/gin-gonic/gin v1.12.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.76.0
