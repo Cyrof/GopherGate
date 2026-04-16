@@ -10,16 +10,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.8.0] - 2026-04-15
 
 ### Added
-- (fill)
+
+- Added full dashboard page implementation
+- Added protobuf v2 integration with the backend for dashboard data
+- Added a fully functional navigation bar with logo and logout support
 
 ### Changed
-- (fill)
+
+- Updated the UI to support the new dashboard data flow through protobuf v2
+- Improved overall dashboard styling and layout for a more complete user experience
+- Refined shared page structure and navigation flow across the UI
 
 ### Fixed
-- (fill)
+
+- Fixed dashboard integration issues to enable full end-to-end functionality between UI and backend
+- Fixed navigation usability by completing the working number implementation
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.7.3] - 2026-04-06
 
