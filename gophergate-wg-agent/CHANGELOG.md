@@ -10,16 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.6.0] - 2026-04-19
 
 ### Added
-- (fill)
+
+- Added backend support for peer traffic history in the v2 flow
+- Added RX/TX traffic point handling for UI graphing
+- Added a traffic snapshotter to periodically persist peer traffic data to the database
+- Added environment variable support for `TRAFFIC_SNAPSHOT_INTERVAL`
+- Added environment variable support for `TRAFFIC_RETENTION_DAYS`
 
 ### Changed
-- (fill)
+
+- Extended the wg-agent backend to support traffic history retrieval for the UI
+- Set the default traffic snapshot interval to 1 minute
+- Set the default traffic retention period to 3 days
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.5.0] - 2026-04-12
 
