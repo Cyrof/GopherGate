@@ -3,6 +3,7 @@ package grpcserver
 import (
 	"context"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,12 +18,14 @@ type WireGuardServiceV2 struct {
 	gatewayv2.UnimplementedWireGuardServiceServer
 	repo         *data.Repository
 	dashboardSvc *service.DashboardService
+	trafficSvc   *service.TrafficService
 }
 
 func NewWireGuardServiceV2(repo *data.Repository) *WireGuardServiceV2 {
 	return &WireGuardServiceV2{
 		repo:         repo,
 		dashboardSvc: service.NewDashboardService(repo),
+		trafficSvc:   service.NewTrafficService(repo),
 	}
 }
 
@@ -100,6 +103,31 @@ func mapDashboardToProto(in *service.DashboardResult) *gatewayv2.GetDashboardRes
 	return out
 }
 
+func mapPeerTrafficToProto(in *service.PeerTrafficHistoryResult) *gatewayv2.GetPeerTrafficResponse {
+	if in == nil {
+		return &gatewayv2.GetPeerTrafficResponse{}
+	}
+
+	out := &gatewayv2.GetPeerTrafficResponse{
+		Traffic: &gatewayv2.PeerTrafficHistory{
+			PublicKey: in.PublicKey,
+			Name:      in.Name,
+			Points:    make([]*gatewayv2.PeerTrafficPoint, 0, len(in.Points)),
+		},
+	}
+
+	for _, p := range in.Points {
+		out.Traffic.Points = append(out.Traffic.Points, &gatewayv2.PeerTrafficPoint{
+			Timestamp:  p.Timestamp.UTC().Format(time.RFC3339),
+			RxBytes:    p.RXBytes,
+			TxBytes:    p.TXBytes,
+			TotalBytes: p.TotalBytes,
+		})
+	}
+
+	return out
+}
+
 func (s *WireGuardServiceV2) GetDashboard(
 	ctx context.Context,
 	req *gatewayv2.GetDashboardRequest,
@@ -114,6 +142,33 @@ func (s *WireGuardServiceV2) GetDashboard(
 	}
 
 	return mapDashboardToProto(result), nil
+}
+
+func (s *WireGuardServiceV2) GetPeerTraffic(
+	ctx context.Context,
+	req *gatewayv2.GetPeerTrafficRequest,
+) (*gatewayv2.GetPeerTrafficResponse, error) {
+	if req.GetIface() == "" {
+		return nil, status.Error(codes.InvalidArgument, "iface is required")
+	}
+	if req.GetPublicKey() == "" {
+		return nil, status.Error(codes.InvalidArgument, "public_key is required")
+	}
+
+	rangeName := req.GetRange()
+	if rangeName == "" {
+		rangeName = "24h"
+	}
+
+	result, err := s.trafficSvc.GetPeerTrafficHistory(ctx, req.GetIface(), req.GetPublicKey(), rangeName)
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "unsupported range") {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		return nil, status.Errorf(codes.Internal, "get peer traffic: %v", err)
+	}
+
+	return mapPeerTrafficToProto(result), nil
 }
 
 func (s *WireGuardServiceV2) CreatePeer(
