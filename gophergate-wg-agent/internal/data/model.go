@@ -42,3 +42,20 @@ type BootstrapPeer struct {
 	Keepalive *int16
 	Name      string
 }
+
+type PeerTrafficSnapshot struct {
+	ID         string
+	Iface      string
+	PublicKey  string
+	RXBytes    uint64
+	TXBytes    uint64
+	TotalBytes uint64
+	RecordedAt time.Time
+}
+
+type PeerTrafficPoint struct {
+	Timestamp  time.Time
+	RXBytes    uint64
+	TXBytes    uint64
+	TotalBytes uint64
+}
