@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WireGuardService_GetDashboard_FullMethodName = "/gateway.v2.WireGuardService/GetDashboard"
-	WireGuardService_CreatePeer_FullMethodName   = "/gateway.v2.WireGuardService/CreatePeer"
-	WireGuardService_GetPeer_FullMethodName      = "/gateway.v2.WireGuardService/GetPeer"
-	WireGuardService_ListPeer_FullMethodName     = "/gateway.v2.WireGuardService/ListPeer"
-	WireGuardService_UpdatePeer_FullMethodName   = "/gateway.v2.WireGuardService/UpdatePeer"
-	WireGuardService_DeletePeer_FullMethodName   = "/gateway.v2.WireGuardService/DeletePeer"
+	WireGuardService_GetDashboard_FullMethodName   = "/gateway.v2.WireGuardService/GetDashboard"
+	WireGuardService_GetPeerTraffic_FullMethodName = "/gateway.v2.WireGuardService/GetPeerTraffic"
+	WireGuardService_CreatePeer_FullMethodName     = "/gateway.v2.WireGuardService/CreatePeer"
+	WireGuardService_GetPeer_FullMethodName        = "/gateway.v2.WireGuardService/GetPeer"
+	WireGuardService_ListPeer_FullMethodName       = "/gateway.v2.WireGuardService/ListPeer"
+	WireGuardService_UpdatePeer_FullMethodName     = "/gateway.v2.WireGuardService/UpdatePeer"
+	WireGuardService_DeletePeer_FullMethodName     = "/gateway.v2.WireGuardService/DeletePeer"
 )
 
 // WireGuardServiceClient is the client API for WireGuardService service.
@@ -34,6 +35,7 @@ const (
 // Wireguard Services
 type WireGuardServiceClient interface {
 	GetDashboard(ctx context.Context, in *GetDashboardRequest, opts ...grpc.CallOption) (*GetDashboardResponse, error)
+	GetPeerTraffic(ctx context.Context, in *GetPeerTrafficRequest, opts ...grpc.CallOption) (*GetPeerTrafficResponse, error)
 	CreatePeer(ctx context.Context, in *CreatePeerRequest, opts ...grpc.CallOption) (*CreatePeerResponse, error)
 	GetPeer(ctx context.Context, in *GetPeerRequest, opts ...grpc.CallOption) (*GetPeerResponse, error)
 	ListPeer(ctx context.Context, in *ListPeerRequest, opts ...grpc.CallOption) (*ListPeerResponse, error)
@@ -53,6 +55,16 @@ func (c *wireGuardServiceClient) GetDashboard(ctx context.Context, in *GetDashbo
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDashboardResponse)
 	err := c.cc.Invoke(ctx, WireGuardService_GetDashboard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wireGuardServiceClient) GetPeerTraffic(ctx context.Context, in *GetPeerTrafficRequest, opts ...grpc.CallOption) (*GetPeerTrafficResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPeerTrafficResponse)
+	err := c.cc.Invoke(ctx, WireGuardService_GetPeerTraffic_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +128,7 @@ func (c *wireGuardServiceClient) DeletePeer(ctx context.Context, in *DeletePeerR
 // Wireguard Services
 type WireGuardServiceServer interface {
 	GetDashboard(context.Context, *GetDashboardRequest) (*GetDashboardResponse, error)
+	GetPeerTraffic(context.Context, *GetPeerTrafficRequest) (*GetPeerTrafficResponse, error)
 	CreatePeer(context.Context, *CreatePeerRequest) (*CreatePeerResponse, error)
 	GetPeer(context.Context, *GetPeerRequest) (*GetPeerResponse, error)
 	ListPeer(context.Context, *ListPeerRequest) (*ListPeerResponse, error)
@@ -133,6 +146,9 @@ type UnimplementedWireGuardServiceServer struct{}
 
 func (UnimplementedWireGuardServiceServer) GetDashboard(context.Context, *GetDashboardRequest) (*GetDashboardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDashboard not implemented")
+}
+func (UnimplementedWireGuardServiceServer) GetPeerTraffic(context.Context, *GetPeerTrafficRequest) (*GetPeerTrafficResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPeerTraffic not implemented")
 }
 func (UnimplementedWireGuardServiceServer) CreatePeer(context.Context, *CreatePeerRequest) (*CreatePeerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePeer not implemented")
@@ -184,6 +200,24 @@ func _WireGuardService_GetDashboard_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WireGuardServiceServer).GetDashboard(ctx, req.(*GetDashboardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WireGuardService_GetPeerTraffic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPeerTrafficRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WireGuardServiceServer).GetPeerTraffic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WireGuardService_GetPeerTraffic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WireGuardServiceServer).GetPeerTraffic(ctx, req.(*GetPeerTrafficRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -288,6 +322,10 @@ var WireGuardService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDashboard",
 			Handler:    _WireGuardService_GetDashboard_Handler,
+		},
+		{
+			MethodName: "GetPeerTraffic",
+			Handler:    _WireGuardService_GetPeerTraffic_Handler,
 		},
 		{
 			MethodName: "CreatePeer",
