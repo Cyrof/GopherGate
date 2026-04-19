@@ -21,10 +21,31 @@ import (
     "github.com/Cyrof/GopherGate/gophergate-core/paths"
     "github.com/Cyrof/GopherGate/gophergate-core/envx"
     "github.com/Cyrof/GopherGate/gophergate-core/dbx"
+    gatewayv2 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2"
 )
 ```
 
 ---
+
+## [v0.6.0] - 2026-04-19
+
+### Added
+
+- Added protobuf definitions for peer traffic point data to support UI graphing
+- Added the required message structures for traffic history and peer traffic visualisation
+
+### Changed
+
+- Extended the core protobuf contract to support traffic graph data for the UI
+- Updated shared interface definitions to align with dashboard traffic history requirements
+
+### Fixed
+
+- No fixes in this release
+
+### Removed
+
+- No removals in this release
 
 ## [v0.5.0] - 2026-04-12
 
