@@ -664,6 +664,238 @@ func (x *GetDashboardResponse) GetPeers() []*PeerOverview {
 	return nil
 }
 
+type PeerTrafficPoint struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Timestamp     string                 `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	RxBytes       uint64                 `protobuf:"varint,2,opt,name=rx_bytes,json=rxBytes,proto3" json:"rx_bytes,omitempty"`
+	TxBytes       uint64                 `protobuf:"varint,3,opt,name=tx_bytes,json=txBytes,proto3" json:"tx_bytes,omitempty"`
+	TotalBytes    uint64                 `protobuf:"varint,4,opt,name=total_bytes,json=totalBytes,proto3" json:"total_bytes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PeerTrafficPoint) Reset() {
+	*x = PeerTrafficPoint{}
+	mi := &file_gateway_v2_peer_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PeerTrafficPoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PeerTrafficPoint) ProtoMessage() {}
+
+func (x *PeerTrafficPoint) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_v2_peer_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PeerTrafficPoint.ProtoReflect.Descriptor instead.
+func (*PeerTrafficPoint) Descriptor() ([]byte, []int) {
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PeerTrafficPoint) GetTimestamp() string {
+	if x != nil {
+		return x.Timestamp
+	}
+	return ""
+}
+
+func (x *PeerTrafficPoint) GetRxBytes() uint64 {
+	if x != nil {
+		return x.RxBytes
+	}
+	return 0
+}
+
+func (x *PeerTrafficPoint) GetTxBytes() uint64 {
+	if x != nil {
+		return x.TxBytes
+	}
+	return 0
+}
+
+func (x *PeerTrafficPoint) GetTotalBytes() uint64 {
+	if x != nil {
+		return x.TotalBytes
+	}
+	return 0
+}
+
+type PeerTrafficHistory struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PublicKey     string                 `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Points        []*PeerTrafficPoint    `protobuf:"bytes,3,rep,name=points,proto3" json:"points,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PeerTrafficHistory) Reset() {
+	*x = PeerTrafficHistory{}
+	mi := &file_gateway_v2_peer_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PeerTrafficHistory) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PeerTrafficHistory) ProtoMessage() {}
+
+func (x *PeerTrafficHistory) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_v2_peer_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PeerTrafficHistory.ProtoReflect.Descriptor instead.
+func (*PeerTrafficHistory) Descriptor() ([]byte, []int) {
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PeerTrafficHistory) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *PeerTrafficHistory) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PeerTrafficHistory) GetPoints() []*PeerTrafficPoint {
+	if x != nil {
+		return x.Points
+	}
+	return nil
+}
+
+type GetPeerTrafficRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Iface         string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
+	PublicKey     string                 `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	Range         string                 `protobuf:"bytes,3,opt,name=range,proto3" json:"range,omitempty"` // 24h for now
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPeerTrafficRequest) Reset() {
+	*x = GetPeerTrafficRequest{}
+	mi := &file_gateway_v2_peer_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPeerTrafficRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPeerTrafficRequest) ProtoMessage() {}
+
+func (x *GetPeerTrafficRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_v2_peer_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPeerTrafficRequest.ProtoReflect.Descriptor instead.
+func (*GetPeerTrafficRequest) Descriptor() ([]byte, []int) {
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetPeerTrafficRequest) GetIface() string {
+	if x != nil {
+		return x.Iface
+	}
+	return ""
+}
+
+func (x *GetPeerTrafficRequest) GetPublicKey() string {
+	if x != nil {
+		return x.PublicKey
+	}
+	return ""
+}
+
+func (x *GetPeerTrafficRequest) GetRange() string {
+	if x != nil {
+		return x.Range
+	}
+	return ""
+}
+
+type GetPeerTrafficResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Traffic       *PeerTrafficHistory    `protobuf:"bytes,1,opt,name=traffic,proto3" json:"traffic,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPeerTrafficResponse) Reset() {
+	*x = GetPeerTrafficResponse{}
+	mi := &file_gateway_v2_peer_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPeerTrafficResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPeerTrafficResponse) ProtoMessage() {}
+
+func (x *GetPeerTrafficResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gateway_v2_peer_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPeerTrafficResponse.ProtoReflect.Descriptor instead.
+func (*GetPeerTrafficResponse) Descriptor() ([]byte, []int) {
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetPeerTrafficResponse) GetTraffic() *PeerTrafficHistory {
+	if x != nil {
+		return x.Traffic
+	}
+	return nil
+}
+
 type CreatePeerRequest struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Iface             string                 `protobuf:"bytes,1,opt,name=iface,proto3" json:"iface,omitempty"`
@@ -679,7 +911,7 @@ type CreatePeerRequest struct {
 
 func (x *CreatePeerRequest) Reset() {
 	*x = CreatePeerRequest{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[8]
+	mi := &file_gateway_v2_peer_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -691,7 +923,7 @@ func (x *CreatePeerRequest) String() string {
 func (*CreatePeerRequest) ProtoMessage() {}
 
 func (x *CreatePeerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[8]
+	mi := &file_gateway_v2_peer_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -704,7 +936,7 @@ func (x *CreatePeerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePeerRequest.ProtoReflect.Descriptor instead.
 func (*CreatePeerRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{8}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *CreatePeerRequest) GetIface() string {
@@ -768,7 +1000,7 @@ type CreatePeerResponse struct {
 
 func (x *CreatePeerResponse) Reset() {
 	*x = CreatePeerResponse{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[9]
+	mi := &file_gateway_v2_peer_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -780,7 +1012,7 @@ func (x *CreatePeerResponse) String() string {
 func (*CreatePeerResponse) ProtoMessage() {}
 
 func (x *CreatePeerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[9]
+	mi := &file_gateway_v2_peer_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -793,7 +1025,7 @@ func (x *CreatePeerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePeerResponse.ProtoReflect.Descriptor instead.
 func (*CreatePeerResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{9}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreatePeerResponse) GetIface() string {
@@ -834,7 +1066,7 @@ type GetPeerRequest struct {
 
 func (x *GetPeerRequest) Reset() {
 	*x = GetPeerRequest{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[10]
+	mi := &file_gateway_v2_peer_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -846,7 +1078,7 @@ func (x *GetPeerRequest) String() string {
 func (*GetPeerRequest) ProtoMessage() {}
 
 func (x *GetPeerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[10]
+	mi := &file_gateway_v2_peer_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -859,7 +1091,7 @@ func (x *GetPeerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPeerRequest.ProtoReflect.Descriptor instead.
 func (*GetPeerRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{10}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetPeerRequest) GetIface() string {
@@ -885,7 +1117,7 @@ type GetPeerResponse struct {
 
 func (x *GetPeerResponse) Reset() {
 	*x = GetPeerResponse{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[11]
+	mi := &file_gateway_v2_peer_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -897,7 +1129,7 @@ func (x *GetPeerResponse) String() string {
 func (*GetPeerResponse) ProtoMessage() {}
 
 func (x *GetPeerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[11]
+	mi := &file_gateway_v2_peer_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -910,7 +1142,7 @@ func (x *GetPeerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPeerResponse.ProtoReflect.Descriptor instead.
 func (*GetPeerResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{11}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetPeerResponse) GetPeer() *PeerStatus {
@@ -929,7 +1161,7 @@ type ListPeerRequest struct {
 
 func (x *ListPeerRequest) Reset() {
 	*x = ListPeerRequest{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[12]
+	mi := &file_gateway_v2_peer_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -941,7 +1173,7 @@ func (x *ListPeerRequest) String() string {
 func (*ListPeerRequest) ProtoMessage() {}
 
 func (x *ListPeerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[12]
+	mi := &file_gateway_v2_peer_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -954,7 +1186,7 @@ func (x *ListPeerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPeerRequest.ProtoReflect.Descriptor instead.
 func (*ListPeerRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{12}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListPeerRequest) GetIface() string {
@@ -973,7 +1205,7 @@ type ListPeerResponse struct {
 
 func (x *ListPeerResponse) Reset() {
 	*x = ListPeerResponse{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[13]
+	mi := &file_gateway_v2_peer_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -985,7 +1217,7 @@ func (x *ListPeerResponse) String() string {
 func (*ListPeerResponse) ProtoMessage() {}
 
 func (x *ListPeerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[13]
+	mi := &file_gateway_v2_peer_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -998,7 +1230,7 @@ func (x *ListPeerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPeerResponse.ProtoReflect.Descriptor instead.
 func (*ListPeerResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{13}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListPeerResponse) GetPeers() []*PeerStatus {
@@ -1022,7 +1254,7 @@ type UpdatePeerRequest struct {
 
 func (x *UpdatePeerRequest) Reset() {
 	*x = UpdatePeerRequest{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[14]
+	mi := &file_gateway_v2_peer_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1034,7 +1266,7 @@ func (x *UpdatePeerRequest) String() string {
 func (*UpdatePeerRequest) ProtoMessage() {}
 
 func (x *UpdatePeerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[14]
+	mi := &file_gateway_v2_peer_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1047,7 +1279,7 @@ func (x *UpdatePeerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePeerRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePeerRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{14}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UpdatePeerRequest) GetIface() string {
@@ -1103,7 +1335,7 @@ type UpdatePeerResponse struct {
 
 func (x *UpdatePeerResponse) Reset() {
 	*x = UpdatePeerResponse{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[15]
+	mi := &file_gateway_v2_peer_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1115,7 +1347,7 @@ func (x *UpdatePeerResponse) String() string {
 func (*UpdatePeerResponse) ProtoMessage() {}
 
 func (x *UpdatePeerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[15]
+	mi := &file_gateway_v2_peer_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1128,7 +1360,7 @@ func (x *UpdatePeerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePeerResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePeerResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{15}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UpdatePeerResponse) GetIface() string {
@@ -1162,7 +1394,7 @@ type DeletePeerRequest struct {
 
 func (x *DeletePeerRequest) Reset() {
 	*x = DeletePeerRequest{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[16]
+	mi := &file_gateway_v2_peer_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1174,7 +1406,7 @@ func (x *DeletePeerRequest) String() string {
 func (*DeletePeerRequest) ProtoMessage() {}
 
 func (x *DeletePeerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[16]
+	mi := &file_gateway_v2_peer_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1187,7 +1419,7 @@ func (x *DeletePeerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePeerRequest.ProtoReflect.Descriptor instead.
 func (*DeletePeerRequest) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{16}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *DeletePeerRequest) GetIface() string {
@@ -1215,7 +1447,7 @@ type DeletePeerResponse struct {
 
 func (x *DeletePeerResponse) Reset() {
 	*x = DeletePeerResponse{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[17]
+	mi := &file_gateway_v2_peer_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1227,7 +1459,7 @@ func (x *DeletePeerResponse) String() string {
 func (*DeletePeerResponse) ProtoMessage() {}
 
 func (x *DeletePeerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[17]
+	mi := &file_gateway_v2_peer_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1240,7 +1472,7 @@ func (x *DeletePeerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePeerResponse.ProtoReflect.Descriptor instead.
 func (*DeletePeerResponse) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{17}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeletePeerResponse) GetIface() string {
@@ -1275,7 +1507,7 @@ type UpdatePeerResponse_Changed struct {
 
 func (x *UpdatePeerResponse_Changed) Reset() {
 	*x = UpdatePeerResponse_Changed{}
-	mi := &file_gateway_v2_peer_proto_msgTypes[18]
+	mi := &file_gateway_v2_peer_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1287,7 +1519,7 @@ func (x *UpdatePeerResponse_Changed) String() string {
 func (*UpdatePeerResponse_Changed) ProtoMessage() {}
 
 func (x *UpdatePeerResponse_Changed) ProtoReflect() protoreflect.Message {
-	mi := &file_gateway_v2_peer_proto_msgTypes[18]
+	mi := &file_gateway_v2_peer_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1300,7 +1532,7 @@ func (x *UpdatePeerResponse_Changed) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePeerResponse_Changed.ProtoReflect.Descriptor instead.
 func (*UpdatePeerResponse_Changed) Descriptor() ([]byte, []int) {
-	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{15, 0}
+	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{19, 0}
 }
 
 func (x *UpdatePeerResponse_Changed) GetAllowedIps() bool {
@@ -1390,7 +1622,25 @@ const file_gateway_v2_peer_proto_rawDesc = "" +
 	"\asummary\x18\x01 \x01(\v2\x1c.gateway.v2.DashboardSummaryR\asummary\x12/\n" +
 	"\x05notes\x18\x02 \x03(\v2\x19.gateway.v2.DashboardNoteR\x05notes\x122\n" +
 	"\x06alerts\x18\x03 \x03(\v2\x1a.gateway.v2.DashboardAlertR\x06alerts\x12.\n" +
-	"\x05peers\x18\x04 \x03(\v2\x18.gateway.v2.PeerOverviewR\x05peers\"\xfa\x01\n" +
+	"\x05peers\x18\x04 \x03(\v2\x18.gateway.v2.PeerOverviewR\x05peers\"\x87\x01\n" +
+	"\x10PeerTrafficPoint\x12\x1c\n" +
+	"\ttimestamp\x18\x01 \x01(\tR\ttimestamp\x12\x19\n" +
+	"\brx_bytes\x18\x02 \x01(\x04R\arxBytes\x12\x19\n" +
+	"\btx_bytes\x18\x03 \x01(\x04R\atxBytes\x12\x1f\n" +
+	"\vtotal_bytes\x18\x04 \x01(\x04R\n" +
+	"totalBytes\"}\n" +
+	"\x12PeerTrafficHistory\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x01 \x01(\tR\tpublicKey\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x124\n" +
+	"\x06points\x18\x03 \x03(\v2\x1c.gateway.v2.PeerTrafficPointR\x06points\"b\n" +
+	"\x15GetPeerTrafficRequest\x12\x14\n" +
+	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
+	"\n" +
+	"public_key\x18\x02 \x01(\tR\tpublicKey\x12\x14\n" +
+	"\x05range\x18\x03 \x01(\tR\x05range\"R\n" +
+	"\x16GetPeerTrafficResponse\x128\n" +
+	"\atraffic\x18\x01 \x01(\v2\x1e.gateway.v2.PeerTrafficHistoryR\atraffic\"\xfa\x01\n" +
 	"\x11CreatePeerRequest\x12\x14\n" +
 	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
@@ -1442,9 +1692,10 @@ const file_gateway_v2_peer_proto_rawDesc = "" +
 	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x02 \x01(\tR\tpublicKey\x12\x18\n" +
-	"\aremoved\x18\x03 \x01(\bR\aremoved2\xd7\x03\n" +
+	"\aremoved\x18\x03 \x01(\bR\aremoved2\xb0\x04\n" +
 	"\x10WireGuardService\x12Q\n" +
-	"\fGetDashboard\x12\x1f.gateway.v2.GetDashboardRequest\x1a .gateway.v2.GetDashboardResponse\x12K\n" +
+	"\fGetDashboard\x12\x1f.gateway.v2.GetDashboardRequest\x1a .gateway.v2.GetDashboardResponse\x12W\n" +
+	"\x0eGetPeerTraffic\x12!.gateway.v2.GetPeerTrafficRequest\x1a\".gateway.v2.GetPeerTrafficResponse\x12K\n" +
 	"\n" +
 	"CreatePeer\x12\x1d.gateway.v2.CreatePeerRequest\x1a\x1e.gateway.v2.CreatePeerResponse\x12B\n" +
 	"\aGetPeer\x12\x1a.gateway.v2.GetPeerRequest\x1a\x1b.gateway.v2.GetPeerResponse\x12E\n" +
@@ -1466,7 +1717,7 @@ func file_gateway_v2_peer_proto_rawDescGZIP() []byte {
 	return file_gateway_v2_peer_proto_rawDescData
 }
 
-var file_gateway_v2_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_gateway_v2_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_gateway_v2_peer_proto_goTypes = []any{
 	(*PeerStatus)(nil),                 // 0: gateway.v2.PeerStatus
 	(*DeviceStatus)(nil),               // 1: gateway.v2.DeviceStatus
@@ -1476,17 +1727,21 @@ var file_gateway_v2_peer_proto_goTypes = []any{
 	(*DashboardAlert)(nil),             // 5: gateway.v2.DashboardAlert
 	(*GetDashboardRequest)(nil),        // 6: gateway.v2.GetDashboardRequest
 	(*GetDashboardResponse)(nil),       // 7: gateway.v2.GetDashboardResponse
-	(*CreatePeerRequest)(nil),          // 8: gateway.v2.CreatePeerRequest
-	(*CreatePeerResponse)(nil),         // 9: gateway.v2.CreatePeerResponse
-	(*GetPeerRequest)(nil),             // 10: gateway.v2.GetPeerRequest
-	(*GetPeerResponse)(nil),            // 11: gateway.v2.GetPeerResponse
-	(*ListPeerRequest)(nil),            // 12: gateway.v2.ListPeerRequest
-	(*ListPeerResponse)(nil),           // 13: gateway.v2.ListPeerResponse
-	(*UpdatePeerRequest)(nil),          // 14: gateway.v2.UpdatePeerRequest
-	(*UpdatePeerResponse)(nil),         // 15: gateway.v2.UpdatePeerResponse
-	(*DeletePeerRequest)(nil),          // 16: gateway.v2.DeletePeerRequest
-	(*DeletePeerResponse)(nil),         // 17: gateway.v2.DeletePeerResponse
-	(*UpdatePeerResponse_Changed)(nil), // 18: gateway.v2.UpdatePeerResponse.Changed
+	(*PeerTrafficPoint)(nil),           // 8: gateway.v2.PeerTrafficPoint
+	(*PeerTrafficHistory)(nil),         // 9: gateway.v2.PeerTrafficHistory
+	(*GetPeerTrafficRequest)(nil),      // 10: gateway.v2.GetPeerTrafficRequest
+	(*GetPeerTrafficResponse)(nil),     // 11: gateway.v2.GetPeerTrafficResponse
+	(*CreatePeerRequest)(nil),          // 12: gateway.v2.CreatePeerRequest
+	(*CreatePeerResponse)(nil),         // 13: gateway.v2.CreatePeerResponse
+	(*GetPeerRequest)(nil),             // 14: gateway.v2.GetPeerRequest
+	(*GetPeerResponse)(nil),            // 15: gateway.v2.GetPeerResponse
+	(*ListPeerRequest)(nil),            // 16: gateway.v2.ListPeerRequest
+	(*ListPeerResponse)(nil),           // 17: gateway.v2.ListPeerResponse
+	(*UpdatePeerRequest)(nil),          // 18: gateway.v2.UpdatePeerRequest
+	(*UpdatePeerResponse)(nil),         // 19: gateway.v2.UpdatePeerResponse
+	(*DeletePeerRequest)(nil),          // 20: gateway.v2.DeletePeerRequest
+	(*DeletePeerResponse)(nil),         // 21: gateway.v2.DeletePeerResponse
+	(*UpdatePeerResponse_Changed)(nil), // 22: gateway.v2.UpdatePeerResponse.Changed
 }
 var file_gateway_v2_peer_proto_depIdxs = []int32{
 	0,  // 0: gateway.v2.DeviceStatus.peers:type_name -> gateway.v2.PeerStatus
@@ -1494,26 +1749,30 @@ var file_gateway_v2_peer_proto_depIdxs = []int32{
 	4,  // 2: gateway.v2.GetDashboardResponse.notes:type_name -> gateway.v2.DashboardNote
 	5,  // 3: gateway.v2.GetDashboardResponse.alerts:type_name -> gateway.v2.DashboardAlert
 	2,  // 4: gateway.v2.GetDashboardResponse.peers:type_name -> gateway.v2.PeerOverview
-	0,  // 5: gateway.v2.GetPeerResponse.peer:type_name -> gateway.v2.PeerStatus
-	0,  // 6: gateway.v2.ListPeerResponse.peers:type_name -> gateway.v2.PeerStatus
-	18, // 7: gateway.v2.UpdatePeerResponse.changed:type_name -> gateway.v2.UpdatePeerResponse.Changed
-	6,  // 8: gateway.v2.WireGuardService.GetDashboard:input_type -> gateway.v2.GetDashboardRequest
-	8,  // 9: gateway.v2.WireGuardService.CreatePeer:input_type -> gateway.v2.CreatePeerRequest
-	10, // 10: gateway.v2.WireGuardService.GetPeer:input_type -> gateway.v2.GetPeerRequest
-	12, // 11: gateway.v2.WireGuardService.ListPeer:input_type -> gateway.v2.ListPeerRequest
-	14, // 12: gateway.v2.WireGuardService.UpdatePeer:input_type -> gateway.v2.UpdatePeerRequest
-	16, // 13: gateway.v2.WireGuardService.DeletePeer:input_type -> gateway.v2.DeletePeerRequest
-	7,  // 14: gateway.v2.WireGuardService.GetDashboard:output_type -> gateway.v2.GetDashboardResponse
-	9,  // 15: gateway.v2.WireGuardService.CreatePeer:output_type -> gateway.v2.CreatePeerResponse
-	11, // 16: gateway.v2.WireGuardService.GetPeer:output_type -> gateway.v2.GetPeerResponse
-	13, // 17: gateway.v2.WireGuardService.ListPeer:output_type -> gateway.v2.ListPeerResponse
-	15, // 18: gateway.v2.WireGuardService.UpdatePeer:output_type -> gateway.v2.UpdatePeerResponse
-	17, // 19: gateway.v2.WireGuardService.DeletePeer:output_type -> gateway.v2.DeletePeerResponse
-	14, // [14:20] is the sub-list for method output_type
-	8,  // [8:14] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	8,  // 5: gateway.v2.PeerTrafficHistory.points:type_name -> gateway.v2.PeerTrafficPoint
+	9,  // 6: gateway.v2.GetPeerTrafficResponse.traffic:type_name -> gateway.v2.PeerTrafficHistory
+	0,  // 7: gateway.v2.GetPeerResponse.peer:type_name -> gateway.v2.PeerStatus
+	0,  // 8: gateway.v2.ListPeerResponse.peers:type_name -> gateway.v2.PeerStatus
+	22, // 9: gateway.v2.UpdatePeerResponse.changed:type_name -> gateway.v2.UpdatePeerResponse.Changed
+	6,  // 10: gateway.v2.WireGuardService.GetDashboard:input_type -> gateway.v2.GetDashboardRequest
+	10, // 11: gateway.v2.WireGuardService.GetPeerTraffic:input_type -> gateway.v2.GetPeerTrafficRequest
+	12, // 12: gateway.v2.WireGuardService.CreatePeer:input_type -> gateway.v2.CreatePeerRequest
+	14, // 13: gateway.v2.WireGuardService.GetPeer:input_type -> gateway.v2.GetPeerRequest
+	16, // 14: gateway.v2.WireGuardService.ListPeer:input_type -> gateway.v2.ListPeerRequest
+	18, // 15: gateway.v2.WireGuardService.UpdatePeer:input_type -> gateway.v2.UpdatePeerRequest
+	20, // 16: gateway.v2.WireGuardService.DeletePeer:input_type -> gateway.v2.DeletePeerRequest
+	7,  // 17: gateway.v2.WireGuardService.GetDashboard:output_type -> gateway.v2.GetDashboardResponse
+	11, // 18: gateway.v2.WireGuardService.GetPeerTraffic:output_type -> gateway.v2.GetPeerTrafficResponse
+	13, // 19: gateway.v2.WireGuardService.CreatePeer:output_type -> gateway.v2.CreatePeerResponse
+	15, // 20: gateway.v2.WireGuardService.GetPeer:output_type -> gateway.v2.GetPeerResponse
+	17, // 21: gateway.v2.WireGuardService.ListPeer:output_type -> gateway.v2.ListPeerResponse
+	19, // 22: gateway.v2.WireGuardService.UpdatePeer:output_type -> gateway.v2.UpdatePeerResponse
+	21, // 23: gateway.v2.WireGuardService.DeletePeer:output_type -> gateway.v2.DeletePeerResponse
+	17, // [17:24] is the sub-list for method output_type
+	10, // [10:17] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_gateway_v2_peer_proto_init() }
@@ -1527,7 +1786,7 @@ func file_gateway_v2_peer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_v2_peer_proto_rawDesc), len(file_gateway_v2_peer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

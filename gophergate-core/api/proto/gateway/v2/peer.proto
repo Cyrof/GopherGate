@@ -83,6 +83,30 @@ message GetDashboardResponse {
   repeated PeerOverview peers       = 4;
 }
 
+message PeerTrafficPoint {
+  string timestamp                  = 1;
+  uint64 rx_bytes                   = 2;
+  uint64 tx_bytes                   = 3;
+  uint64 total_bytes                = 4;
+}
+
+message PeerTrafficHistory {
+  string public_key                 = 1;
+  string name                       = 2;
+  repeated PeerTrafficPoint points  = 3;
+}
+
+message GetPeerTrafficRequest {
+  string iface                      = 1;
+  string public_key                 = 2;
+  string range                      = 3; // 24h for now 
+}
+
+message GetPeerTrafficResponse {
+  PeerTrafficHistory traffic        = 1;
+}
+
+
 // =================================
 // Create
 // =================================
@@ -173,6 +197,7 @@ message DeletePeerResponse {
 // Wireguard Services
 service WireGuardService {
     rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+    rpc GetPeerTraffic(GetPeerTrafficRequest) returns (GetPeerTrafficResponse);
     rpc CreatePeer(CreatePeerRequest) returns (CreatePeerResponse);
     rpc GetPeer(GetPeerRequest) returns (GetPeerResponse);
     rpc ListPeer(ListPeerRequest) returns (ListPeerResponse);
