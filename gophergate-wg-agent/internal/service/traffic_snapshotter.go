@@ -60,6 +60,19 @@ func (s *TrafficSnapshotter) Run(ctx context.Context) {
 	ticker := time.NewTicker(s.interval)
 	defer ticker.Stop()
 
+	s.capture(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			if s.log != nil {
+				s.log.Infow("traffic snapshotter stopped", "reason", ctx.Err())
+			}
+			return
+		case <-ticker.C:
+			s.capture(ctx)
+		}
+	}
 }
 
 func (s *TrafficSnapshotter) capture(ctx context.Context) {
