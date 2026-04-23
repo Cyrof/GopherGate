@@ -87,3 +87,8 @@ func (c *Client) GetDashboard(ctx context.Context, req *gatewayv2.GetDashboardRe
 	c.log.Infow("grpc.get_dashboard", "version", "v2", "iface", req.Iface)
 	return c.wgV2.GetDashboard(ctx, req)
 }
+
+func (c *Client) GetPeerTraffic(ctx context.Context, req *gatewayv2.GetPeerTrafficRequest) (*gatewayv2.GetPeerTrafficResponse, error) {
+	c.log.Infow("grpc.get_peer_traffic", "version", "v2", "iface", req.Iface, "pubkey", req.PublicKey, "range", req.Range)
+	return c.wgV2.GetPeerTraffic(ctx, req)
+}
