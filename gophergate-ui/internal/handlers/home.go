@@ -40,3 +40,32 @@ func Dashboard(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc {
 		})
 	}
 }
+
+
+func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		defer cancel()
+
+		resp, err := grpcClient.GetPeerTraffic(ctx, &gatewayv2.GetPeerTrafficRequest{
+			Iface: iface,
+		})
+		if err != nil {
+			c.HTML(http.StatusBadGateway, "pages/index.tmpl", gin.H{
+				"title":      "Dashboard",
+				"pagetitle":  "Dashboard",
+				"activeNav":  "dashboard",
+				"statusText": "All Systems Operational",
+				"error":      err.Error(),
+			})
+			return
+		}
+		c.HTML(http.StatusOK, "pages/index.tmpl", gin.H{
+			"title":      "Dashboard",
+			"pageTitle":  "Dashboard",
+			"activeNav":  "dashboard",
+			"statusText": "All Systems Operational",
+			"traffic": resp.GetPeerTrafficResponse(),
+		})
+	}
+}
