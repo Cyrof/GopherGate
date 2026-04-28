@@ -139,8 +139,15 @@ func registerRoutes(
 		if dashboardHandler == nil {
 			return fmt.Errorf("handlers.Dashboard() returned nil")
 		}
+		
+		dashboardModalHandler := handlers.DashboardModal(&grpcClient, cfg.WGIface)
+		if dashboardModalHandler == nil {
+			return fmt.Errorf("handlers.DashboardModal() returned nil")
+		}
+
 		protected.GET("/dashboard", dashboardHandler)
-		log.Infow("dashboard route registered")
+		protected.GET("/dashboard/peers/:publicKey/modal", dashboardModalHandler)
+		log.Infow("dashboard routes registered")
 
 		peer := handlers.NewPeers(log, &grpcClient, cfg.WGIface)
 		if peer == nil {
