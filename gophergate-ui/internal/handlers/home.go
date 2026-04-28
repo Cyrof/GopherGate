@@ -69,6 +69,16 @@ func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc
 			return
 		}
 
+		dashboardResp, err := grpcClient.GetDashboard(ctx, &gatewayv2.GetDashboardRequest{
+			Iface: iface,
+		})
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{
+				"error": "failed to retrieve dashboard peer overview",
+			})
+			return
+		}
+
 		traffic := resp.GetTraffic()
 		if traffic == nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -77,6 +87,14 @@ func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc
 				"points":     []any{},
 			})
 			return
+		}
+
+		var allowedIPs []string
+		for _, peer := range dashboardResp.GetPeers() {
+			if peer.GetPublicKey() == publicKey {
+				allowedIPs = peer.GetAllowedIps()
+				break
+			}
 		}
 
 		var totalRx uint64
@@ -98,6 +116,7 @@ func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc
 		c.JSON(http.StatusOK, gin.H{
 			"name":       traffic.GetName(),
 			"public_key": traffic.GetPublicKey(),
+			"allowed_ips": allowedIPs,
 			"total_rx":   totalRx,
 			"total_tx":   totalTx,
 			"points":     points,

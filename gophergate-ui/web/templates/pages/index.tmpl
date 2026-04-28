@@ -145,7 +145,7 @@
           <tbody>
             {{ if .peers }}
               {{ range .peers }}
-              <tr class="peer-row border-b border-[rgba(91,194,240,0.12)]" data-public-key="{{ .PublicKey }}" data-peer-name="{{ .Name }}"> 
+              <tr class="peer-row border-b border-[rgba(91,194,240,0.12)]" data-public-key="{{ .PublicKey }}" data-peer-name="{{ .Name }}" tabindex="0"> 
                 <td class="py-4 text-lg font-medium text-base-content">
                   {{ .Name }}
                 </td>
@@ -206,8 +206,10 @@
 
         <div class="grid gap-4 lg:grid-cols-[2fr_1.2fr]">
           <div class="rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
-            <div class="mb-3 text-lg text-base-content/80">Traffic (24h)</div>
-            <div id="peer-traffic-chart" class="h-[220px]"></div>
+            <div class="mb-3 text-lg text-base-content/80">Traffic Activity (24h)</div>
+            <div class="h-[220px]">
+              <canvas id="peer-traffic-chart"></canvas>
+            </div>
           </div>
 
           <div class="rounded-[1.35rem] border border-[rgba(91,194,240,0.20)] p-4">
