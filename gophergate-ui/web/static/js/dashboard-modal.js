@@ -70,16 +70,25 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
   function openModal() {
-    backdrop.classList.remove("hidden");
-    backdrop.classList.add("flex");
-    document.body.classList.add("overflow-hidden");
-  }
+  backdrop.classList.remove("hidden");
+  backdrop.classList.add("flex");
 
-  function closeModal() {
+  requestAnimationFrame(() => {
+    backdrop.classList.add("is-open");
+  });
+
+  document.body.classList.add("overflow-hidden");
+}
+
+function closeModal() {
+  backdrop.classList.remove("is-open");
+  document.body.classList.remove("overflow-hidden");
+
+  setTimeout(() => {
     backdrop.classList.add("hidden");
     backdrop.classList.remove("flex");
-    document.body.classList.remove("overflow-hidden");
-  }
+  }, 220);
+}
 
   function setLoadingState(peerName, publicKey) {
     titleEl.textContent = peerName || "Peer";
