@@ -10,16 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.6.2] - 2026-04-30
 
 ### Added
-- (fill)
+
+- No addition in this relase
 
 ### Changed
-- (fill)
+
+- Bump Dockerfile golang builder from `1.24` to `1.25`
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.6.1] - 2026-04-30
 
