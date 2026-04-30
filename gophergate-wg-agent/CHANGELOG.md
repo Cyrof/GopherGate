@@ -10,16 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.6.1] - 2026-04-30
 
 ### Added
-- (fill)
+
+- No addition in this release
 
 ### Changed
-- (fill)
+
+- Updated Go module dependencies
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.6.0] - 2026-04-19
 
