@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.6.1] - 2026-04-30
+
+### Added
+
+- No addition in this release
+
+### Changed
+
+- Updated Go module dependencies
+
+### Fixed
+
+- No fixes in this release
+
+### Removed
+
+- No removals in this release
+
 ## [v0.6.0] - 2026-04-19
 
 ### Added
