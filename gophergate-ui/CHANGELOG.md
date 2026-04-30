@@ -10,16 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.9.0] - 2026-04-30
 
 ### Added
-- (fill)
+- Added interactive peer detail modal on the dashboard
+- Added clickable peer rows to open detailed peer view
+- Added gRPC-based data fetching for peer-specific modal content
+- Integrated Chart.js for peer traffic visualisation in the modal
 
 ### Changed
-- (fill)
+- Improved dashboard interactivity with peer-level drill-down functionality
+- Refined modal styling to align with overall dashboard design
+- Updated Go module dependencies
 
 ### Fixed
-- (fill)
+- No fixes in this release
 
 ### Removed
-- (fill)
+- No removals in this release
 
 ## [v0.8.0] - 2026-04-15
 
