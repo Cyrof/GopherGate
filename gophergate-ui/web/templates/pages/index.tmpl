@@ -145,7 +145,7 @@
           <tbody>
             {{ if .peers }}
               {{ range .peers }}
-              <tr class="peer-row border-b border-[rgba(91,194,240,0.12)]">
+              <tr class="peer-row border-b border-[rgba(91,194,240,0.12)]" data-public-key="{{ .PublicKey }}" data-peer-name="{{ .Name }}" tabindex="0"> 
                 <td class="py-4 text-lg font-medium text-base-content">
                   {{ .Name }}
                 </td>
@@ -183,4 +183,64 @@
     {{ end }}
   </div>
 </section>
+
+<div
+  id="peer-modal-backdrop"
+  class="peer-modal-backdrop fixed inset-0 z-50 hidden items-center justify-center"
+>
+  <div
+    id="peer-modal"
+    class="peer-modal-shell relative w-full max-w-5xl p-5"
+  >
+    <button
+      id="peer-modal-close"
+      type="button"
+      class="peer-modal-card peer-modal-card-surface absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center text-base-content/80"
+      aria-label="Close modal"
+    >
+      ×
+    </button>
+
+    <div class="mb-4">
+      <p class="text-xs uppercase tracking-[0.22em] text-base-content/50">Peer Details</p>
+      <h3 id="peer-modal-title" class="text-3xl font-semibold tracking-tight text-base-content">
+        Peer
+      </h3>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-[2fr_1.2fr]">
+      <div class="peer-modal-card peer-modal-card-surface p-4">
+        <div class="mb-3 text-lg text-base-content/80">Traffic Activity (24h)</div>
+        <div>
+          <canvas id="peer-traffic-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="peer-modal-card peer-modal-card-surface p-4">
+        <div class="space-y-6">
+          <div>
+            <p class="text-sm text-base-content/55">Total Rx</p>
+            <p id="peer-total-rx" class="text-3xl font-semibold text-base-content">—</p>
+          </div>
+
+          <div>
+            <p class="text-sm text-base-content/55">Total Tx</p>
+            <p id="peer-total-tx" class="text-3xl font-semibold text-base-content">—</p>
+          </div>
+
+          <div>
+            <p class="text-sm text-base-content/55">Public Key</p>
+            <p id="peer-public-key" class="break-all text-xl font-semibold text-base-content">—</p>
+          </div>
+
+          <div>
+            <p class="text-sm text-base-content/55">Allowed IPs</p>
+            <p id="peer-allowed-ips" class="text-xl font-semibold text-base-content">—</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {{ end }}

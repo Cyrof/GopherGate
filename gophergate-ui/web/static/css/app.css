@@ -179,6 +179,14 @@ body::after {
     backdrop-filter: blur(10px);
 }
 
+.peer-modal-card-surface {
+    background: rgba(22, 38, 54, 0.40);
+    border: 1px solid rgba(41, 65, 88, 0.95);
+    box-shadow: var(--shadow);
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+}
+
 .panel-glow {
     position: relative;
     overflow: hidden;
@@ -491,4 +499,50 @@ body::after {
 
 .peer-row:last-child:hover td:last-child::before {
     border-bottom-right-radius: 1rem;
+}
+
+.peer-modal-backdrop {
+  background: rgba(3, 10, 18, 0.5);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.peer-modal-backdrop.is-open {
+  opacity: 1;
+}
+
+.peer-modal-shell {
+  width: min(100%, 72rem);
+  margin: 1.5rem;
+  border-radius: 1.75rem;
+  background: rgba(18, 29, 41, 0.34);
+  border: 1px solid rgba(41, 65, 88, 0.62);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(10px);
+  padding: 1.25rem;
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease;
+}
+
+.peer-modal-backdrop.is-open .peer-modal-shell {
+  transform: translateY(0) scale(1);
+}
+
+.peer-modal-card {
+    transition:
+        transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 220ms ease,
+        box-shadow 240ms ease,
+        background 220ms ease;
+}
+
+.peer-modal-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(220, 228, 236, 0.28);
+    background: rgba(24, 39, 56, 0.9);
+    box-shadow:
+        0 14px 26px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(210, 220, 230, 0.06);
 }
