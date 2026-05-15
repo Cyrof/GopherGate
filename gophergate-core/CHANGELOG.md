@@ -30,16 +30,22 @@ import (
 ## [v0.6.1] - 2026-05-15
 
 ### Added
-- (fill)
+
+- Added protobuf definitions for peer page functionality
+- Added the required, response, and service structures for peer management features
 
 ### Changed
-- (fill)
+
+- Extended core protobuf v2 definitions to support peer page integration
+- Updated shared interface contracts for upcoming peer-related backend and UI functionality
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.6.0] - 2026-04-19
 
