@@ -106,6 +106,39 @@ message GetPeerTrafficResponse {
   PeerTrafficHistory traffic        = 1;
 }
 
+// =================================
+// Peer Directory / Peers Page
+// =================================
+
+message PeerDirectorySummary {
+  int32 connected                   = 1;
+  int32 intermittent                = 2;
+  int32 offline                     = 3;
+  int32 total                       = 4;
+}
+
+message PeerDirectoryItem {
+  string public_key                 = 1;
+  string name                       = 2;
+  string endpoint                   = 3;
+  repeated string allowed_ips       = 4;
+  string state                      = 5; // CONNECTED / INTERMITTENT / OFFLINE
+  string state_reason               = 6; // Optional
+  string last_handshake             = 7;
+  uint64 rx_bytes                   = 8;
+  uint64 tx_bytes                   = 9;
+  bool managed                      = 10;
+}
+
+message GetPeersPageRequest {
+  string iface                      = 1;
+}
+
+message GetPeersPageResponse {
+  PeerDirectorySummary summary      = 1;
+  repeated PeerDirectoryItem peers  = 2;
+}
+
 
 // =================================
 // Create
@@ -196,8 +229,16 @@ message DeletePeerResponse {
 
 // Wireguard Services
 service WireGuardService {
+    // dashboard
     rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+
+    // peer traffic
     rpc GetPeerTraffic(GetPeerTrafficRequest) returns (GetPeerTrafficResponse);
+
+    // peers page
+    rpc GetPeersPage(GetPeersPageRequest) returns (GetPeersPageResponse);
+
+    // Peer CRUD
     rpc CreatePeer(CreatePeerRequest) returns (CreatePeerResponse);
     rpc GetPeer(GetPeerRequest) returns (GetPeerResponse);
     rpc ListPeer(ListPeerRequest) returns (ListPeerResponse);
