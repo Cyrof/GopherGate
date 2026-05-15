@@ -1,6 +1,6 @@
 PROTO_DIR ?= api/proto
 OUT_DIR ?= pkg/gen
-PROTO_SUBDIR ?= gateway/v1
+PROTO_SUBDIR ?= gateway/v2
 PROTO_FILES ?= $(PROTO_DIR)/$(PROTO_SUBDIR)/*.proto
 
 .PHONY: test itest
