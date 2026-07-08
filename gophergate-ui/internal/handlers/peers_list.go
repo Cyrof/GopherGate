@@ -36,14 +36,15 @@ func (p *Peers) List(c *gin.Context) {
 		}
 
 		rows = append(rows, peer{
-			Name: "",	// Name not stored in proto hence need a separate storage
-			IP: ip,
+			Name:      "", // Name not stored in proto hence need a separate storage
+			IP:        ip,
 			Keepalive: peerStatus.Keepalive,
 			PublicKey: peerStatus.PublicKey,
-			Endpoint: peerStatus.Endpoint,
-			RxBytes: peerStatus.RxBytes,
-			TxBytes: peerStatus.TxBytes,
+			Endpoint:  peerStatus.Endpoint,
+			RxBytes:   peerStatus.RxBytes,
+			TxBytes:   peerStatus.TxBytes,
 			Handshake: peerStatus.Handshake,
+			State:     inferPeerState(peerStatus.Endpoint, peerStatus.Handshake),
 		})
 
 	}

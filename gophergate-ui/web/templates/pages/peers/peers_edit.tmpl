@@ -1,52 +1,96 @@
+{{ define "peers_edit.tmpl" }}
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="gophergate">
 <head>
-    <meta charset="utf-8" />
-    <title>{{ .title }}</title>
+  {{ template "partials/head" . }}
 </head>
-<body>
-    <h1>{{ .title }}</h1>
+<body class="page-shell">
+  <div>
+    <input id="app-drawer" type="checkbox" class="drawer-toggle" />
 
-    <div>
-        <strong>Note:</strong> The public key cannot be changed. To use a different key, delete this peer and create a new one.
+    <div class="drawer-content flex min-h-screen flex-col">
+      {{ template "partials/navbar" . }}
+
+      <main class="page-container flex-1">
+        <section class="peers-shell">
+          <div class="peers-page-header">
+            <div>
+              <div class="peers-eyebrow">Peer Configuration</div>
+              <h1>Edit Peer</h1>
+            </div>
+
+            <a href="/peers" class="peers-secondary-action">Back to Peers</a>
+          </div>
+
+          <section class="peers-panel peers-create-panel peers-edit-panel">
+            <div class="peers-table-header">
+              <div>
+                <div class="peers-section-label">Configuration</div>
+                <h2>Peer Settings</h2>
+              </div>
+            </div>
+
+            <div class="peers-note">
+              The public key cannot be changed. To use a different key, delete this peer and create a new one.
+            </div>
+
+            <form method="post" action="/peers/edit" class="peers-form-grid">
+              <input type="hidden" name="pubkey_original" value="{{ .peer.PublicKey }}" />
+
+              <label class="peers-field peers-field-wide">
+                <span>Public Key</span>
+                <input id="pubkey" name="pubkey" value="{{ .peer.PublicKey }}" readonly />
+              </label>
+
+              <label class="peers-field">
+                <span>Allowed IPs</span>
+                <input id="ip" name="ip" value="{{ .peer.IP }}" />
+                <small>IP addresses this peer can use.</small>
+              </label>
+
+              <label class="peers-field">
+                <span>Endpoint</span>
+                <input id="endpoint" name="endpoint" value="{{ .peer.Endpoint }}" placeholder="192.168.1.100:51820" />
+                <small>IP:port where this peer can be reached.</small>
+              </label>
+
+              <label class="peers-field">
+                <span>Persistent Keepalive</span>
+                <input id="keepalive" name="keepalive" value="{{ .peer.Keepalive }}" inputmode="numeric" />
+                <small>Interval for keepalive packets. Use 0 to disable.</small>
+              </label>
+
+              <div class="peers-current-stats">
+                <div>
+                  <span>Rx</span>
+                  <strong>{{ humanBytes .peer.RxBytes }}</strong>
+                </div>
+                <div>
+                  <span>Tx</span>
+                  <strong>{{ humanBytes .peer.TxBytes }}</strong>
+                </div>
+                <div>
+                  <span>Last Handshake</span>
+                  <strong>{{ handshakeDisplay .peer.Handshake }}</strong>
+                </div>
+              </div>
+
+              <div class="peers-form-actions peers-field-wide">
+                <button type="submit" class="peers-primary-action">Save Changes</button>
+                <a href="/peers" class="peers-secondary-action">Cancel</a>
+              </div>
+            </form>
+          </section>
+        </section>
+      </main>
+
+      {{ template "partials/footer" . }}
     </div>
 
-    <form method="post" action="/peers/edit">
-        <input type="hidden" name="pubkey_original" value="{{ .peer.PublicKey }}" />
+    {{ template "partials/sidebar" . }}
+  </div>
 
-        <p>
-            <label for="pubkey">Public Key:</label><br />
-            <input id="pubkey" name="pubkey" value="{{ .peer.PublicKey }}" readonly />
-        </p>
-
-        <p>
-            <label for="ip">Allowed IPs (CIDR):</label><br />
-            <input id="ip" name="ip" value="{{ .peer.IP }}" />
-            <span>IP addresses this peer can use</span>
-        </p>
-
-        <p>
-            <label for="endpoint">Endpoint:</label><br />
-            <input id="endpoint" name="endpoint" value="{{ .peer.Endpoint }}" placeholder="192.168.1.100:51820" />
-            <span>IP:port where this peer can be reached</span>
-        </p>
-
-        <p>
-            <label for="keepalive">Persistent Keepalive (seconds):</label><br />
-            <input id="keepalive" name="keepalive" value="{{ .peer.Keepalive }}" />
-            <span>Interval for keepalive packets (0 = disable)</span>
-        </p>
-
-        <div>
-            <strong>Current Stats:</strong><br>
-            Rx: {{ .peer.RxBytes }} bytes | Tx: {{ .peer.TxBytes }} bytes <br>
-            Last Handshake: {{ .peer.Handshake }}
-        </div>
-
-        <p>
-            <button type="submit">Save</button>
-            <button type="button" onclick="window.location='/peers'">Cancel</button>
-        </p>
-    </form>
+  {{ template "partials/scripts" }}
 </body>
 </html>
+{{ end }}

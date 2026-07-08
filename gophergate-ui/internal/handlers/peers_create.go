@@ -22,11 +22,7 @@ func (p *Peers) Create(c *gin.Context) {
 		val, err := strconv.Atoi(keepaliveStr)
 		if err != nil {
 			p.log.Warnw("peer.create.invalid_keepalive", "value", keepaliveStr, "err", err)
-			c.HTML(http.StatusBadRequest, "peers.tmpl", gin.H{
-				"title": "Peers",
-				"peers": []peer{},
-				"error": "Invalid Keepalive Value",
-			})
+			c.HTML(http.StatusBadRequest, "peers.tmpl", peerPageData("Peers", []peer{}, "Invalid keepalive value"))
 			return
 		}
 		keepalive = int32(val)
@@ -41,23 +37,19 @@ func (p *Peers) Create(c *gin.Context) {
 	defer cancel()
 
 	req := &gatewayv1.CreatePeerRequest{
-		Iface: p.wgIface,
-		Name: name,
-		PublicKey: pubkey,
-		AllowedCidrs: allowedCIRDs,
-		Endpoint: endpoint,
-		KeepaliveSeconds: keepalive,
+		Iface:             p.wgIface,
+		Name:              name,
+		PublicKey:         pubkey,
+		AllowedCidrs:      allowedCIRDs,
+		Endpoint:          endpoint,
+		KeepaliveSeconds:  keepalive,
 		ReplaceAllowedIps: false,
 	}
 
 	resp, err := p.grpc.CreatePeer(ctx, req)
 	if err != nil {
 		p.log.Errorw("peer.create.grpc_error", "err", err)
-		c.HTML(http.StatusInternalServerError, "peers.tmpl", gin.H{
-			"title": "Peers",
-			"peers": []peer{},
-			"error": "Failed to create peer: " + err.Error(),
-		})
+		c.HTML(http.StatusInternalServerError, "peers.tmpl", peerPageData("Peers", []peer{}, "Failed to create peer: "+err.Error()))
 		return
 	}
 
