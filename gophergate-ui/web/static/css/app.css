@@ -805,7 +805,7 @@ body::after {
 
 .peers-form-actions {
     display: flex;
-    align-items: end;
+    align-items: center;
     justify-content: flex-end;
 }
 
@@ -937,44 +937,6 @@ body::after {
     color: var(--muted) !important;
 }
 
-@media (min-width: 1024px) {
-    .peers-shell {
-        padding: 1.5rem 1.25rem;
-    }
-}
-
-@media (max-width: 980px) {
-    .peers-summary-grid,
-    .peers-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .peers-field-wide {
-        grid-column: auto;
-    }
-
-    .peers-enrollment-panel {
-        min-height: auto;
-    }
-}
-
-@media (max-width: 640px) {
-    .peers-page-header,
-    .peers-table-header {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .peers-primary-action,
-    .peers-secondary-action {
-        width: 100%;
-    }
-
-    .peers-form-actions {
-        align-items: stretch;
-    }
-}
-
 .peers-edit-panel {
     display: block;
 }
@@ -1018,8 +980,71 @@ body::after {
     font-weight: 750;
 }
 
+/* Edit peer page save action */
+.peers-edit-panel .peers-form-actions.peers-field-wide {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    justify-self: stretch;
+    width: 100%;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(91, 194, 240, 0.13);
+}
+
+.peers-edit-panel .peers-form-actions.peers-field-wide .peers-primary-action {
+    width: auto;
+}
+
+@media (min-width: 1024px) {
+    .peers-shell {
+        padding: 1.5rem 1.25rem;
+    }
+}
+
+@media (max-width: 980px) {
+    .peers-summary-grid,
+    .peers-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .peers-field-wide {
+        grid-column: auto;
+    }
+
+    .peers-edit-panel .peers-form-actions.peers-field-wide {
+        grid-column: 1 / -1;
+    }
+
+    .peers-enrollment-panel {
+        min-height: auto;
+    }
+}
+
 @media (max-width: 780px) {
     .peers-current-stats {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .peers-page-header,
+    .peers-table-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .peers-primary-action,
+    .peers-secondary-action {
+        width: 100%;
+    }
+
+    .peers-form-actions {
+        align-items: stretch;
+    }
+
+    .peers-edit-panel .peers-form-actions.peers-field-wide .peers-primary-action {
+        width: 100%;
     }
 }
