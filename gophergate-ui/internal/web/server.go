@@ -18,6 +18,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func Run(cfg *config.Config, log *zap.SugaredLogger, db *pgxpool.Pool) (err error) {
@@ -269,7 +271,7 @@ func stateDisplay(s string) string {
 		if s == "" {
 			return "Unknown"
 		}
-		return strings.Title(strings.ToLower(s))
+		return cases.Title(language.Und).String(strings.ToLower(s))
 	}
 }
 
