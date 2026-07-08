@@ -27,7 +27,7 @@ type peerStat struct {
 	State string
 }
 
-type enrollmentItems struct {
+type enrollmentItem struct {
 	Name        string
 	Description string
 }
@@ -49,7 +49,7 @@ func NewPeers(log *zap.SugaredLogger, grpcClient *grpcclient.Client, wgIface str
 }
 
 func peerPageData(title string, rows []peer, errorMsg string) map[string]any {
-	rows = normalisePeerRow(rows)
+	rows = normalisePeerRows(rows)
 	stats, connectedCount := buildPeerStats(rows)
 	enrollmentItems := defaultEnrollmentItems()
 
@@ -67,34 +67,39 @@ func peerPageData(title string, rows []peer, errorMsg string) map[string]any {
 	}
 }
 
-func defaultEnrollmentItems() []enrollmentItems {
-	return []enrollmentItems{
+func defaultEnrollmentItems() []enrollmentItem {
+	return []enrollmentItem{
 		{
 			Name:        "Edge Gateway SG-08",
 			Description: "requesting key exchange",
 		},
 		{
-			Name:        "Dev Laptop cyrof-mbp",
+			Name:        "Dev Laptop keith-mbp",
 			Description: "awaiting route policy",
 		},
 	}
 }
 
-func normalisePeerRow(rows []peer) []peer {
+func normalisePeerRows(rows []peer) []peer {
 	for i := range rows {
 		if strings.TrimSpace(rows[i].Name) == "" {
 			rows[i].Name = fmt.Sprintf("Peer #%02d", i+1)
 		}
-		if strings.TrimSpace(rows[i].Endpoint) == "" {
-			rows[i].Endpoint = "-"
+
+		endpoint := strings.TrimSpace(rows[i].Endpoint)
+		if endpoint == "" || endpoint == "<nil>" || endpoint == "—" || endpoint == "--" {
+			rows[i].Endpoint = "—"
 		}
+
 		if strings.TrimSpace(rows[i].IP) == "" {
-			rows[i].IP = "-"
+			rows[i].IP = "—"
 		}
+
 		if strings.TrimSpace(rows[i].State) == "" {
 			rows[i].State = inferPeerState(rows[i].Endpoint, rows[i].Handshake)
 		}
 	}
+
 	return rows
 }
 
@@ -123,7 +128,7 @@ func buildPeerStats(rows []peer) ([]peerStat, int) {
 
 func inferPeerState(endpoint string, handshake string) string {
 	endpoint = strings.TrimSpace(endpoint)
-	if endpoint == "" || endpoint == "-" || endpoint == "--" {
+	if endpoint == "" || endpoint == "<nil>" || endpoint == "—" || endpoint == "--" {
 		return "OFFLINE"
 	}
 

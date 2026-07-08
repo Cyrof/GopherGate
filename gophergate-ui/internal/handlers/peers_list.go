@@ -20,11 +20,7 @@ func (p *Peers) List(c *gin.Context) {
 
 	if err != nil {
 		p.log.Errorw("peer.list.grpc_error", "err", err)
-		c.HTML(http.StatusInternalServerError, "peers.tmpl", gin.H{
-			"title": "Peers",
-			"peers": []peer{},
-			"error": "Failed to fetch peers from backend",
-		})
+		c.HTML(http.StatusInternalServerError, "peers.tmpl", peerPageData("Peers", []peer{}, "Failed to fetch peers from backend"))
 		return
 	}
 
@@ -36,7 +32,7 @@ func (p *Peers) List(c *gin.Context) {
 		}
 
 		rows = append(rows, peer{
-			Name:      "", // Name not stored in proto hence need a separate storage
+			Name:      "",
 			IP:        ip,
 			Keepalive: peerStatus.Keepalive,
 			PublicKey: peerStatus.PublicKey,
@@ -46,13 +42,11 @@ func (p *Peers) List(c *gin.Context) {
 			Handshake: peerStatus.Handshake,
 			State:     inferPeerState(peerStatus.Endpoint, peerStatus.Handshake),
 		})
-
 	}
 
-	sort.Slice(rows, func(i, j int) bool { return rows[i].PublicKey < rows[j].PublicKey })
-
-	c.HTML(http.StatusOK, "peers.tmpl", gin.H{
-		"title": "Peers",
-		"peers": rows,
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i].PublicKey < rows[j].PublicKey
 	})
+
+	c.HTML(http.StatusOK, "peers.tmpl", peerPageData("Peers", rows, ""))
 }
