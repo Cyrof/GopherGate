@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cyro-dev-wireguard
+  namespace: cyro-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cyro-dev-wireguard
+  template:
+    metadata:
+      labels:
+        app: cyro-dev-wireguard
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: wireguard
+          image: lscr.io/linuxserver/wireguard:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: Asia/Singapore
+            - name: SERVERURL
+              value: "127.0.0.1"
+            - name: SERVERPORT
+              value: "51820"
+            - name: PEERS
+              value: devpeer
+            - name: PEERDNS
+              value: auto
+            - name: LOG_CONFS
+              value: "true"
+          ports:
+            - name: wireguard
+              containerPort: 51820
+              hostPort: 51820
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: tun
+              mountPath: /dev/net/tun
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: cyro-dev-wireguard-config
+        - name: tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cyro-dev-wireguard
+  namespace: cyro-dev
+spec:
+  selector:
+    app: cyro-dev-wireguard
+  ports:
+    - name: wireguard
+      port: 51820
+      targetPort: 51820
+      protocol: UDP
+    - name: agent-grpc
+      port: 7443
+      targetPort: 7443
+      protocol: TCP
