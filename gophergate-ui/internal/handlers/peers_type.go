@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -83,7 +84,7 @@ func defaultEnrollmentItems() []enrollmentItem {
 func normalisePeerRows(rows []peer) []peer {
 	for i := range rows {
 		if strings.TrimSpace(rows[i].Name) == "" {
-			rows[i].Name = fmt.Sprintf("Peer #%02d", i+1)
+			rows[i].Name = "Unnamed Peer"
 		}
 
 		endpoint := strings.TrimSpace(rows[i].Endpoint)
@@ -91,7 +92,7 @@ func normalisePeerRows(rows []peer) []peer {
 			rows[i].Endpoint = "—"
 		}
 
-		if strings.TrimSpace(rows[i].IP) == "" {
+		if normaliseAllowedIP(rows[i].IP) == "" {
 			rows[i].IP = "—"
 		}
 
@@ -155,4 +156,65 @@ func inferPeerState(endpoint string, handshake string) string {
 	default:
 		return "OFFLINE"
 	}
+}
+
+func defaultPeerName(publicKey string) string {
+	publicKey = strings.TrimSpace(publicKey)
+	if publicKey == "" {
+		return "Unnamed Peer"
+	}
+
+	if len(publicKey) <= 8 {
+		return "Peer " + publicKey
+	}
+
+	return "Peer " + publicKey[:8]
+}
+
+func normaliseAllowedIP(ip string) string {
+	ip = strings.TrimSpace(ip)
+
+	switch ip {
+	case "", "-", "--", "<nil>":
+		return ""
+	default:
+		return ip
+	}
+}
+
+func allowedIPExists(rows []peer, allowedIP string, excludePublicKey string) bool {
+	allowedIP = normaliseAllowedIP(allowedIP)
+	if allowedIP == "" {
+		return false
+	}
+
+	excludePublicKey = strings.TrimSpace(excludePublicKey)
+
+	for _, row := range rows {
+		if excludePublicKey != "" && strings.TrimSpace(row.PublicKey) == excludePublicKey {
+			continue
+		}
+
+		if normaliseAllowedIP(row.IP) == allowedIP {
+			return true
+		}
+	}
+
+	return false
+}
+
+func parseKeepaliveSeconds(value string) (int32, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, nil
+	}
+
+	value = strings.TrimSuffix(strings.ToLower(value), "s")
+
+	seconds, err := strconv.Atoi(value)
+	if err != nil || seconds < 0 {
+		return 0, fmt.Errorf("invalid keepalive value")
+	}
+
+	return int32(seconds), nil
 }

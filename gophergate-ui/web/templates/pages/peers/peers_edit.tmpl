@@ -22,6 +22,12 @@
             <a href="/peers" class="peers-secondary-action">Back to Peers</a>
           </div>
 
+          {{ if .error }}
+          <div class="peers-alert" role="alert">
+            {{ .error }}
+          </div>
+          {{ end }}
+
           <section class="peers-panel peers-create-panel peers-edit-panel">
             <div class="peers-table-header">
               <div>

@@ -3,48 +3,59 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
-	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
+	gatewayv2 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2"
 	"github.com/gin-gonic/gin"
 )
 
 func (p *Peers) Edit(c *gin.Context) {
 	pubkeyOriginal := c.PostForm("pubkey_original")
+	pubkey := c.PostForm("pubkey")
 	ip := c.PostForm("ip")
 	keepaliveStr := c.PostForm("keepalive")
 	endpoint := c.PostForm("endpoint")
 
-	keepalive := int32(0)
-	if keepaliveStr != "" {
-		val, err := strconv.Atoi(keepaliveStr)
-		if err != nil {
-			p.log.Warnw("peer.update.invalid_keepalive", "values", keepaliveStr, "err", err)
-			c.Redirect(http.StatusSeeOther, "/peers")
-			return
-		}
-		keepalive = int32(val)
+	rec := peer{
+		PublicKey: pubkey,
+		IP:        ip,
+		Keepalive: keepaliveStr,
+		Endpoint:  endpoint,
+	}
+
+	keepalive, err := parseKeepaliveSeconds(keepaliveStr)
+	if err != nil {
+		p.log.Warnw("peer.update.invalid_keepalive", "value", keepaliveStr, "err", err)
+		p.renderPeerEditPage(c, http.StatusBadRequest, rec, "Invalid keepalive value. Please enter a number of seconds, for example 25.")
+		return
 	}
 
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	req := &gatewayv1.UpdatePeerRequest{
-		Iface: p.wgIface,
-		PublicKey: pubkeyOriginal,
-		Endpoint: endpoint,
+	existingRows, err := p.listPeerRows(ctx)
+	if err != nil {
+		p.log.Warnw("peer.edit.duplicate_check_failed", "err", err)
+	} else if allowedIPExists(existingRows, ip, pubkeyOriginal) {
+		p.renderPeerEditPage(c, http.StatusConflict, rec, "Allowed IP already exists. Please use a unique Allowed IP for this peer.")
+		return
+	}
+
+	req := &gatewayv2.UpdatePeerRequest{
+		Iface:            p.wgIface,
+		PublicKey:        pubkeyOriginal,
+		Endpoint:         endpoint,
 		KeepaliveSeconds: keepalive,
 	}
 
-	if ip != "" {
+	if normaliseAllowedIP(ip) != "" {
 		req.SetAllowedCidrs = []string{ip}
 	}
 
 	resp, err := p.grpc.UpdatePeer(ctx, req)
 	if err != nil {
 		p.log.Errorw("peer.update.grpc_error", "pubkey", pubkeyOriginal, "err", err)
-		c.Redirect(http.StatusSeeOther, "/peers")
+		p.renderPeerEditPage(c, peerErrorHTTPStatus(err), rec, peerActionError("update", err))
 		return
 	}
 
@@ -54,6 +65,6 @@ func (p *Peers) Edit(c *gin.Context) {
 		"changed_endpoint", resp.Changed.Endpoint,
 		"changed_keepalive", resp.Changed.Keepalive,
 	)
-	
+
 	c.Redirect(http.StatusSeeOther, "/peers")
 }

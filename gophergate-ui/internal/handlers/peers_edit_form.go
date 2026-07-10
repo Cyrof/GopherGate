@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
+	gatewayv2 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ func (p *Peers) EditForm(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	req := &gatewayv1.GetPeerRequest{
+	req := &gatewayv2.GetPeerRequest{
 		Iface:     p.wgIface,
 		PublicKey: pubkey,
 	}
@@ -33,6 +33,7 @@ func (p *Peers) EditForm(c *gin.Context) {
 	}
 
 	rec := peer{
+		Name: resp.Peer.Name,
 		PublicKey: resp.Peer.PublicKey,
 		IP:        ip,
 		Keepalive: resp.Peer.Keepalive,
@@ -42,12 +43,16 @@ func (p *Peers) EditForm(c *gin.Context) {
 		Handshake: resp.Peer.Handshake,
 	}
 
-	c.HTML(http.StatusOK, "peers_edit.tmpl", gin.H{
-		"title":      "Edit Peer",
-		"pageTitle":  "Edit Peer",
-		"activeNav":  "peers",
-		"activePage": "peers",
+	p.renderPeerEditPage(c, http.StatusOK, rec, "")
+}
+
+func (p *Peers) renderPeerEditPage(c *gin.Context, status int, rec peer, errorMsg string) {
+	c.HTML(status, "peers_edit.tmpl", gin.H{
+		"title": "Edit Peer",
+		"pageTitle": "Edit Peer",
+		"activeNav": "peers",
 		"statusText": "Peer Management",
-		"peer":       rec,
+		"error": errorMsg,
+		"peer": rec,
 	})
 }
