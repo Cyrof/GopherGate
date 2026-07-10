@@ -52,34 +52,34 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// CreatePeer creates a new WireGuard peer using v1.
-func (c *Client) CreatePeer(ctx context.Context, req *gatewayv1.CreatePeerRequest) (*gatewayv1.CreatePeerResponse, error) {
-	c.log.Infow("grpc.create_peer", "version", "v1", "name", req.Name, "pubkey", req.PublicKey)
-	return c.wgV1.CreatePeer(ctx, req)
+// CreatePeer creates a new WireGuard peer using v2.
+func (c *Client) CreatePeer(ctx context.Context, req *gatewayv2.CreatePeerRequest) (*gatewayv2.CreatePeerResponse, error) {
+	c.log.Infow("grpc.create_peer", "version", "v2", "name", req.Name, "pubkey", req.PublicKey)
+	return c.wgV2.CreatePeer(ctx, req)
 }
 
-// GetPeer retrieves a specific peer via public key using v1.
-func (c *Client) GetPeer(ctx context.Context, req *gatewayv1.GetPeerRequest) (*gatewayv1.GetPeerResponse, error) {
-	c.log.Infow("grpc.get_peer", "version", "v1", "iface", req.Iface, "pubkey", req.PublicKey)
-	return c.wgV1.GetPeer(ctx, req)
+// GetPeer retrieves a specific peer via public key using v2.
+func (c *Client) GetPeer(ctx context.Context, req *gatewayv2.GetPeerRequest) (*gatewayv2.GetPeerResponse, error) {
+	c.log.Infow("grpc.get_peer", "version", "v2", "iface", req.Iface, "pubkey", req.PublicKey)
+	return c.wgV2.GetPeer(ctx, req)
 }
 
-// ListPeers retrieves all peers for an interface using v1.
-func (c *Client) ListPeers(ctx context.Context, req *gatewayv1.ListPeerRequest) (*gatewayv1.ListPeerResponse, error) {
-	c.log.Infow("grpc.list_peers", "version", "v1", "iface", req.Iface)
-	return c.wgV1.ListPeer(ctx, req)
+// ListPeers retrieves all peers for an interface using v2.
+func (c *Client) ListPeers(ctx context.Context, req *gatewayv2.ListPeerRequest) (*gatewayv2.ListPeerResponse, error) {
+	c.log.Infow("grpc.list_peers", "version", "v2", "iface", req.Iface)
+	return c.wgV2.ListPeer(ctx, req)
 }
 
-// UpdatePeer updates an existing peer using v1.
-func (c *Client) UpdatePeer(ctx context.Context, req *gatewayv1.UpdatePeerRequest) (*gatewayv1.UpdatePeerResponse, error) {
-	c.log.Infow("grpc.update_peer", "version", "v1", "pubkey", req.PublicKey)
-	return c.wgV1.UpdatePeer(ctx, req)
+// UpdatePeer updates an existing peer using v2.
+func (c *Client) UpdatePeer(ctx context.Context, req *gatewayv2.UpdatePeerRequest) (*gatewayv2.UpdatePeerResponse, error) {
+	c.log.Infow("grpc.update_peer", "version", "v2", "pubkey", req.PublicKey)
+	return c.wgV2.UpdatePeer(ctx, req)
 }
 
-// DeletePeer removes a peer using v1.
-func (c *Client) DeletePeer(ctx context.Context, req *gatewayv1.DeletePeerRequest) (*gatewayv1.DeletePeerResponse, error) {
-	c.log.Infow("grpc.delete_peer", "version", "v1", "pubkey", req.PublicKey)
-	return c.wgV1.DeletePeer(ctx, req)
+// DeletePeer removes a peer using v2.
+func (c *Client) DeletePeer(ctx context.Context, req *gatewayv2.DeletePeerRequest) (*gatewayv2.DeletePeerResponse, error) {
+	c.log.Infow("grpc.delete_peer", "version", "v2", "pubkey", req.PublicKey)
+	return c.wgV2.DeletePeer(ctx, req)
 }
 
 // GetDashboard retrieves dashboard data using v2.
