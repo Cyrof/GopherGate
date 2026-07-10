@@ -33,7 +33,7 @@ func (p *Peers) EditForm(c *gin.Context) {
 	}
 
 	rec := peer{
-		Name: resp.Peer.Name,
+		Name:      resp.Peer.Name,
 		PublicKey: resp.Peer.PublicKey,
 		IP:        ip,
 		Keepalive: resp.Peer.Keepalive,
@@ -48,11 +48,11 @@ func (p *Peers) EditForm(c *gin.Context) {
 
 func (p *Peers) renderPeerEditPage(c *gin.Context, status int, rec peer, errorMsg string) {
 	c.HTML(status, "peers_edit.tmpl", gin.H{
-		"title": "Edit Peer",
-		"pageTitle": "Edit Peer",
-		"activeNav": "peers",
+		"title":      "Edit Peer",
+		"pageTitle":  "Edit Peer",
+		"activeNav":  "peers",
 		"statusText": "Peer Management",
-		"error": errorMsg,
-		"peer": rec,
+		"error":      errorMsg,
+		"peer":       rec,
 	})
 }
