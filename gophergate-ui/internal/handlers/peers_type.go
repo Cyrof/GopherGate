@@ -84,7 +84,7 @@ func defaultEnrollmentItems() []enrollmentItem {
 func normalisePeerRows(rows []peer) []peer {
 	for i := range rows {
 		if strings.TrimSpace(rows[i].Name) == "" {
-			rows[i].Name = "Unnamed Peer"
+			rows[i].Name = defaultPeerName(rows[i].PublicKey)
 		}
 
 		endpoint := strings.TrimSpace(rows[i].Endpoint)
