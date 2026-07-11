@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"net/netip"
 	"strconv"
 	"strings"
 	"time"
@@ -102,6 +103,19 @@ func normalisePeerRows(rows []peer) []peer {
 	}
 
 	return rows
+}
+
+func validateAllowedCIDR(value string) error {
+	value = normaliseAllowedIP(value)
+	if value == "" {
+		return nil
+	}
+
+	if _, err := netip.ParsePrefix(value); err != nil {
+		return fmt.Errorf("invalid allowed ip")
+	}
+
+	return nil
 }
 
 func buildPeerStats(rows []peer) ([]peerStat, int) {

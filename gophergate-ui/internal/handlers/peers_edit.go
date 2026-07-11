@@ -30,6 +30,12 @@ func (p *Peers) Edit(c *gin.Context) {
 		return
 	}
 
+	if err := validateAllowedCIDR(ip); err != nil {
+		p.log.Warnw("peer.update.invalid_allowed_ip", "value", ip, "err", err)
+		p.renderPeerEditPage(c, http.StatusBadRequest, rec, "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32.")
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 

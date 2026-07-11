@@ -30,6 +30,15 @@ func peerActionError(action string, err error) string {
 		strings.Contains(lower, "base64-encoded key"):
 		return "Invalid public key. Please enter a valid WireGuard public key."
 
+	case strings.Contains(lower, "invalid allowed ip"),
+		strings.Contains(lower, "invalid allowed"),
+		strings.Contains(lower, "invalid cidr"),
+		strings.Contains(lower, "allowed cidr"),
+		strings.Contains(lower, "parse prefix"),
+		strings.Contains(lower, "parseprefix"),
+		strings.Contains(lower, "netip"):
+		return "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32."
+
 	case strings.Contains(lower, "allowed ip already exists"),
 		strings.Contains(lower, "allowed cidr already exists"),
 		strings.Contains(lower, "duplicate allowed"),
@@ -86,7 +95,14 @@ func peerErrorHTTPStatus(err error) int {
 		strings.Contains(lower, "illegal base64"),
 		strings.Contains(lower, "base64-encoded key"),
 		strings.Contains(lower, "invalid keepalive"),
-		strings.Contains(lower, "invalid endpoint"):
+		strings.Contains(lower, "invalid endpoint"),
+		strings.Contains(lower, "invalid allowed ip"),
+		strings.Contains(lower, "invalid allowed"),
+		strings.Contains(lower, "invalid cidr"),
+		strings.Contains(lower, "allowed cidr"),
+		strings.Contains(lower, "parse prefix"),
+		strings.Contains(lower, "parseprefix"),
+		strings.Contains(lower, "netip"):
 		return http.StatusBadRequest
 
 	case strings.Contains(lower, "already exists"),

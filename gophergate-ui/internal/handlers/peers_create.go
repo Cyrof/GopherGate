@@ -23,6 +23,12 @@ func (p *Peers) Create(c *gin.Context) {
 		return
 	}
 
+	if err := validateAllowedCIDR(ip); err != nil {
+		p.log.Warnw("peer.create.invalid_allowed_ip", "value", ip, "err", err)
+		p.renderPeersCreateError(c, http.StatusBadRequest, "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32.")
+		return
+	}
+
 	allowedCIRDs := []string{}
 	if normaliseAllowedIP(ip) != "" {
 		allowedCIRDs = append(allowedCIRDs, ip)
