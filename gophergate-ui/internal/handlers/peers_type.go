@@ -217,6 +217,25 @@ func allowedIPExists(rows []peer, allowedIP string, excludePublicKey string) boo
 	return false
 }
 
+func normalisePeerName(name string) string {
+	return strings.TrimSpace(name)
+}
+
+func peerNameExists(rows []peer, name string) bool {
+	name = strings.ToLower(normalisePeerName(name))
+	if name == "" {
+		return false
+	}
+
+	for _, row := range rows {
+		if strings.ToLower(normalisePeerName(row.Name)) == name {
+			return true
+		}
+	}
+
+	return false
+}
+
 func parseKeepaliveSeconds(value string) (int32, error) {
 	value = strings.TrimSpace(value)
 	if value == "" {

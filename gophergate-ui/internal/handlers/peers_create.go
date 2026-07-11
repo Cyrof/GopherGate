@@ -10,7 +10,7 @@ import (
 )
 
 func (p *Peers) Create(c *gin.Context) {
-	name := c.PostForm("name")
+	name := normalisePeerName(c.PostForm("name"))
 	ip := c.PostForm("ip")
 	keepaliveStr := c.PostForm("keepalive")
 	pubkey := c.PostForm("pubkey")
@@ -40,9 +40,16 @@ func (p *Peers) Create(c *gin.Context) {
 	existingRows, err := p.listPeerRows(ctx)
 	if err != nil {
 		p.log.Warnw("peer.create.duplicate_check_failed", "err", err)
-	} else if allowedIPExists(existingRows, ip, "") {
-		p.renderPeersCreateError(c, http.StatusConflict, "Allowed IP already exists. Please use a unique Allowed IP for this peer.")
-		return
+	} else {
+		if peerNameExists(existingRows, name) {
+			p.renderPeersCreateError(c, http.StatusConflict, "Peer name already exists. Please use a unique name for this peer.")
+			return
+		}
+
+		if allowedIPExists(existingRows, ip, "") {
+			p.renderPeersCreateError(c, http.StatusConflict, "Allowed IP already exists. Please use a unique Allowed IP for this peer.")
+			return
+		}
 	}
 
 	req := &gatewayv2.CreatePeerRequest{
