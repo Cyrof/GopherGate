@@ -37,7 +37,7 @@ func (p *Peers) EditForm(c *gin.Context) {
 		PublicKey: resp.Peer.PublicKey,
 		IP:        ip,
 		Keepalive: resp.Peer.Keepalive,
-		Endpoint:  resp.Peer.Endpoint,
+		Endpoint:  normaliseEndpoint(resp.Peer.Endpoint),
 		RxBytes:   resp.Peer.RxBytes,
 		TxBytes:   resp.Peer.TxBytes,
 		Handshake: resp.Peer.Handshake,

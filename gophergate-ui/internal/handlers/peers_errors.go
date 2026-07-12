@@ -49,7 +49,7 @@ func peerActionError(action string, err error) string {
 		return "Invalid keepalive value. Please enter a number of seconds, for example 25."
 
 	case strings.Contains(lower, "invalid endpoint"):
-		return "Invalid endpoint Please use the format IP:port, for example 192.168.1.100:51820."
+		return "Invalid endpoint. Leave it blank for roaming peers, or use the formate IP:port, for example 192.168.1.100:51820."
 
 	case strings.Contains(lower, "public key already exists"),
 		strings.Contains(lower, "peer already exists"):

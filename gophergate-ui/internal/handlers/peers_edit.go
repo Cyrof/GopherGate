@@ -14,7 +14,7 @@ func (p *Peers) Edit(c *gin.Context) {
 	pubkey := c.PostForm("pubkey")
 	ip := c.PostForm("ip")
 	keepaliveStr := c.PostForm("keepalive")
-	endpoint := c.PostForm("endpoint")
+	endpoint := normaliseEndpoint(c.PostForm("endpoint"))
 
 	rec := peer{
 		PublicKey: pubkey,
@@ -33,6 +33,12 @@ func (p *Peers) Edit(c *gin.Context) {
 	if err := validateAllowedCIDR(ip); err != nil {
 		p.log.Warnw("peer.update.invalid_allowed_ip", "value", ip, "err", err)
 		p.renderPeerEditPage(c, http.StatusBadRequest, rec, "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32.")
+		return
+	}
+
+	if err := validateEndpoint(endpoint); err != nil {
+		p.log.Warnw("peer.update.invalid_endpoint", "value", endpoint, "err", err)
+		p.renderPeerEditPage(c, http.StatusBadRequest, rec, "Invalid endpoint. Leave it blank for roaming peers, or use the format IP:port, for example 192.168.1.100:51820")
 		return
 	}
 

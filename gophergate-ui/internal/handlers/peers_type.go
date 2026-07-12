@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"net"
 	"net/netip"
 	"strconv"
 	"strings"
@@ -82,14 +83,47 @@ func defaultEnrollmentItems() []enrollmentItem {
 	}
 }
 
+func normaliseEndpoint(endpoint string) string {
+	endpoint = strings.TrimSpace(endpoint)
+
+	switch endpoint {
+	case "", "-", "—", "--", "<nil>":
+		return ""
+	default:
+		return endpoint
+	}
+}
+
+func validateEndpoint(endpoint string) error {
+	endpoint = normaliseEndpoint(endpoint)
+	if endpoint == "" {
+		return nil
+	}
+
+	host, port, err := net.SplitHostPort(endpoint)
+	if err != nil {
+		return fmt.Errorf("invalid endpoint")
+	}
+
+	if strings.TrimSpace(host) == "" {
+		return fmt.Errorf("invalid endpoint")
+	}
+
+	portNumber, err := strconv.Atoi(port)
+	if err != nil || portNumber < 1 || portNumber > 65535 {
+		return fmt.Errorf("invalid endpoint")
+	}
+
+	return nil
+}
+
 func normalisePeerRows(rows []peer) []peer {
 	for i := range rows {
 		if strings.TrimSpace(rows[i].Name) == "" {
 			rows[i].Name = defaultPeerName(rows[i].PublicKey)
 		}
 
-		endpoint := strings.TrimSpace(rows[i].Endpoint)
-		if endpoint == "" || endpoint == "<nil>" || endpoint == "—" || endpoint == "--" {
+		if normaliseEndpoint(rows[i].Endpoint) == "" {
 			rows[i].Endpoint = "—"
 		}
 

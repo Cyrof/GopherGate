@@ -14,7 +14,7 @@ func (p *Peers) Create(c *gin.Context) {
 	ip := c.PostForm("ip")
 	keepaliveStr := c.PostForm("keepalive")
 	pubkey := c.PostForm("pubkey")
-	endpoint := c.PostForm("endpoint")
+	endpoint := normaliseEndpoint(c.PostForm("endpoint"))
 
 	keepalive, err := parseKeepaliveSeconds(keepaliveStr)
 	if err != nil {
@@ -26,6 +26,12 @@ func (p *Peers) Create(c *gin.Context) {
 	if err := validateAllowedCIDR(ip); err != nil {
 		p.log.Warnw("peer.create.invalid_allowed_ip", "value", ip, "err", err)
 		p.renderPeersCreateError(c, http.StatusBadRequest, "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32.")
+		return
+	}
+
+	if err := validateEndpoint(endpoint); err != nil {
+		p.log.Warnw("peer.create.invalid_endpoint", "value", endpoint, "err", err)
+		p.renderPeersCreateError(c, http.StatusBadRequest, "Invalid endpoint. Leave it blank for roaming peers, or use the format IP:port, for example 192.168.1.100:51820")
 		return
 	}
 
