@@ -653,6 +653,17 @@ body::after {
     font-weight: 600;
 }
 
+.peers-modal-alert {
+    border: 1px solid rgba(240, 131, 131, 0.35);
+    border-radius: 1rem;
+    background: rgba(240, 131, 131, 0.1);
+    color: var(--down);
+    padding: 0.8rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
 .peers-summary-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.98fr);

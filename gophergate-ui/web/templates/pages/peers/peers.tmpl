@@ -82,15 +82,21 @@
                 </button>
               </div>
 
+              {{ if .createError }}
+              <div class="peers-modal-alert" role="alert">
+                {{ .createError }}
+              </div>
+              {{ end }}
+
               <div class="peers-create-form-grid">
                 <label class="peers-field peers-field-wide">
                   <span>Name</span>
-                  <input name="name" placeholder="peer-name" required />
+                  <input name="name" placeholder="peer-name" value="{{ index .createForm "name" }}" required />
                 </label>
 
                 <label class="peers-field peers-field-wide">
                   <span>Public Key</span>
-                  <input name="pubkey" placeholder="base64 encoded key" required />
+                  <input name="pubkey" placeholder="base64 encoded key" value="{{ index .createForm "pubkey" }}" required />
                 </label>
 
                 <label class="peers-field peers-field-wide">
@@ -99,6 +105,7 @@
                     id="create-peer-allowed-ips"
                     name="ip"
                     placeholder="Auto assign, or enter 10.8.0.25"
+                    value="{{ index .createForm "ip" }}"
                   />
                   <small>
                     Leave blank to auto-assign the next available IP from the configured peer pool.
@@ -108,7 +115,7 @@
 
                 <label class="peers-field peers-field-wide">
                   <span>Endpoint (optional)</span>
-                  <input name="endpoint" placeholder="192.168.1.100:51820" />
+                  <input name="endpoint" placeholder="192.168.1.100:51820" value="{{ index .createForm "endpoint" }}" />
                   <small>
                     Leave blank for roaming peers. WireGuard can learn the endpoint from handshakes.
                   </small>
@@ -116,7 +123,7 @@
 
                 <label class="peers-field peers-field-wide">
                   <span>Persistent Keepalive (seconds)</span>
-                  <input name="keepalive" placeholder="25" inputmode="numeric" />
+                  <input name="keepalive" placeholder="25" inputmode="numeric" value="{{ index .createForm "keepalive" }}" />
                 </label>
               </div>
               <div class="peers-create-modal-actions">
@@ -261,7 +268,7 @@
   </div>
 
   {{ template "partials/scripts" }}
-  <script src="/static/js/peers.js?v=delete-dialog-2" defer></script>
+  <script src="/static/js/peers.js?v=peer-dialogs-1" defer></script>
 </body>
 </html>
 {{ end }}

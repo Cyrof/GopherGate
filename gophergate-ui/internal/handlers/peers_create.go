@@ -89,8 +89,16 @@ func (p *Peers) renderPeersCreateError(c *gin.Context, status int, errorMsg stri
 		rows = []peer{}
 	}
 
-	data := peerPageData("Peers", rows, errorMsg)
+	data := peerPageData("Peers", rows, "")
 	data["openCreateModal"] = true
+	data["createError"] = errorMsg
+	data["createForm"] = map[string]string{
+		"name":      c.PostForm("name"),
+		"pubkey":    c.PostForm("pubkey"),
+		"ip":        c.PostForm("ip"),
+		"endpoint":  c.PostForm("endpoint"),
+		"keepalive": c.PostForm("keepalive"),
+	}
 
 	c.HTML(status, "peers.tmpl", data)
 }

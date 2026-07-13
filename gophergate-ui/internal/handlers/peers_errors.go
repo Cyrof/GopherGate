@@ -49,11 +49,11 @@ func peerActionError(action string, err error) string {
 		strings.Contains(lower, "netip"):
 		return "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.8.0.25."
 
-	case strings.Contains(lower, "allowed ip already exists"),
-		strings.Contains(lower, "allowed cidr already exists"),
-		strings.Contains(lower, "duplicate allowed"),
-		strings.Contains(lower, "duplicate ip"):
-		return "Allowed IP already exists. Please use a unique Allowed IP for this peer."
+	case strings.Contains(lower, "uq_peers_ip_address"),
+		strings.Contains(lower, "duplicate key value"),
+		strings.Contains(lower, "ip_address"),
+		strings.Contains(lower, "already assigned"):
+		return "Allowed IP already exists. Please use a different IP or leave it blank to auto-assign one."
 
 	case strings.Contains(lower, "invalid keepalive"):
 		return "Invalid keepalive value. Please enter a number of seconds, for example 25."
@@ -115,8 +115,10 @@ func peerErrorHTTPStatus(err error) int {
 		strings.Contains(lower, "netip"):
 		return http.StatusBadRequest
 
-	case strings.Contains(lower, "already exists"),
-		strings.Contains(lower, "duplicate"):
+	case strings.Contains(lower, "uq_peers_ip_address"),
+		strings.Contains(lower, "duplicate key value"),
+		strings.Contains(lower, "already exists"),
+		strings.Contains(lower, "already assigned"):
 		return http.StatusConflict
 	}
 

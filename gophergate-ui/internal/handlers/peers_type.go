@@ -70,6 +70,16 @@ func peerPageData(title string, rows []peer, errorMsg string) map[string]any {
 		"stats":            stats,
 		"pendingApprovals": len(enrollmentItems),
 		"enrollmentItems":  enrollmentItems,
+
+		"openCreateModal": false,
+		"createError":     "",
+		"createForm": map[string]string{
+			"name":      "",
+			"pubkey":    "",
+			"ip":        "",
+			"endpoint":  "",
+			"keepalive": "",
+		},
 	}
 }
 
@@ -353,9 +363,6 @@ func parsePeerIPInput(value string) (netip.Addr, error) {
 
 		addr := prefix.Addr()
 
-		// For one peer assignment, only allow a single host address:
-		// IPv4: /32
-		// IPv6: /128
 		if prefix.Bits() != addr.BitLen() {
 			return netip.Addr{}, errPeerIPInvalid
 		}

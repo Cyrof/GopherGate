@@ -3055,6 +3055,17 @@ body::after {
     font-weight: 600;
 }
 
+.peers-modal-alert {
+    border: 1px solid rgba(240, 131, 131, 0.35);
+    border-radius: 1rem;
+    background: rgba(240, 131, 131, 0.1);
+    color: var(--down);
+    padding: 0.8rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
 .peers-summary-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.98fr);
@@ -3343,21 +3354,6 @@ body::after {
 .peers-submit-action {
     width: 100%;
     border-radius: 0.9rem;
-}
-
-.peers-checkbox-field {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    color: rgba(220, 235, 247, 0.88);
-    font-size: 0.9rem;
-    font-weight: 650;
-}
-
-.peers-checkbox-field input {
-    width: 0.95rem;
-    height: 0.95rem;
-    accent-color: rgba(91, 194, 240, 0.9);
 }
 
 /* Edit peer page */
