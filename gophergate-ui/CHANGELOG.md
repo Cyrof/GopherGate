@@ -10,34 +10,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 ## [v0.9.1] - 2026-07-13
 
 ### Added
-- (fill)
+
+- Added a dedicated modern Peers management page.
+- Added peer directory layout with page header, peer summary panels, and managed peers table.
+- Added peer status summary cards for connected, intermittent, and offline peers.
+- Added enrollment queue placeholder section for future peer onboarding workflows.
+- Added visual peer status pills for clearer peer state display.
+- Added scoped Peers page styling to match the GopherGate admin console theme.
+- Added friendly peer CRUD error handling for common validation and backend errors.
 
 ### Changed
-- (fill)
+
+- Moved peer management into a dedicated `/peers` page instead of relying on dashboard-only peer visibility.
+- Updated peer listing to display peer name, public key, endpoint, allowed IPs, status, and actions in a structured table.
+- Updated peer edit page styling to align with the new Peers page design.
+- Updated peer CRUD handlers to use the v2 WireGuard gRPC client flow.
+- Improved peer row normalisation for missing peer names, empty endpoints, and empty allowed IP values.
+- Improved peer state display by deriving connected, intermittent, and offline states from endpoint and handshake data.
 
 ### Fixed
-- (fill)
+
+- Fixed raw backend/gRPC errors being exposed directly to users for common peer create/update failures.
+- Fixed invalid public key errors to show a user-friendly message.
+- Fixed invalid Allowed IP/CIDR errors to show a clearer validation message.
+- Fixed invalid endpoint handling so blank endpoints are allowed for roaming peers.
+- Fixed edit peer page layout so the save action aligns properly across desktop and mobile views.
+- Fixed peer table empty-state handling when no peers are configured.
 
 ### Removed
-- (fill)
+
+- Removed the redundant cancel action from the edit peer form because `Back to Peers` already provides navigation.
+- Removed older inline/unstyled peer management UI patterns that no longer match the modern Peers page layout.
 
 ## [v0.9.0] - 2026-04-30
 
 ### Added
+
 - Added interactive peer detail modal on the dashboard
 - Added clickable peer rows to open detailed peer view
 - Added gRPC-based data fetching for peer-specific modal content
 - Integrated Chart.js for peer traffic visualisation in the modal
 
 ### Changed
+
 - Improved dashboard interactivity with peer-level drill-down functionality
 - Refined modal styling to align with overall dashboard design
 - Updated Go module dependencies
 
 ### Fixed
+
 - No fixes in this release
 
 ### Removed
+
 - No removals in this release
 
 ## [v0.8.0] - 2026-04-15
