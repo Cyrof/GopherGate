@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net"
 	"net/netip"
@@ -36,18 +37,20 @@ type enrollmentItem struct {
 }
 
 type Peers struct {
-	log     *zap.SugaredLogger
-	data    []peer
-	grpc    *grpcclient.Client
-	wgIface string
+	log            *zap.SugaredLogger
+	data           []peer
+	grpc           *grpcclient.Client
+	wgIface        string
+	peerIPPoolCIDR string
 }
 
-func NewPeers(log *zap.SugaredLogger, grpcClient *grpcclient.Client, wgIface string) *Peers {
+func NewPeers(log *zap.SugaredLogger, grpcClient *grpcclient.Client, wgIface string, peerIPPoolCIDR string) *Peers {
 	return &Peers{
-		log:     log,
-		data:    []peer{},
-		grpc:    grpcClient,
-		wgIface: wgIface,
+		log:            log,
+		data:           []peer{},
+		grpc:           grpcClient,
+		wgIface:        wgIface,
+		peerIPPoolCIDR: peerIPPoolCIDR,
 	}
 }
 
@@ -223,7 +226,7 @@ func normaliseAllowedIP(ip string) string {
 	ip = strings.TrimSpace(ip)
 
 	switch ip {
-	case "", "-", "--", "<nil>":
+	case "", "-", "—", "--", "<nil>":
 		return ""
 	default:
 		return ip
@@ -236,6 +239,15 @@ func allowedIPExists(rows []peer, allowedIP string, excludePublicKey string) boo
 		return false
 	}
 
+	targetAddr, err := parsePeerIPInput(allowedIP)
+	if err != nil {
+		return allowedIPStringExists(rows, allowedIP, excludePublicKey)
+	}
+
+	return peerIPInUse(rows, targetAddr, excludePublicKey)
+}
+
+func allowedIPStringExists(rows []peer, allowedIP string, excludePublicKey string) bool {
 	excludePublicKey = strings.TrimSpace(excludePublicKey)
 
 	for _, row := range rows {
@@ -284,4 +296,180 @@ func parseKeepaliveSeconds(value string) (int32, error) {
 	}
 
 	return int32(seconds), nil
+}
+
+func (p *Peers) peerIPPool() (netip.Prefix, error) {
+	raw := strings.TrimSpace(p.peerIPPoolCIDR)
+	if raw == "" {
+		return netip.Prefix{}, errPeerIPPoolMissing
+	}
+
+	prefix, err := netip.ParsePrefix(raw)
+	if err != nil {
+		return netip.Prefix{}, errPeerIPPoolInvalid
+	}
+
+	return prefix.Masked(), nil
+}
+
+func (p *Peers) normaliseCreateAllowedCIDR(value string, existingRows []peer) (string, error) {
+	pool, err := p.peerIPPool()
+	if err != nil {
+		return "", err
+	}
+
+	value = normaliseAllowedIP(value)
+	if value == "" {
+		return allocatePeerCIDR(pool, existingRows)
+	}
+
+	addr, err := parsePeerIPInput(value)
+	if err != nil {
+		return "", errPeerIPInvalid
+	}
+
+	if !pool.Contains(addr) {
+		return "", errPeerIPOutOfRange
+	}
+
+	if peerIPInUse(existingRows, addr, "") {
+		return "", errPeerIPAlreadyUsed
+	}
+
+	return hostCIDR(addr), nil
+}
+
+func parsePeerIPInput(value string) (netip.Addr, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return netip.Addr{}, errPeerIPInvalid
+	}
+
+	if strings.Contains(value, "/") {
+		prefix, err := netip.ParsePrefix(value)
+		if err != nil {
+			return netip.Addr{}, err
+		}
+
+		addr := prefix.Addr()
+
+		// For one peer assignment, only allow a single host address:
+		// IPv4: /32
+		// IPv6: /128
+		if prefix.Bits() != addr.BitLen() {
+			return netip.Addr{}, errPeerIPInvalid
+		}
+
+		return addr, nil
+	}
+
+	return netip.ParseAddr(value)
+}
+
+func allocatePeerCIDR(pool netip.Prefix, existingRows []peer) (string, error) {
+	used := usedPeerIPs(existingRows)
+	broadcast, hasBroadcast := ipv4BroadcastAddr(pool)
+
+	checked := 0
+	for addr := pool.Addr(); pool.Contains(addr); addr = addr.Next() {
+		checked++
+		if checked > 65536 {
+			return "", errPeerIPPoolFull
+		}
+
+		if shouldSkipIPv4NetworkAddress(pool, addr) {
+			continue
+		}
+
+		if hasBroadcast && addr == broadcast && pool.Bits() < 31 {
+			continue
+		}
+
+		if _, exists := used[addr]; exists {
+			continue
+		}
+
+		return hostCIDR(addr), nil
+	}
+
+	return "", errPeerIPPoolFull
+}
+
+func usedPeerIPs(rows []peer) map[netip.Addr]struct{} {
+	used := make(map[netip.Addr]struct{})
+
+	for _, row := range rows {
+		value := normaliseAllowedIP(row.IP)
+		if value == "" {
+			continue
+		}
+
+		addr, err := parsePeerIPInput(value)
+		if err != nil {
+			continue
+		}
+
+		used[addr] = struct{}{}
+	}
+
+	return used
+}
+
+func peerIPInUse(rows []peer, addr netip.Addr, excludePublicKey string) bool {
+	excludePublicKey = strings.TrimSpace(excludePublicKey)
+
+	for _, row := range rows {
+		if excludePublicKey != "" && strings.TrimSpace(row.PublicKey) == excludePublicKey {
+			continue
+		}
+
+		value := normaliseAllowedIP(row.IP)
+		if value == "" {
+			continue
+		}
+
+		existingAddr, err := parsePeerIPInput(value)
+		if err != nil {
+			continue
+		}
+
+		if existingAddr == addr {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hostCIDR(addr netip.Addr) string {
+	return fmt.Sprintf("%s/%d", addr.String(), addr.BitLen())
+}
+
+func shouldSkipIPv4NetworkAddress(pool netip.Prefix, addr netip.Addr) bool {
+	return addr.Is4() && pool.Addr().Is4() && pool.Bits() < 31 && addr == pool.Addr()
+}
+
+func ipv4BroadcastAddr(prefix netip.Prefix) (netip.Addr, bool) {
+	prefix = prefix.Masked()
+	addr := prefix.Addr()
+
+	if !addr.Is4() {
+		return netip.Addr{}, false
+	}
+
+	bytes := addr.As4()
+	ip := binary.BigEndian.Uint32(bytes[:])
+
+	hostBits := 32 - prefix.Bits()
+	if hostBits <= 0 {
+		return addr, true
+	}
+
+	hostMask := uint32(1<<hostBits) - 1
+	broadcast := ip | hostMask
+
+	var out [4]byte
+	binary.BigEndian.PutUint32(out[:], broadcast)
+
+	return netip.AddrFrom4(out), true
 }

@@ -23,21 +23,10 @@ func (p *Peers) Create(c *gin.Context) {
 		return
 	}
 
-	if err := validateAllowedCIDR(ip); err != nil {
-		p.log.Warnw("peer.create.invalid_allowed_ip", "value", ip, "err", err)
-		p.renderPeersCreateError(c, http.StatusBadRequest, "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32.")
-		return
-	}
-
 	if err := validateEndpoint(endpoint); err != nil {
 		p.log.Warnw("peer.create.invalid_endpoint", "value", endpoint, "err", err)
-		p.renderPeersCreateError(c, http.StatusBadRequest, "Invalid endpoint. Leave it blank for roaming peers, or use the format IP:port, for example 192.168.1.100:51820")
+		p.renderPeersCreateError(c, http.StatusBadRequest, "Invalid endpoint. Leave it blank for roaming peers, or use the format IP:port, for example 192.168.1.100:51820.")
 		return
-	}
-
-	allowedCIRDs := []string{}
-	if normaliseAllowedIP(ip) != "" {
-		allowedCIRDs = append(allowedCIRDs, ip)
 	}
 
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
@@ -45,24 +34,28 @@ func (p *Peers) Create(c *gin.Context) {
 
 	existingRows, err := p.listPeerRows(ctx)
 	if err != nil {
-		p.log.Warnw("peer.create.duplicate_check_failed", "err", err)
-	} else {
-		if peerNameExists(existingRows, name) {
-			p.renderPeersCreateError(c, http.StatusConflict, "Peer name already exists. Please use a unique name for this peer.")
-			return
-		}
+		p.log.Warnw("peer.create.load_existing_peers_failed", "err", err)
+		p.renderPeersCreateError(c, http.StatusServiceUnavailable, "Unable to check existing peers before creating a new peer. Please try again.")
+		return
+	}
 
-		if allowedIPExists(existingRows, ip, "") {
-			p.renderPeersCreateError(c, http.StatusConflict, "Allowed IP already exists. Please use a unique Allowed IP for this peer.")
-			return
-		}
+	if peerNameExists(existingRows, name) {
+		p.renderPeersCreateError(c, http.StatusConflict, "Peer name already exists. Please use a unique name for this peer.")
+		return
+	}
+
+	allowedCIDR, err := p.normaliseCreateAllowedCIDR(ip, existingRows)
+	if err != nil {
+		p.log.Warnw("peer.create.resolve_allowed_ip_failed", "value", ip, "err", err)
+		p.renderPeersCreateError(c, http.StatusBadRequest, peerAllowedIPErrorMessage(err))
+		return
 	}
 
 	req := &gatewayv2.CreatePeerRequest{
 		Iface:             p.wgIface,
 		Name:              name,
 		PublicKey:         pubkey,
-		AllowedCidrs:      allowedCIRDs,
+		AllowedCidrs:      []string{allowedCIDR},
 		Endpoint:          endpoint,
 		KeepaliveSeconds:  keepalive,
 		ReplaceAllowedIps: false,
@@ -75,7 +68,13 @@ func (p *Peers) Create(c *gin.Context) {
 		return
 	}
 
-	p.log.Infow("peer.create.success", "name", name, "pubkey", pubkey, "config_applied", resp.ConfigApplied)
+	p.log.Infow(
+		"peer.create.success",
+		"name", name,
+		"pubkey", pubkey,
+		"allowed_cidr", allowedCIDR,
+		"config_applied", resp.ConfigApplied,
+	)
 
 	c.Redirect(http.StatusSeeOther, "/peers")
 }
@@ -90,5 +89,8 @@ func (p *Peers) renderPeersCreateError(c *gin.Context, status int, errorMsg stri
 		rows = []peer{}
 	}
 
-	c.HTML(status, "peers.tmpl", peerPageData("Peers", rows, errorMsg))
+	data := peerPageData("Peers", rows, errorMsg)
+	data["openCreateModal"] = true
+
+	c.HTML(status, "peers.tmpl", data)
 }

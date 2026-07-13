@@ -623,6 +623,25 @@ body::after {
     box-shadow: 0 14px 26px rgba(91, 194, 240, 0.12);
 }
 
+.peers-secondary-action {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(151, 173, 195, 0.22);
+    background: rgba(18, 29, 41, 0.42);
+    color: var(--muted);
+    padding: 0.35rem 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.peers-secondary-action:hover {
+    border-color: rgba(151, 173, 195, 0.42);
+    color: var(--text);
+}
+
 .peers-alert {
     margin-bottom: 1rem;
     border: 1px solid rgba(240, 131, 131, 0.35);
@@ -651,8 +670,7 @@ body::after {
 
 .peers-enrollment-panel,
 .peers-stats-panel,
-.peers-table-panel,
-.peers-create-panel {
+.peers-table-panel {
     padding: 1rem;
 }
 
@@ -714,19 +732,6 @@ body::after {
     line-height: 1;
 }
 
-.peer-create-toggle {
-    display: none;
-}
-
-.peers-create-panel {
-    display: none;
-    margin-bottom: 1rem;
-}
-
-.peer-create-toggle:checked ~ .peers-create-panel {
-    display: block;
-}
-
 .peers-table-header {
     display: flex;
     align-items: center;
@@ -741,77 +746,6 @@ body::after {
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.04em;
-}
-
-.peers-secondary-action {
-    display: inline-flex;
-    min-height: 2rem;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    border: 1px solid rgba(151, 173, 195, 0.22);
-    background: rgba(18, 29, 41, 0.42);
-    color: var(--muted);
-    padding: 0.35rem 0.8rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-}
-
-.peers-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.9rem;
-}
-
-.peers-field {
-    display: grid;
-    gap: 0.45rem;
-}
-
-.peers-field-wide {
-    grid-column: span 2;
-}
-
-.peers-field span {
-    color: rgba(220, 235, 247, 0.9);
-    font-size: 0.9rem;
-    font-weight: 700;
-}
-
-.peers-field small {
-    color: var(--muted);
-    font-size: 0.78rem;
-}
-
-.peers-field input {
-    min-height: 2.75rem;
-    width: 100%;
-    border-radius: 0.9rem;
-    border: 1px solid rgba(41, 65, 88, 0.95);
-    background: rgba(10, 20, 30, 0.44);
-    color: var(--text);
-    padding: 0.65rem 0.8rem;
-    outline: none;
-}
-
-.peers-field input:focus {
-    border-color: rgba(91, 194, 240, 0.45);
-    box-shadow: 0 0 0 3px rgba(91, 194, 240, 0.08);
-}
-
-.peers-field input::placeholder {
-    color: rgba(151, 173, 195, 0.62);
-}
-
-.peers-form-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.peers-submit-action {
-    width: 100%;
-    border-radius: 0.9rem;
 }
 
 .peers-managed-pill {
@@ -937,6 +871,79 @@ body::after {
     color: var(--muted) !important;
 }
 
+/* Shared peer form fields */
+.peers-form-grid,
+.peers-create-form-grid {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.peers-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.peers-create-form-grid {
+    grid-template-columns: 1fr;
+}
+
+.peers-field {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.peers-field-wide {
+    grid-column: span 2;
+}
+
+.peers-field span {
+    color: rgba(220, 235, 247, 0.9);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.peers-field small {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.peers-field input {
+    min-height: 2.75rem;
+    width: 100%;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(41, 65, 88, 0.95);
+    background: rgba(10, 20, 30, 0.44);
+    color: var(--text);
+    padding: 0.65rem 0.8rem;
+    outline: none;
+}
+
+.peers-field input:focus {
+    border-color: rgba(91, 194, 240, 0.45);
+    box-shadow: 0 0 0 3px rgba(91, 194, 240, 0.08);
+}
+
+.peers-field input::placeholder {
+    color: rgba(151, 173, 195, 0.62);
+}
+
+.peers-field input[readonly] {
+    color: rgba(220, 235, 247, 0.72);
+    background: rgba(10, 20, 30, 0.28);
+    cursor: not-allowed;
+}
+
+.peers-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.peers-submit-action {
+    width: 100%;
+    border-radius: 0.9rem;
+}
+
+/* Edit peer page */
 .peers-edit-panel {
     display: block;
 }
@@ -980,7 +987,6 @@ body::after {
     font-weight: 750;
 }
 
-/* Edit peer page save action */
 .peers-edit-panel .peers-form-actions.peers-field-wide {
     grid-column: 1 / -1;
     display: flex;
@@ -997,68 +1003,16 @@ body::after {
     width: auto;
 }
 
-@media (min-width: 1024px) {
-    .peers-shell {
-        padding: 1.5rem 1.25rem;
-    }
-}
-
-@media (max-width: 980px) {
-    .peers-summary-grid,
-    .peers-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .peers-field-wide {
-        grid-column: auto;
-    }
-
-    .peers-edit-panel .peers-form-actions.peers-field-wide {
-        grid-column: 1 / -1;
-    }
-
-    .peers-enrollment-panel {
-        min-height: auto;
-    }
-}
-
-@media (max-width: 780px) {
-    .peers-current-stats {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 640px) {
-    .peers-page-header,
-    .peers-table-header {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .peers-primary-action,
-    .peers-secondary-action {
-        width: 100%;
-    }
-
-    .peers-form-actions {
-        align-items: stretch;
-    }
-
-    .peers-edit-panel .peers-form-actions.peers-field-wide .peers-primary-action {
-        width: 100%;
-    }
-}
-
-/* Peer delete dialog */
+/* Shared dialog styling */
+dialog.peers-create-dialog,
 dialog.peers-delete-dialog {
     position: fixed;
-    inset: 0;
-    width: min(34rem, calc(100vw - 2rem));
-    max-width: 34rem;
-    max-height: calc(100vh - 2rem);
-    margin: auto;
+    top: 50%;
+    left: 50%;
+    margin: 0;
     padding: 0;
-    border: 1px solid rgba(240, 131, 131, 0.28);
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(91, 194, 240, 0.22);
     border-radius: 1.35rem;
     background: rgba(18, 29, 41, 0.98);
     color: var(--text);
@@ -1066,13 +1020,82 @@ dialog.peers-delete-dialog {
     overflow: hidden;
 }
 
+dialog.peers-create-dialog:not([open]),
 dialog.peers-delete-dialog:not([open]) {
     display: none;
 }
 
+dialog.peers-create-dialog::backdrop,
 dialog.peers-delete-dialog::backdrop {
     background: rgba(2, 8, 14, 0.72);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(7px);
+}
+
+/* Add peer dialog */
+dialog.peers-create-dialog {
+    width: min(52rem, calc(100vw - 2rem));
+    max-width: 52rem;
+    max-height: calc(100vh - 2rem);
+}
+
+.peers-create-modal {
+    display: grid;
+    gap: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding: 1.15rem;
+}
+
+.peers-create-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.peers-create-modal-header h2 {
+    margin-top: 0.2rem;
+    color: var(--text);
+    font-size: 1.45rem;
+    font-weight: 750;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+}
+
+.peers-create-close {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(151, 173, 195, 0.22);
+    border-radius: 0.65rem;
+    background: rgba(10, 20, 30, 0.42);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.peers-create-close:hover {
+    border-color: rgba(91, 194, 240, 0.42);
+    color: var(--text);
+}
+
+.peers-create-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(91, 194, 240, 0.13);
+}
+
+/* Delete peer dialog */
+dialog.peers-delete-dialog {
+    width: min(34rem, calc(100vw - 2rem));
+    max-width: 34rem;
+    max-height: calc(100vh - 2rem);
+    border-color: rgba(240, 131, 131, 0.28);
 }
 
 .peers-delete-modal {
@@ -1183,11 +1206,65 @@ dialog.peers-delete-dialog::backdrop {
     padding-inline: 1rem;
 }
 
+/* Responsive peers page */
+@media (min-width: 1024px) {
+    .peers-shell {
+        padding: 1.5rem 1.25rem;
+    }
+}
+
+@media (max-width: 980px) {
+    .peers-summary-grid,
+    .peers-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .peers-field-wide {
+        grid-column: auto;
+    }
+
+    .peers-edit-panel .peers-form-actions.peers-field-wide {
+        grid-column: 1 / -1;
+    }
+
+    .peers-enrollment-panel {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 780px) {
+    .peers-current-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 640px) {
+    .peers-page-header,
+    .peers-table-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .peers-primary-action,
+    .peers-secondary-action {
+        width: 100%;
+    }
+
+    .peers-form-actions {
+        align-items: stretch;
+    }
+
+    .peers-edit-panel .peers-form-actions.peers-field-wide .peers-primary-action {
+        width: 100%;
+    }
+
+    .peers-create-modal-actions,
     .peers-delete-actions {
         flex-direction: column-reverse;
     }
 
+    .peers-create-modal-actions .peers-secondary-action,
+    .peers-create-modal-actions .peers-primary-action,
     .peers-delete-actions .peers-secondary-action,
     .peers-delete-actions .peers-delete-confirm {
         width: 100%;

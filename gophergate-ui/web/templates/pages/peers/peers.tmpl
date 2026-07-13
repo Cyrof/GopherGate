@@ -13,17 +13,15 @@
 
       <main class="page-container flex-1">
         <section class="peers-shell mx-3 rounded-[26px] px-4 py-5 lg:px-5 lg:py-6">
-          <input id="create-peer-toggle" type="checkbox" class="peer-create-toggle" {{ if .error }}checked{{ end }} />
-
           <div class="peers-page-header">
             <div>
               <div class="peers-eyebrow">Peer Directory</div>
               <h1>Peers</h1>
             </div>
 
-            <label for="create-peer-toggle" class="peers-primary-action" role="button" tabindex="0">
+            <button type="button" class="peers-primary-action" data-create-peer-open>
               Add Peer
-            </label>
+            </button>
           </div>
 
           {{ if .error }}
@@ -66,54 +64,72 @@
             </article>
           </div>
 
-          <section id="create-peer" class="peers-panel peers-create-panel">
-            <div class="peers-table-header">
-              <div>
-                <div class="peers-section-label">Manual Enrollment</div>
-                <h2>Create Peer</h2>
+          <dialog id="create-peer-dialog" class="peers-create-dialog" data-open-on-load="{{ if .openCreateModal }}true{{ else }}false{{ end }}">
+            <form method="post" action="/peers" class="peers-create-modal">
+              <div class="peers-create-modal-header">
+                <div>
+                  <div class="peers-section-label">Create Peer</div>
+                  <h2>Add New Peer</h2>
+                </div>
+
+                <button
+                  type="button"
+                  class="peers-create-close"
+                  data-create-peer-close
+                  aria-label="Close create peer dialog"
+                >
+                  ×
+                </button>
               </div>
 
-              <label for="create-peer-toggle" class="peers-secondary-action" role="button" tabindex="0">
-                Close
-              </label>
-            </div>
+              <div class="peers-create-form-grid">
+                <label class="peers-field peers-field-wide">
+                  <span>Name</span>
+                  <input name="name" placeholder="peer-name" required />
+                </label>
 
-            <form method="post" action="/peers" class="peers-form-grid">
-              <label class="peers-field">
-                <span>Name</span>
-                <input name="name" placeholder="Edge Gateway SG-08" required />
-              </label>
+                <label class="peers-field peers-field-wide">
+                  <span>Public Key</span>
+                  <input name="pubkey" placeholder="base64 encoded key" required />
+                </label>
 
-              <label class="peers-field peers-field-wide">
-                <span>Public Key</span>
-                <input name="pubkey" placeholder="base64 encoded key" required />
-              </label>
+                <label class="peers-field peers-field-wide">
+                  <span>Allowed IPs</span>
+                  <input
+                    id="create-peer-allowed-ips"
+                    name="ip"
+                    placeholder="Auto assign, or enter 10.8.0.25"
+                  />
+                  <small>
+                    Leave blank to auto-assign the next available IP from the configured peer pool.
+                    Enter an IP manually only when needed.
+                  </small>
+                </label>
 
-              <label class="peers-field">
-                <span>Allowed IPs</span>
-                <input name="ip" placeholder="10.8.0.2/32" />
-                <small>Optional CIDR address this peer can use.</small>
-              </label>
+                <label class="peers-field peers-field-wide">
+                  <span>Endpoint (optional)</span>
+                  <input name="endpoint" placeholder="192.168.1.100:51820" />
+                  <small>
+                    Leave blank for roaming peers. WireGuard can learn the endpoint from handshakes.
+                  </small>
+                </label>
 
-              <label class="peers-field">
-                <span>Endpoint</span>
-                <input name="endpoint" placeholder="192.168.1.100:51820" />
-                <small>Optional IP:port where this peer is reachable. Leave blank for roaming peers.</small>
-              </label>
+                <label class="peers-field peers-field-wide">
+                  <span>Persistent Keepalive (seconds)</span>
+                  <input name="keepalive" placeholder="25" inputmode="numeric" />
+                </label>
+              </div>
+              <div class="peers-create-modal-actions">
+                <button type="button" class="peers-secondary-action" data-create-peer-close>
+                  Cancel
+                </button>
 
-              <label class="peers-field">
-                <span>Persistent Keepalive</span>
-                <input name="keepalive" placeholder="25" inputmode="numeric" />
-                <small>Seconds between keepalive packets.</small>
-              </label>
-
-              <div class="peers-form-actions">
-                <button type="submit" class="peers-primary-action peers-submit-action">
+                <button type="submit" class="peers-primary-action">
                   Create Peer
                 </button>
               </div>
             </form>
-          </section>
+          </dialog>
 
           <section class="peers-panel peers-table-panel">
             <div class="peers-table-header">

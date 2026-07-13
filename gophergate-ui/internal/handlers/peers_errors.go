@@ -1,12 +1,22 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+var (
+	errPeerIPPoolMissing = errors.New("peer ip pool is not configured")
+	errPeerIPPoolInvalid = errors.New("peer ip pool is invalid")
+	errPeerIPInvalid     = errors.New("peer ip is invalid")
+	errPeerIPOutOfRange  = errors.New("peer ip is outside configured pool")
+	errPeerIPAlreadyUsed = errors.New("peer ip is already assigned")
+	errPeerIPPoolFull    = errors.New("peer ip pool has no available addresses")
 )
 
 func peerActionError(action string, err error) string {
@@ -37,7 +47,7 @@ func peerActionError(action string, err error) string {
 		strings.Contains(lower, "parse prefix"),
 		strings.Contains(lower, "parseprefix"),
 		strings.Contains(lower, "netip"):
-		return "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32."
+		return "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.8.0.25."
 
 	case strings.Contains(lower, "allowed ip already exists"),
 		strings.Contains(lower, "allowed cidr already exists"),
@@ -123,5 +133,30 @@ func peerErrorHTTPStatus(err error) int {
 		return http.StatusGatewayTimeout
 	default:
 		return http.StatusInternalServerError
+	}
+}
+
+func peerAllowedIPErrorMessage(err error) string {
+	switch {
+	case errors.Is(err, errPeerIPPoolMissing):
+		return "Peer IP pool is not configured. Please set GOPHERGATE_PEER_IP_POOL_CIDR."
+
+	case errors.Is(err, errPeerIPPoolInvalid):
+		return "Peer IP pool is invalid. Please check GOPHERGATE_PEER_IP_POOL_CIDR."
+
+	case errors.Is(err, errPeerIPInvalid):
+		return "Invalid Allowed IP. Leave it blank to auto-assign, or enter a valid IP such as 10.8.0.25."
+
+	case errors.Is(err, errPeerIPOutOfRange):
+		return "Allowed IP is outside the configured peer IP pool."
+
+	case errors.Is(err, errPeerIPAlreadyUsed):
+		return "Allowed IP already exists. Please use a different IP or leave it blank to auto-assign one."
+
+	case errors.Is(err, errPeerIPPoolFull):
+		return "No available IP addresses remain in the configured peer IP pool."
+
+	default:
+		return "Invalid Allowed IP. Leave it blank to auto-assign, or enter a valid IP such as 10.8.0.25."
 	}
 }
