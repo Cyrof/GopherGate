@@ -41,7 +41,6 @@ func Dashboard(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc {
 	}
 }
 
-
 func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
@@ -58,7 +57,7 @@ func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc
 		rangeValue := c.DefaultQuery("range", "24h")
 
 		resp, err := grpcClient.GetPeerTraffic(ctx, &gatewayv2.GetPeerTrafficRequest{
-			Iface: iface,
+			Iface:     iface,
 			PublicKey: publicKey,
 			Range:     rangeValue,
 		})
@@ -114,12 +113,12 @@ func DashboardModal(grpcClient *grpcclient.Client, iface string) gin.HandlerFunc
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"name":       traffic.GetName(),
-			"public_key": traffic.GetPublicKey(),
+			"name":        traffic.GetName(),
+			"public_key":  traffic.GetPublicKey(),
 			"allowed_ips": allowedIPs,
-			"total_rx":   totalRx,
-			"total_tx":   totalTx,
-			"points":     points,
+			"total_rx":    totalRx,
+			"total_tx":    totalTx,
+			"points":      points,
 		})
 	}
 }

@@ -18,6 +18,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func Run(cfg *config.Config, log *zap.SugaredLogger, db *pgxpool.Pool) (err error) {
@@ -95,6 +97,7 @@ func loadTemplates(router *gin.Engine) error {
 		"handshakeDisplay": handshakeDisplay,
 		"stateDisplay":     stateDisplay,
 		"statePillClass":   statePillClass,
+		"shortKey":         shortKey,
 	}
 
 	tmpl, err := template.New("").Funcs(funcMap).ParseFS(
@@ -139,7 +142,7 @@ func registerRoutes(
 		if dashboardHandler == nil {
 			return fmt.Errorf("handlers.Dashboard() returned nil")
 		}
-		
+
 		dashboardModalHandler := handlers.DashboardModal(&grpcClient, cfg.WGIface)
 		if dashboardModalHandler == nil {
 			return fmt.Errorf("handlers.DashboardModal() returned nil")
@@ -238,6 +241,17 @@ func timeAgo(s string) string {
 	}
 }
 
+func shortKey(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "-"
+	}
+	if len(s) <= 14 {
+		return s
+	}
+	return s[:8] + "..." + s[len(s)-5:]
+}
+
 func handshakeDisplay(s string) string {
 	if s == "" {
 		return "—"
@@ -251,14 +265,13 @@ func stateDisplay(s string) string {
 		return "Connected"
 	case "INTERMITTENT":
 		return "Intermittent"
-	case "DOWN":
-		return "Down"
+	case "DOWN", "OFFLINE":
+		return "Offline"
 	default:
 		if s == "" {
 			return "Unknown"
 		}
-		s = strings.ToLower(s)
-		return strings.ToUpper(s[:1]) + s[1:]
+		return cases.Title(language.Und).String(strings.ToLower(s))
 	}
 }
 
@@ -268,7 +281,7 @@ func statePillClass(s string) string {
 		return "border-success/40 bg-success/10 text-success"
 	case "INTERMITTENT":
 		return "border-warning/40 bg-warning/10 text-warning"
-	case "DOWN":
+	case "DOWN", "OFFLINE":
 		return "border-error/40 bg-error/10 text-error"
 	default:
 		return "border-base-300 bg-base-200/70 text-base-content/80"

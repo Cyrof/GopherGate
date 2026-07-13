@@ -2,7 +2,7 @@ package web
 
 import (
 	"time"
-	
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

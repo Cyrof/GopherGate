@@ -1,85 +1,251 @@
+{{ define "peers.tmpl" }}
 <!doctype html>
-<html lang="en">
-
+<html lang="en" data-theme="gophergate">
 <head>
-    <meta charset="utf-8" />
-    <title>{{ .title }}</title>
+  {{ template "partials/head" . }}
 </head>
+<body class="page-shell">
+  <div>
+    <input id="app-drawer" type="checkbox" class="drawer-toggle" />
 
-<body>
-    <h1>{{ .title }}</h1>
+    <div class="drawer-content flex min-h-screen flex-col">
+      {{ template "partials/navbar" . }}
 
-    {{ if .error }}
-    <div>{{ .error }}</div>
-    {{ end }}
+      <main class="page-container flex-1">
+        <section class="peers-shell mx-3 rounded-[26px] px-4 py-5 lg:px-5 lg:py-6">
+          <input id="create-peer-toggle" type="checkbox" class="peer-create-toggle" {{ if .error }}checked{{ end }} />
 
-    <h2>Create Peer</h2>
-    <form method="post" action="/peers">
-        <p>
-            <label for="name">Name:</label><br />
-            <input name="name" placeholder="name" required />
-        </p>
-        <p>
-            <label for="pubkey">Public Key:</label><br />
-            <input name="pubkey" placeholder="base64 encoded key" required />
-        </p>
-        <p>
-            <label for="ip">Allowed IPs (CIDR):</label><br />
-            <input name="ip" placeholder="10.8.0.2/32" />
-            <span>Optional: IP addresses this peer can use</span>
-        </p>
-        <p>
-            <label for="endpoint">Endpoint:</label><br />
-            <input name="endpoint" placeholder="192.168.1.100:51820" />
-            <span>Optional: IP:port of the peer</span>
-        </p>
-        <p>
-            <label for="keepalive">Persistent Keepalive (seconds):</label><br />
-            <input name="keepalive" placeholder="25" />
-            <span>Optional: interval for keepalive packets</span>
-        </p>
-        <button type="submit">Create</button>
-    </form>
+          <div class="peers-page-header">
+            <div>
+              <div class="peers-eyebrow">Peer Directory</div>
+              <h1>Peers</h1>
+            </div>
 
-    <h2>Active Peers</h2>
-    <table>
-        <tr>
-            <th>Public Key</th>
-            <th>Allowed IPs</th>
-            <th>Endpoint</th>
-            <th>Keepalive</th>
-            <th>Last Handshake</th>
-            <th>Actions</th>
-        </tr>
-        {{ if .peers }}
-        {{ range .peers }}
-        <tr>
-            <td><code>{{ .PublicKey }}</code></td>
-            <td>{{ .IP }}</td>
-            <td>{{ .Endpoint }}</td>
-            <td>{{ .Keepalive }}</td>
-            <td>{{ .Handshake }}</td>
-            <td>
-                <a href="/peers/edit?pubkey={{ .PublicKey }}"><button>Edit</button></a>
+            <label for="create-peer-toggle" class="peers-primary-action" role="button" tabindex="0">
+              Add Peer
+            </label>
+          </div>
 
-                <form method="post" action="/peers/delete" style="display:inline"
-                    onsubmit="return confirm('Delete peer {{ .PublicKey }}?')">
-                    <input type="hidden" name="pubkey" value="{{ .PublicKey }}" />
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {{ end }}
-        {{ else }}
-        <tr>
-            <td colspan="7" style="text-align: center; padding: 20px;">
-                No peers configured yet.
-            </td>
-        </tr>
-        {{ end }}
-    </table>
+          {{ if .error }}
+          <div class="peers-alert" role="alert">
+            {{ .error }}
+          </div>
+          {{ end }}
 
-    <p><a href="/">Home</a></p>
+          <div class="peers-summary-grid">
+            <article class="peers-panel peers-enrollment-panel">
+              <div class="peers-section-label">Enrollment Queue</div>
+              <h2>{{ .pendingApprovals }} Pending Approvals</h2>
+
+              <ul class="peers-enrollment-list">
+                {{ range .enrollmentItems }}
+                <li>
+                  <span>{{ .Name }}</span>
+                  <span>{{ .Description }}</span>
+                </li>
+                {{ else }}
+                <li>
+                  <span>No enrollment requests</span>
+                  <span>queue is clear</span>
+                </li>
+                {{ end }}
+              </ul>
+            </article>
+
+            <article class="peers-panel peers-stats-panel">
+              <div class="peers-section-label">Quick Stats</div>
+
+              <div class="peers-stat-stack">
+                {{ range .stats }}
+                <div class="peers-stat-card peers-stat-{{ .State }}">
+                  <span>{{ .Label }}</span>
+                  <strong>{{ .Value }}</strong>
+                </div>
+                {{ end }}
+              </div>
+            </article>
+          </div>
+
+          <section id="create-peer" class="peers-panel peers-create-panel">
+            <div class="peers-table-header">
+              <div>
+                <div class="peers-section-label">Manual Enrollment</div>
+                <h2>Create Peer</h2>
+              </div>
+
+              <label for="create-peer-toggle" class="peers-secondary-action" role="button" tabindex="0">
+                Close
+              </label>
+            </div>
+
+            <form method="post" action="/peers" class="peers-form-grid">
+              <label class="peers-field">
+                <span>Name</span>
+                <input name="name" placeholder="Edge Gateway SG-08" required />
+              </label>
+
+              <label class="peers-field peers-field-wide">
+                <span>Public Key</span>
+                <input name="pubkey" placeholder="base64 encoded key" required />
+              </label>
+
+              <label class="peers-field">
+                <span>Allowed IPs</span>
+                <input name="ip" placeholder="10.8.0.2/32" />
+                <small>Optional CIDR address this peer can use.</small>
+              </label>
+
+              <label class="peers-field">
+                <span>Endpoint</span>
+                <input name="endpoint" placeholder="192.168.1.100:51820" />
+                <small>Optional IP:port where this peer is reachable. Leave blank for roaming peers.</small>
+              </label>
+
+              <label class="peers-field">
+                <span>Persistent Keepalive</span>
+                <input name="keepalive" placeholder="25" inputmode="numeric" />
+                <small>Seconds between keepalive packets.</small>
+              </label>
+
+              <div class="peers-form-actions">
+                <button type="submit" class="peers-primary-action peers-submit-action">
+                  Create Peer
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="peers-panel peers-table-panel">
+            <div class="peers-table-header">
+              <h2>All Peers</h2>
+              <span class="peers-managed-pill">Managed</span>
+            </div>
+
+            <div class="peers-table-wrap">
+              <table class="peers-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Public Key</th>
+                    <th>Endpoint</th>
+                    <th>Allowed IPs</th>
+                    <th>Status</th>
+                    <th class="peers-actions-heading">Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {{ if .peers }}
+                    {{ range .peers }}
+                    <tr>
+                      <td class="peers-peer-name">{{ .Name }}</td>
+
+                      <td>
+                        <code title="{{ .PublicKey }}">{{ shortKey .PublicKey }}</code>
+                      </td>
+
+                      <td>{{ .Endpoint }}</td>
+                      <td>{{ .IP }}</td>
+
+                      <td>
+                        <span class="{{ statePillClass .State }} peers-status-pill">
+                          {{ stateDisplay .State }}
+                        </span>
+                      </td>
+
+                      <td>
+                        <div class="peers-row-actions">
+                          <a href="/peers/edit?pubkey={{ .PublicKey }}" class="peers-row-action">
+                            Edit
+                          </a>
+
+                          <button
+                            type="button"
+                            class="peers-row-action peers-row-danger"
+                            data-delete-peer
+                            data-peer-name="{{ .Name }}"
+                            data-public-key="{{ .PublicKey }}"
+                            data-public-key-short="{{ shortKey .PublicKey }}"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {{ end }}
+                  {{ else }}
+                    <tr>
+                      <td colspan="6" class="peers-empty-state">
+                        No peers configured yet. Use Add Peer to enroll the first device.
+                      </td>
+                    </tr>
+                  {{ end }}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <dialog id="delete-peer-dialog" class="peers-delete-dialog">
+            <form method="post" action="/peers/delete" class="peers-delete-modal">
+              <input id="delete-peer-public-key" type="hidden" name="pubkey" value="" />
+
+              <div class="peers-delete-modal-header">
+                <div>
+                  <div class="peers-section-label">Danger Zone</div>
+                  <h2>Delete Peer</h2>
+                </div>
+
+                <button
+                  type="button"
+                  class="peers-delete-close"
+                  data-delete-cancel
+                  aria-label="Close delete peer dialog"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div class="peers-delete-warning">
+                <strong>This action cannot be undone.</strong>
+                <span>
+                  The selected peer will be removed from GopherGate and may lose access to the mesh network.
+                </span>
+              </div>
+
+              <div class="peers-delete-target">
+                <div>
+                  <span>Peer</span>
+                  <strong id="delete-peer-name">this peer</strong>
+                </div>
+
+                <div>
+                  <span>Public Key</span>
+                  <code id="delete-peer-key">—</code>
+                </div>
+              </div>
+
+              <div class="peers-delete-actions">
+                <button type="button" class="peers-secondary-action" data-delete-cancel>
+                  Cancel
+                </button>
+
+                <button type="submit" class="peers-row-action peers-row-danger peers-delete-confirm">
+                  Delete Peer
+                </button>
+              </div>
+            </form>
+          </dialog>
+        </section>
+      </main>
+
+      {{ template "partials/footer" . }}
+    </div>
+
+    {{ template "partials/sidebar" . }}
+  </div>
+
+  {{ template "partials/scripts" }}
+  <script src="/static/js/peers.js?v=delete-dialog-2" defer></script>
 </body>
-
 </html>
+{{ end }}

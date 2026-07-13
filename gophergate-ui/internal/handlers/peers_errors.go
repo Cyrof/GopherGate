@@ -1,0 +1,127 @@
+package handlers
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+func peerActionError(action string, err error) string {
+	if err == nil {
+		return ""
+	}
+
+	msg := err.Error()
+	code := codes.Unknown
+
+	if st, ok := status.FromError(err); ok {
+		msg = st.Message()
+		code = st.Code()
+	}
+
+	lower := strings.ToLower(msg)
+
+	switch {
+	case strings.Contains(lower, "parse public key"),
+		strings.Contains(lower, "illegal base64"),
+		strings.Contains(lower, "base64-encoded key"):
+		return "Invalid public key. Please enter a valid WireGuard public key."
+
+	case strings.Contains(lower, "invalid allowed ip"),
+		strings.Contains(lower, "invalid allowed"),
+		strings.Contains(lower, "invalid cidr"),
+		strings.Contains(lower, "allowed cidr"),
+		strings.Contains(lower, "parse prefix"),
+		strings.Contains(lower, "parseprefix"),
+		strings.Contains(lower, "netip"):
+		return "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32."
+
+	case strings.Contains(lower, "allowed ip already exists"),
+		strings.Contains(lower, "allowed cidr already exists"),
+		strings.Contains(lower, "duplicate allowed"),
+		strings.Contains(lower, "duplicate ip"):
+		return "Allowed IP already exists. Please use a unique Allowed IP for this peer."
+
+	case strings.Contains(lower, "invalid keepalive"):
+		return "Invalid keepalive value. Please enter a number of seconds, for example 25."
+
+	case strings.Contains(lower, "invalid endpoint"):
+		return "Invalid endpoint. Leave it blank for roaming peers, or use the formate IP:port, for example 192.168.1.100:51820."
+
+	case strings.Contains(lower, "public key already exists"),
+		strings.Contains(lower, "peer already exists"):
+		return "A peer with this public key already exists."
+
+	case strings.Contains(lower, "not found"):
+		return "Peer not found. It may have already been removed."
+	}
+
+	switch code {
+	case codes.InvalidArgument:
+		return fmt.Sprintf("Failed to %s peer. Please check the peer details and try again.", action)
+	case codes.AlreadyExists:
+		return fmt.Sprintf("Failed to %s peer because it already exists.", action)
+	case codes.NotFound:
+		return "Peer not found. It may have already been removed."
+	case codes.Unavailable:
+		return "GopherGate backend is currently unavailable. Please try again later."
+	case codes.DeadlineExceeded:
+		return "The request timed out while contacting the GopherGate backend."
+	default:
+		return fmt.Sprintf("Failed to %s peer. Please check the details and try again.", action)
+	}
+}
+
+func peerErrorHTTPStatus(err error) int {
+	if err == nil {
+		return http.StatusOK
+	}
+
+	msg := err.Error()
+	code := codes.Unknown
+
+	if st, ok := status.FromError(err); ok {
+		msg = st.Message()
+		code = st.Code()
+	}
+
+	lower := strings.ToLower(msg)
+
+	switch {
+	case strings.Contains(lower, "parse public key"),
+		strings.Contains(lower, "illegal base64"),
+		strings.Contains(lower, "base64-encoded key"),
+		strings.Contains(lower, "invalid keepalive"),
+		strings.Contains(lower, "invalid endpoint"),
+		strings.Contains(lower, "invalid allowed ip"),
+		strings.Contains(lower, "invalid allowed"),
+		strings.Contains(lower, "invalid cidr"),
+		strings.Contains(lower, "allowed cidr"),
+		strings.Contains(lower, "parse prefix"),
+		strings.Contains(lower, "parseprefix"),
+		strings.Contains(lower, "netip"):
+		return http.StatusBadRequest
+
+	case strings.Contains(lower, "already exists"),
+		strings.Contains(lower, "duplicate"):
+		return http.StatusConflict
+	}
+
+	switch code {
+	case codes.InvalidArgument:
+		return http.StatusBadRequest
+	case codes.AlreadyExists:
+		return http.StatusConflict
+	case codes.NotFound:
+		return http.StatusNotFound
+	case codes.Unavailable:
+		return http.StatusServiceUnavailable
+	case codes.DeadlineExceeded:
+		return http.StatusGatewayTimeout
+	default:
+		return http.StatusInternalServerError
+	}
+}
