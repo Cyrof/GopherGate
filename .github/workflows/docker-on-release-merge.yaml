@@ -151,7 +151,7 @@ jobs:
           images: |
             cyrof/gophergate
           tags: |
-            type=raw,value=${{ steps.parse.outputs.module_path }}-v${{ steps.parse.outputs.version}}
+            type=raw,value=${{ steps.parse.outputs.module_path }}-v${{ steps.parse.outputs.version }}
             type=raw,value=${{ steps.parse.outputs.module_path }}-latest
 
       - name: Build & push (multi-arch)
@@ -164,8 +164,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ steps.parse.outputs.module_path }}
+          cache-to: type=gha,scope=${{ steps.parse.outputs.module_path }},mode=min,ignore-error=true
 
       - name: Skip notice
         if: ${{ steps.decide.outputs.publish != 'true' }}
