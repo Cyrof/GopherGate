@@ -11,7 +11,7 @@ type rowQuerier interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }
 
-func (r *Repository) Insert(ctx context.Context, p Peer) (string, error) { 
+func (r *Repository) Insert(ctx context.Context, p Peer) (string, error) {
 	return insertPeer(ctx, r.db, p)
 }
 
