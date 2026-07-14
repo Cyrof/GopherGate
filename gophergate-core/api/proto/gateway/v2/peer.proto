@@ -18,6 +18,7 @@ message PeerStatus {
     uint64 rx_bytes             = 6;
     uint64 tx_bytes             = 7;
     string keepalive            = 8;
+    string ip_address           = 9;
 }
 
 // overall wiregaurd state
@@ -41,6 +42,7 @@ message PeerOverview {
   string latency                = 8;
   string state                  = 9; // CONNECTED / INTERMITTENT / DOWN
   string state_reason           = 10; // optional
+  string ip_address             = 11;
 }
 
 // =================================
@@ -128,6 +130,7 @@ message PeerDirectoryItem {
   uint64 rx_bytes                   = 8;
   uint64 tx_bytes                   = 9;
   bool managed                      = 10;
+  string ip_address                 = 11;
 }
 
 message GetPeersPageRequest {
@@ -152,6 +155,7 @@ message CreatePeerRequest {
     string endpoint               = 5;
     int32 keepalive_seconds       = 6;
     bool replace_allowed_ips      = 7;
+    bool auto_assign_ip           = 8;
 }
 
 message CreatePeerResponse {
@@ -159,6 +163,8 @@ message CreatePeerResponse {
     string name         = 2;
     string public_key   = 3;
     bool config_applied = 4;
+    string assigned_ip  = 5;
+    string assigned_cidr = 6;
 }
 
 // =================================
@@ -224,6 +230,29 @@ message DeletePeerResponse {
 }
 
 // =================================
+// IP Pool
+// =================================
+
+message IPPoolStatus {
+  string allowed_cidrs          = 1;
+  string range_start            = 2;
+  string range_end              = 3;
+  uint64 capacity               = 4;
+  uint64 allocated              = 5;
+  uint64 available              = 6;
+  string next_available_ip      = 7;
+  repeated string reserved_ips  = 8;
+}
+
+message GetIPPoolRequest {
+  string iface                  = 1;
+}
+
+message GetIPPoolResponse {
+IPPoolStatus pool               = 1;
+}
+
+// =================================
 // Service
 // =================================
 
@@ -237,6 +266,9 @@ service WireGuardService {
 
     // peers page
     rpc GetPeersPage(GetPeersPageRequest) returns (GetPeersPageResponse);
+
+    // configured automatic address pool
+    rpc GetIPPool(GetIPPoolRequest) returns (GetIPPoolResponse);
 
     // Peer CRUD
     rpc CreatePeer(CreatePeerRequest) returns (CreatePeerResponse);
