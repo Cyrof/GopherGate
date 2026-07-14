@@ -1,6 +1,9 @@
 package wgsvc
 
-import "github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
+import (
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/ippool"
+)
 
 type DeviceStatus struct {
 	Interface    string       `json:"interface"`
@@ -28,6 +31,8 @@ type CreatePeerRequest struct {
 	Endpoint          string
 	KeepaliveSeconds  int
 	ReplaceAllowedIPs bool
+	AutoAssignIP      bool
+	IPPool            *ippool.Pool
 	Repo              *data.Repository
 }
 
@@ -37,6 +42,8 @@ type CreatePeerResponse struct {
 	PublicKey     string `json:"public_key"`
 	ConfigApplied bool   `json:"config_applied"`
 	ID            string
+	AssignedIP    string `json:"assigned_ip,omitempty"`
+	AssignedCIDR  string `json:"assigned_cidr,omitempty"`
 }
 
 type UpdatePeerRequest struct {
