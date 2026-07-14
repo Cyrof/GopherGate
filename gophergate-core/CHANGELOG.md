@@ -27,19 +27,25 @@ import (
 
 ---
 
-## [v0.7.0] - 2026-07-14
+## [v0.7.0] - 2026-07-13
 
 ### Added
-- (fill)
+
+- Added v2 IP-pool status messages and the `GetIPPool` RPC
+- Added `auto_assign_ip` to peer creation requests
+- Added committed address fields to create responses and peer read models
 
 ### Changed
-- (fill)
+
+- Extended the shared v2 contract for wg-agent automatic address allocation and future frontend integration
 
 ### Fixed
-- (fill)
+
+- No fixes in this release
 
 ### Removed
-- (fill)
+
+- No removals in this release
 
 ## [v0.6.1] - 2026-05-15
 
