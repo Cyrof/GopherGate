@@ -23,7 +23,7 @@ func (r *Repository) GetPublicKeyByName(ctx context.Context, name string) (strin
 
 func (r *Repository) GetByPublicKey(ctx context.Context, pub string) (*Peer, error) {
 	const q = `
-		select id::text, name, public_key, ip_address::text, allowed_ips::text[], endpoint, 
+		select id::text, name, public_key, host(ip_address), allowed_ips::text[], endpoint, 
 			persistent_keepalive, last_handshake, created_at, updated_at
 		from peers
 		where public_key = $1
@@ -83,6 +83,37 @@ func (r *Repository) NamesByPublicKeys(ctx context.Context, pubs []string) (map[
 			return nil, err
 		}
 		out[pk] = name
+	}
+	return out, rows.Err()
+}
+
+func (r *Repository) MetadataByPublicKeys(ctx context.Context, pubs []string) (map[string]PeerMetadata, error) {
+	if len(pubs) == 0 {
+		return map[string]PeerMetadata{}, nil
+	}
+	const q = `
+		select public_key, name, host(ip_address)
+		from peers
+		where public_key = any($1::text[])
+	`
+	rows, err := r.db.Query(ctx, q, pubs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make(map[string]PeerMetadata, len(pubs))
+	for rows.Next() {
+		var publicKey, name string
+		var ipRaw *string
+		if err := rows.Scan(&publicKey, &name, &ipRaw); err != nil {
+			return nil, err
+		}
+		metadata := PeerMetadata{Name: name}
+		if ipRaw != nil {
+			metadata.IPAddress = net.ParseIP(*ipRaw)
+		}
+		out[publicKey] = metadata
 	}
 	return out, rows.Err()
 }
