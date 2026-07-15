@@ -234,7 +234,7 @@ message DeletePeerResponse {
 // =================================
 
 message IPPoolStatus {
-  string allowed_cidrs          = 1;
+  string cidr                   = 1;
   string range_start            = 2;
   string range_end              = 3;
   uint64 capacity               = 4;

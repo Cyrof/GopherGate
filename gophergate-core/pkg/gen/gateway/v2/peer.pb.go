@@ -1826,7 +1826,7 @@ func (x *DeletePeerResponse) GetRemoved() bool {
 
 type IPPoolStatus struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	AllowedCidrs    string                 `protobuf:"bytes,1,opt,name=allowed_cidrs,json=allowedCidrs,proto3" json:"allowed_cidrs,omitempty"`
+	Cidr            string                 `protobuf:"bytes,1,opt,name=cidr,proto3" json:"cidr,omitempty"`
 	RangeStart      string                 `protobuf:"bytes,2,opt,name=range_start,json=rangeStart,proto3" json:"range_start,omitempty"`
 	RangeEnd        string                 `protobuf:"bytes,3,opt,name=range_end,json=rangeEnd,proto3" json:"range_end,omitempty"`
 	Capacity        uint64                 `protobuf:"varint,4,opt,name=capacity,proto3" json:"capacity,omitempty"`
@@ -1868,9 +1868,9 @@ func (*IPPoolStatus) Descriptor() ([]byte, []int) {
 	return file_gateway_v2_peer_proto_rawDescGZIP(), []int{26}
 }
 
-func (x *IPPoolStatus) GetAllowedCidrs() string {
+func (x *IPPoolStatus) GetCidr() string {
 	if x != nil {
-		return x.AllowedCidrs
+		return x.Cidr
 	}
 	return ""
 }
@@ -2242,9 +2242,9 @@ const file_gateway_v2_peer_proto_rawDesc = "" +
 	"\x05iface\x18\x01 \x01(\tR\x05iface\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x02 \x01(\tR\tpublicKey\x12\x18\n" +
-	"\aremoved\x18\x03 \x01(\bR\aremoved\"\x98\x02\n" +
-	"\fIPPoolStatus\x12#\n" +
-	"\rallowed_cidrs\x18\x01 \x01(\tR\fallowedCidrs\x12\x1f\n" +
+	"\aremoved\x18\x03 \x01(\bR\aremoved\"\x87\x02\n" +
+	"\fIPPoolStatus\x12\x12\n" +
+	"\x04cidr\x18\x01 \x01(\tR\x04cidr\x12\x1f\n" +
 	"\vrange_start\x18\x02 \x01(\tR\n" +
 	"rangeStart\x12\x1b\n" +
 	"\trange_end\x18\x03 \x01(\tR\brangeEnd\x12\x1a\n" +
