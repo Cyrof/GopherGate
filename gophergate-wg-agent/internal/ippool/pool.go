@@ -25,7 +25,7 @@ func New(cidr, start, end string, reserved []string) (*Pool, error) {
 	}
 	prefix = prefix.Masked()
 	if !prefix.Addr().Is4() {
-		return nil, fmt.Errorf("Only IPV4 pools are currently supported")
+		return nil, fmt.Errorf("only IPV4 pools are currently supported")
 	}
 	if prefix.Bits() >= 31 {
 		return nil, fmt.Errorf("pool CIDR %s has no standard usable host range", prefix)
