@@ -82,6 +82,12 @@ func (c *Client) DeletePeer(ctx context.Context, req *gatewayv2.DeletePeerReques
 	return c.wgV2.DeletePeer(ctx, req)
 }
 
+// GetIPPool retrieves the agent-managed peer IP pool status using v2.
+func (c *Client) GetIPPool(ctx context.Context, req *gatewayv2.GetIPPoolRequest) (*gatewayv2.GetIPPoolResponse, error) {
+	c.log.Infow("grpc.get_ip_pool", "version", "v2", "iface", req.Iface)
+	return c.wgV2.GetIPPool(ctx, req)
+}
+
 // GetDashboard retrieves dashboard data using v2.
 func (c *Client) GetDashboard(ctx context.Context, req *gatewayv2.GetDashboardRequest) (*gatewayv2.GetDashboardResponse, error) {
 	c.log.Infow("grpc.get_dashboard", "version", "v2", "iface", req.Iface)
