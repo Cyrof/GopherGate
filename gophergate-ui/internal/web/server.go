@@ -152,7 +152,7 @@ func registerRoutes(
 		protected.GET("/dashboard/peers/:publicKey/modal", dashboardModalHandler)
 		log.Infow("dashboard routes registered")
 
-		peer := handlers.NewPeers(log, &grpcClient, cfg.WGIface, cfg.PeerIPPoolCIDR)
+		peer := handlers.NewPeers(log, &grpcClient, cfg.WGIface)
 		if peer == nil {
 			return fmt.Errorf("handlers.NewPeers() returned nil")
 		}
