@@ -100,17 +100,30 @@
                 </label>
 
                 <label class="peers-field peers-field-wide">
-                  <span>Allowed IPs</span>
+                  <span>Allowed IP</span>
                   <input
                     id="create-peer-allowed-ips"
                     name="ip"
-                    placeholder="Auto assign, or enter 10.8.0.25"
+                    placeholder="Leave blank for auto assignment, or enter 10.13.13.25"
                     value="{{ index .createForm "ip" }}"
                   />
+                  {{ if .ipPool.Enabled }}
+                    {{ if .ipPool.HasAvailable }}
+                    <small>
+                      Leave blank and the WireGuard agent will assign the next free IP.
+                      Current preview: <strong>{{ .ipPool.NextAvailableIP }}</strong>
+                      ({{ .ipPool.Available }} of {{ .ipPool.Capacity }} available).
+                    </small>
+                    {{ else }}
+                    <small>
+                      The configured automatic IP pool is full. Enter a manual host IP to continue.
+                    </small>
+                    {{ end }}
+                  {{ else }}
                   <small>
-                    Leave blank to auto-assign the next available IP from the configured peer pool.
-                    Enter an IP manually only when needed.
+                    Automatic assignment is unavailable. Enter a manual host IP, for example 10.13.13.25.
                   </small>
+                  {{ end }}
                 </label>
 
                 <label class="peers-field peers-field-wide">
