@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/ippool"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/wgsvc"
 	"github.com/spf13/cobra"
 )
@@ -21,6 +22,7 @@ var (
 	createEndpoint   string
 	createKeepalive  int
 	createReplaceIPs bool
+	createAutoIP     bool
 )
 
 var createCmd = &cobra.Command{
@@ -29,19 +31,25 @@ var createCmd = &cobra.Command{
 	Short:   "Create a new WireGuard peer and persist it to the database",
 	Long: `The create command provisions a new WireGuard peer, applies the configuration to the
 WireGuard interface, and persists the peer record into the database. Each peer must
-have a unique name, public key, and one or more allowed IPs (CIDRs).`,
+have a unique public key. The peer address can be supplied manually or allocated from the configured IP pool.`,
 	Example: `
 	# Create a new peer with basic settings 
 	gophergate-wg-agent create --name alice --pubkey <base64> --allowed 10.0.0.2/32 --keepalive 25
 
-	# Create another peer on interface wg1 with multiple allowed 	
-	gophergate-wg-agent create -i wg1 -n bob -p <base64> -a 10.0.0.3/32 -a 10.0.1.0/32 -k 30
+	# Create a peer with an automatically assigned address
+	gophergate-wg-agent create --name bob --pubkey <base64> --auto-ip --keepalive 25
+
+	# Auto-assign the peer address and add another routed network
+	gophergate-wg-agent create -i wg1 -n carol -p <base64> --auto-ip -a 10.0.1.0/24 -k 30
   	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if createKeepalive < 0 {
 			return errors.New("--keepalive must be >= 0")
 		}
-		// validate allowed CIDRs
+		if !createAutoIP && len(createAllowed) == 0 {
+			return errors.New("--allowed is required unless --auto-ip is enabled")
+		}
+		// validate any extra allowed CIDRs
 		for _, cidr := range createAllowed {
 			if _, _, err := net.ParseCIDR(cidr); err != nil {
 				return fmt.Errorf("invalid --allowed CIDR %q: %w", cidr, err)
@@ -58,6 +66,10 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 		}
 
 		repo := data.NewRepository(DB)
+		addressPool, err := ippool.FromEnv()
+		if err != nil {
+			return fmt.Errorf("load IP pool configuration: %w", err)
+		}
 
 		req := wgsvc.CreatePeerRequest{
 			Iface:             createIface,
@@ -67,6 +79,8 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			Endpoint:          createEndpoint,
 			KeepaliveSeconds:  createKeepalive,
 			ReplaceAllowedIPs: createReplaceIPs,
+			AutoAssignIP:      createAutoIP,
+			IPPool:            addressPool,
 			Repo:              repo,
 		}
 
@@ -85,10 +99,8 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			return err
 		}
 
-		primaryIP := pickPrimaryIP(createAllowed)
-
-		outf(cmd, "Peer created on %s\n ID: %s\n Name: %s\n PublicKey: %s\n PrimaryIP: %s\n ConfigApplied: %t\n",
-			resp.Iface, resp.ID, resp.Name, resp.PublicKey, primaryIP, resp.ConfigApplied,
+		outf(cmd, "Peer created on %s\n ID: %s\n Name: %s\n PublicKey: %s\n AssignedIP: %s\n AssignedCIDR: %s\n ConfigApplied: %t\n",
+			resp.Iface, resp.ID, resp.Name, resp.PublicKey, resp.AssignedIP, resp.AssignedCIDR, resp.ConfigApplied,
 		)
 
 		Log.Infow("peerCreated",
@@ -97,7 +109,8 @@ have a unique name, public key, and one or more allowed IPs (CIDRs).`,
 			"iface", resp.Iface,
 			"pubKey", resp.PublicKey,
 			"configApplied", resp.ConfigApplied,
-			"ip", primaryIP,
+			"ip", resp.AssignedIP,
+			"autoAssigned", createAutoIP,
 		)
 
 		Log.Debugw("peer create request detail",
@@ -117,16 +130,13 @@ func init() {
 	createCmd.Flags().StringVarP(&createIface, "iface", "i", "wg0", "WireGuard interface name")
 	createCmd.Flags().StringVarP(&createName, "name", "n", "", "Friendly name for this peer (optional)")
 	createCmd.Flags().StringVarP(&createPubKey, "pubkey", "p", "", "Peer public key (base64, required)")
-	createCmd.Flags().StringSliceVarP(&createAllowed, "allowed", "a", nil, "Allowed IPs (CIDR). Repeatable (required)")
+	createCmd.Flags().StringSliceVarP(&createAllowed, "allowed", "a", nil, "Additional allowed IPs/routes (CIDR). Required unless --auto-ip is enabled")
 	createCmd.Flags().IntVarP(&createKeepalive, "keepalive", "k", 0, "Persistent keepalive in seconds (0 = disabled)")
 	createCmd.Flags().BoolVarP(&createReplaceIPs, "replace-ips", "r", true, "Replace existing AllowedIPs for this peer")
+	createCmd.Flags().BoolVar(&createAutoIP, "auto-ip", false, "Automatically assign the lowest free IP from the configured pool")
 
 	if err := createCmd.MarkFlagRequired("pubkey"); err != nil {
 		Log.Errorw("Failed to mark flag as required", "flag", "pubkey", "error", err)
-	}
-
-	if err := createCmd.MarkFlagRequired("allowed"); err != nil {
-		Log.Errorw("Failed to mark flag as required", "flag", "allowed", "error", err)
 	}
 
 	if err := createCmd.MarkFlagRequired("keepalive"); err != nil {
@@ -134,18 +144,4 @@ func init() {
 	}
 
 	rootCmd.AddCommand(createCmd)
-}
-
-func pickPrimaryIP(cidrs []string) net.IP {
-	for _, c := range cidrs {
-		ip, ipNet, err := net.ParseCIDR(c)
-		if err != nil {
-			continue
-		}
-		ones, bits := ipNet.Mask.Size()
-		if (ip.To4() != nil && ones == 32 && bits == 32) || (ip.To4() == nil && ones == 128 && bits == 128) {
-			return ip
-		}
-	}
-	return nil
 }
