@@ -11,12 +11,8 @@ import (
 )
 
 var (
-	errPeerIPPoolMissing = errors.New("peer ip pool is not configured")
-	errPeerIPPoolInvalid = errors.New("peer ip pool is invalid")
 	errPeerIPInvalid     = errors.New("peer ip is invalid")
-	errPeerIPOutOfRange  = errors.New("peer ip is outside configured pool")
 	errPeerIPAlreadyUsed = errors.New("peer ip is already assigned")
-	errPeerIPPoolFull    = errors.New("peer ip pool has no available addresses")
 )
 
 func peerActionError(action string, err error) string {
@@ -35,6 +31,15 @@ func peerActionError(action string, err error) string {
 	lower := strings.ToLower(msg)
 
 	switch {
+	case strings.Contains(lower, "ip pool is not configured"),
+		strings.Contains(lower, "automatic ip assignment requires a configured ip pool"):
+		return "Automatic IP assignment is not configured on the WireGuard agent. Enter a manual IP or configure the agent IP pool."
+
+	case strings.Contains(lower, "no free ip addresses"),
+		strings.Contains(lower, "ip pool exhausted"),
+		strings.Contains(lower, "no available ip"):
+		return "No available IP addresses remain in the configured pool. Enter a manual IP or expand the agent IP pool."
+
 	case strings.Contains(lower, "parse public key"),
 		strings.Contains(lower, "illegal base64"),
 		strings.Contains(lower, "base64-encoded key"):
@@ -47,7 +52,7 @@ func peerActionError(action string, err error) string {
 		strings.Contains(lower, "parse prefix"),
 		strings.Contains(lower, "parseprefix"),
 		strings.Contains(lower, "netip"):
-		return "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.8.0.25."
+		return "Invalid Allowed IP. Leave it blank for automatic assignment, or enter a host IP such as 10.13.13.25."
 
 	case strings.Contains(lower, "uq_peers_ip_address"),
 		strings.Contains(lower, "duplicate key value"),
@@ -59,7 +64,7 @@ func peerActionError(action string, err error) string {
 		return "Invalid keepalive value. Please enter a number of seconds, for example 25."
 
 	case strings.Contains(lower, "invalid endpoint"):
-		return "Invalid endpoint. Leave it blank for roaming peers, or use the formate IP:port, for example 192.168.1.100:51820."
+		return "Invalid endpoint. Leave it blank for roaming peers, or use the format IP:port, for example 192.168.1.100:51820."
 
 	case strings.Contains(lower, "public key already exists"),
 		strings.Contains(lower, "peer already exists"):
@@ -74,6 +79,10 @@ func peerActionError(action string, err error) string {
 		return fmt.Sprintf("Failed to %s peer. Please check the peer details and try again.", action)
 	case codes.AlreadyExists:
 		return fmt.Sprintf("Failed to %s peer because it already exists.", action)
+	case codes.FailedPrecondition:
+		return "Automatic IP assignment is unavailable because the WireGuard agent IP pool is not configured."
+	case codes.ResourceExhausted:
+		return "No available IP addresses remain in the configured WireGuard IP pool."
 	case codes.NotFound:
 		return "Peer not found. It may have already been removed."
 	case codes.Unavailable:
@@ -118,19 +127,21 @@ func peerErrorHTTPStatus(err error) int {
 	case strings.Contains(lower, "uq_peers_ip_address"),
 		strings.Contains(lower, "duplicate key value"),
 		strings.Contains(lower, "already exists"),
-		strings.Contains(lower, "already assigned"):
+		strings.Contains(lower, "already assigned"),
+		strings.Contains(lower, "ip pool exhausted"),
+		strings.Contains(lower, "no free ip addresses"):
 		return http.StatusConflict
 	}
 
 	switch code {
 	case codes.InvalidArgument:
 		return http.StatusBadRequest
-	case codes.AlreadyExists:
+	case codes.AlreadyExists, codes.ResourceExhausted:
 		return http.StatusConflict
+	case codes.FailedPrecondition, codes.Unavailable:
+		return http.StatusServiceUnavailable
 	case codes.NotFound:
 		return http.StatusNotFound
-	case codes.Unavailable:
-		return http.StatusServiceUnavailable
 	case codes.DeadlineExceeded:
 		return http.StatusGatewayTimeout
 	default:
@@ -140,25 +151,13 @@ func peerErrorHTTPStatus(err error) int {
 
 func peerAllowedIPErrorMessage(err error) string {
 	switch {
-	case errors.Is(err, errPeerIPPoolMissing):
-		return "Peer IP pool is not configured. Please set GOPHERGATE_PEER_IP_POOL_CIDR."
-
-	case errors.Is(err, errPeerIPPoolInvalid):
-		return "Peer IP pool is invalid. Please check GOPHERGATE_PEER_IP_POOL_CIDR."
-
 	case errors.Is(err, errPeerIPInvalid):
-		return "Invalid Allowed IP. Leave it blank to auto-assign, or enter a valid IP such as 10.8.0.25."
-
-	case errors.Is(err, errPeerIPOutOfRange):
-		return "Allowed IP is outside the configured peer IP pool."
+		return "Invalid Allowed IP. Leave it blank to auto-assign, or enter a host IP such as 10.13.13.25."
 
 	case errors.Is(err, errPeerIPAlreadyUsed):
 		return "Allowed IP already exists. Please use a different IP or leave it blank to auto-assign one."
 
-	case errors.Is(err, errPeerIPPoolFull):
-		return "No available IP addresses remain in the configured peer IP pool."
-
 	default:
-		return "Invalid Allowed IP. Leave it blank to auto-assign, or enter a valid IP such as 10.8.0.25."
+		return "Invalid Allowed IP. Leave it blank to auto-assign, or enter a host IP such as 10.13.13.25."
 	}
 }

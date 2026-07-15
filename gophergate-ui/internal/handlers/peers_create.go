@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	gatewayv2 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2"
@@ -11,9 +13,9 @@ import (
 
 func (p *Peers) Create(c *gin.Context) {
 	name := normalisePeerName(c.PostForm("name"))
-	ip := c.PostForm("ip")
+	ip := strings.TrimSpace(c.PostForm("ip"))
 	keepaliveStr := c.PostForm("keepalive")
-	pubkey := c.PostForm("pubkey")
+	pubkey := strings.TrimSpace(c.PostForm("pubkey"))
 	endpoint := normaliseEndpoint(c.PostForm("endpoint"))
 
 	keepalive, err := parseKeepaliveSeconds(keepaliveStr)
@@ -44,26 +46,38 @@ func (p *Peers) Create(c *gin.Context) {
 		return
 	}
 
-	allowedCIDR, err := p.normaliseCreateAllowedCIDR(ip, existingRows)
-	if err != nil {
-		p.log.Warnw("peer.create.resolve_allowed_ip_failed", "value", ip, "err", err)
-		p.renderPeersCreateError(c, http.StatusBadRequest, peerAllowedIPErrorMessage(err))
-		return
+	autoAssignIP := ip == ""
+	allowedCIDRs := make([]string, 0, 1)
+	manualCIDR := ""
+
+	if !autoAssignIP {
+		manualCIDR, err = normaliseManualPeerCIDR(ip, existingRows)
+		if err != nil {
+			p.log.Warnw("peer.create.resolve_manual_ip_failed", "value", ip, "err", err)
+			statusCode := http.StatusBadRequest
+			if errors.Is(err, errPeerIPAlreadyUsed) {
+				statusCode = http.StatusConflict
+			}
+			p.renderPeersCreateError(c, statusCode, peerAllowedIPErrorMessage(err))
+			return
+		}
+		allowedCIDRs = append(allowedCIDRs, manualCIDR)
 	}
 
 	req := &gatewayv2.CreatePeerRequest{
 		Iface:             p.wgIface,
 		Name:              name,
 		PublicKey:         pubkey,
-		AllowedCidrs:      []string{allowedCIDR},
+		AllowedCidrs:      allowedCIDRs,
 		Endpoint:          endpoint,
 		KeepaliveSeconds:  keepalive,
-		ReplaceAllowedIps: false,
+		ReplaceAllowedIps: true,
+		AutoAssignIp:      autoAssignIP,
 	}
 
 	resp, err := p.grpc.CreatePeer(ctx, req)
 	if err != nil {
-		p.log.Errorw("peer.create.grpc_error", "err", err)
+		p.log.Errorw("peer.create.grpc_error", "auto_assign_ip", autoAssignIP, "err", err)
 		p.renderPeersCreateError(c, peerErrorHTTPStatus(err), peerActionError("create", err))
 		return
 	}
@@ -72,14 +86,17 @@ func (p *Peers) Create(c *gin.Context) {
 		"peer.create.success",
 		"name", name,
 		"pubkey", pubkey,
-		"allowed_cidr", allowedCIDR,
+		"auto_assign_ip", autoAssignIP,
+		"requested_cidr", manualCIDR,
+		"assigned_ip", resp.AssignedIp,
+		"assigned_cidr", resp.AssignedCidr,
 		"config_applied", resp.ConfigApplied,
 	)
 
 	c.Redirect(http.StatusSeeOther, "/peers")
 }
 
-func (p *Peers) renderPeersCreateError(c *gin.Context, status int, errorMsg string) {
+func (p *Peers) renderPeersCreateError(c *gin.Context, statusCode int, errorMsg string) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
@@ -89,7 +106,8 @@ func (p *Peers) renderPeersCreateError(c *gin.Context, status int, errorMsg stri
 		rows = []peer{}
 	}
 
-	data := peerPageData("Peers", rows, "")
+	pool := p.loadIPPoolStatus(ctx)
+	data := peerPageData("Peers", rows, "", pool)
 	data["openCreateModal"] = true
 	data["createError"] = errorMsg
 	data["createForm"] = map[string]string{
@@ -100,5 +118,5 @@ func (p *Peers) renderPeersCreateError(c *gin.Context, status int, errorMsg stri
 		"keepalive": c.PostForm("keepalive"),
 	}
 
-	c.HTML(status, "peers.tmpl", data)
+	c.HTML(statusCode, "peers.tmpl", data)
 }

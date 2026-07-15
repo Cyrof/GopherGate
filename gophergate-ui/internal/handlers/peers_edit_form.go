@@ -27,8 +27,8 @@ func (p *Peers) EditForm(c *gin.Context) {
 		return
 	}
 
-	ip := ""
-	if len(resp.Peer.AllowedIps) > 0 {
+	ip := storedPeerCIDR(resp.Peer.IpAddress)
+	if ip == "" && len(resp.Peer.AllowedIps) > 0 {
 		ip = resp.Peer.AllowedIps[0]
 	}
 
