@@ -11,24 +11,22 @@ import (
 )
 
 type Config struct {
-	Env            string
-	HTTPAddr       string
-	GRPCAddr       string
-	TLS            bool
-	WGIface        string
-	PeerIPPoolCIDR string
-	DB             dbx.Config
-	SessionSecret  string
+	Env           string
+	HTTPAddr      string
+	GRPCAddr      string
+	TLS           bool
+	WGIface       string
+	DB            dbx.Config
+	SessionSecret string
 }
 
 func Load(logger *zap.SugaredLogger) (*Config, error) {
 	c := &Config{
-		Env:            getenv(logger, "GOPHERGATE_ENV", "dev"),
-		HTTPAddr:       getenv(logger, "HTTP_ADDR", ":8080"),
-		GRPCAddr:       getenv(logger, "GRPC_ADDR", "127.0.0.1:5051"),
-		TLS:            getbool(logger, "GRPC_TLS_ENABLE", false),
-		WGIface:        getenv(logger, "WG_IFACE", "wg0"),
-		PeerIPPoolCIDR: getenv(logger, "GOPHERGATE_PEER_IP_POOL_CIDR", "10.8.0.0/24"),
+		Env:      getenv(logger, "GOPHERGATE_ENV", "dev"),
+		HTTPAddr: getenv(logger, "HTTP_ADDR", ":8080"),
+		GRPCAddr: getenv(logger, "GRPC_ADDR", "127.0.0.1:5051"),
+		TLS:      getbool(logger, "GRPC_TLS_ENABLE", false),
+		WGIface:  getenv(logger, "WG_IFACE", "wg0"),
 		DB: dbx.Config{
 			App: "ui",
 		},
