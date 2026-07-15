@@ -27,6 +27,20 @@ import (
 
 ---
 
+## [v0.7.1] - 2026-07-15
+
+### Added
+- No additions in this release
+
+### Changed
+- Changed `allowed_cidrs` to `cidr` in IPPoolStatus struct
+
+### Fixed
+- No fixes in this release
+
+### Removed
+- No removals in this release
+
 ## [v0.7.0] - 2026-07-13
 
 ### Added
