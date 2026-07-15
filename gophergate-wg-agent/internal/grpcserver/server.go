@@ -13,6 +13,7 @@ import (
 	gatewayv1 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v1"
 	gatewayv2 "github.com/Cyrof/GopherGate/gophergate-core/pkg/gen/gateway/v2"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/data"
+	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/ippool"
 	"github.com/Cyrof/GopherGate/gophergate-wg-agent/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -43,13 +44,19 @@ func envDurationOrDefault(key string, def time.Duration) time.Duration {
 }
 
 func Start(logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
-	listenAddr := envOrDefault("GRPC_ADDR", ":7443")
+	addressPool, err := ippool.FromEnv()
+	if err != nil {
+		logger.Errorw("invalid WireGuard IP pool configuration", "err", err)
+		return err
+	}
 
+	listenAddr := envOrDefault("GRPC_ADDR", ":7443")
 	list, err := net.Listen("tcp", listenAddr)
 	if err != nil {
 		logger.Errorw("grpc listen failed", "addr", listenAddr, "err", err)
 		return err
 	}
+	defer func() { _ = list.Close() }()
 
 	srv := grpc.NewServer()
 
@@ -60,8 +67,19 @@ func Start(logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
 		logger.Warn("grpc started without db: create via grpc will not persist")
 	}
 
+	if addressPool != nil {
+		logger.Infow("WireGuard IP pool configured",
+			"cidr", addressPool.CIDR(),
+			"start", addressPool.Start().String(),
+			"end", addressPool.End().String(),
+			"capacity", addressPool.Capacity(),
+		)
+	} else {
+		logger.Warn("WireGuard automatic IP assignment is disabled; WG_IP_POOL_CIDR is not set")
+	}
+
 	gatewayv1.RegisterWireGuardServiceServer(srv, NewWireGuardService(repo))
-	gatewayv2.RegisterWireGuardServiceServer(srv, NewWireGuardServiceV2(repo))
+	gatewayv2.RegisterWireGuardServiceServer(srv, NewWireGuardServiceV2(repo, addressPool))
 
 	if repo != nil {
 		iface := envOrDefault("WG_IFACE", "wg0")
