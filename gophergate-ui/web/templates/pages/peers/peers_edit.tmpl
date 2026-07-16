@@ -40,7 +40,7 @@
               The public key cannot be changed. To use a different key, delete this peer and create a new one.
             </div>
 
-            <form method="post" action="/peers/edit" class="peers-form-grid">
+            <form method="post" action="/peers/edit" class="peers-form-grid peers-edit-form-grid">
               <input type="hidden" name="pubkey_original" value="{{ .peer.PublicKey }}" />
 
               <label class="peers-field peers-field-wide">
@@ -66,7 +66,7 @@
                 <small>Interval for keepalive packets. Use 0 to disable.</small>
               </label>
 
-              <div class="peers-current-stats">
+              <div class="peers-current-stats peers-edit-wide">
                 <div>
                   <span>Rx</span>
                   <strong>{{ humanBytes .peer.RxBytes }}</strong>
