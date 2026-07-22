@@ -35,6 +35,18 @@ type enrollmentItem struct {
 	Description string
 }
 
+type ipPoolStatus struct {
+	Enabled         bool
+	HasAvailable    bool
+	RangeStart      string
+	RangeEnd        string
+	Capacity        uint64
+	Allocated       uint64
+	Available       uint64
+	NextAvailableIP string
+	ReservedIPs     []string
+}
+
 type Peers struct {
 	log     *zap.SugaredLogger
 	data    []peer
@@ -51,7 +63,7 @@ func NewPeers(log *zap.SugaredLogger, grpcClient *grpcclient.Client, wgIface str
 	}
 }
 
-func peerPageData(title string, rows []peer, errorMsg string) map[string]any {
+func peerPageData(title string, rows []peer, errorMsg string, pool ipPoolStatus) map[string]any {
 	rows = normalisePeerRows(rows)
 	stats, connectedCount := buildPeerStats(rows)
 	enrollmentItems := defaultEnrollmentItems()
@@ -67,6 +79,17 @@ func peerPageData(title string, rows []peer, errorMsg string) map[string]any {
 		"stats":            stats,
 		"pendingApprovals": len(enrollmentItems),
 		"enrollmentItems":  enrollmentItems,
+		"ipPool":           pool,
+
+		"openCreateModal": false,
+		"createError":     "",
+		"createForm": map[string]string{
+			"name":      "",
+			"pubkey":    "",
+			"ip":        "",
+			"endpoint":  "",
+			"keepalive": "",
+		},
 	}
 }
 
@@ -145,7 +168,7 @@ func validateAllowedCIDR(value string) error {
 		return nil
 	}
 
-	if _, err := netip.ParsePrefix(value); err != nil {
+	if _, err := parsePeerIPInput(value); err != nil {
 		return fmt.Errorf("invalid allowed ip")
 	}
 
@@ -223,7 +246,7 @@ func normaliseAllowedIP(ip string) string {
 	ip = strings.TrimSpace(ip)
 
 	switch ip {
-	case "", "-", "--", "<nil>":
+	case "", "-", "—", "--", "<nil>":
 		return ""
 	default:
 		return ip
@@ -236,6 +259,15 @@ func allowedIPExists(rows []peer, allowedIP string, excludePublicKey string) boo
 		return false
 	}
 
+	targetAddr, err := parsePeerIPInput(allowedIP)
+	if err != nil {
+		return allowedIPStringExists(rows, allowedIP, excludePublicKey)
+	}
+
+	return peerIPInUse(rows, targetAddr, excludePublicKey)
+}
+
+func allowedIPStringExists(rows []peer, allowedIP string, excludePublicKey string) bool {
 	excludePublicKey = strings.TrimSpace(excludePublicKey)
 
 	for _, row := range rows {
@@ -284,4 +316,89 @@ func parseKeepaliveSeconds(value string) (int32, error) {
 	}
 
 	return int32(seconds), nil
+}
+
+func storedPeerCIDR(value string) string {
+	value = normaliseAllowedIP(value)
+	if value == "" {
+		return ""
+	}
+
+	addr, err := netip.ParseAddr(value)
+	if err != nil {
+		return value
+	}
+
+	return hostCIDR(addr)
+}
+
+func normaliseManualPeerCIDR(value string, existingRows []peer) (string, error) {
+	value = normaliseAllowedIP(value)
+	if value == "" {
+		return "", errPeerIPInvalid
+	}
+
+	addr, err := parsePeerIPInput(value)
+	if err != nil {
+		return "", errPeerIPInvalid
+	}
+
+	if peerIPInUse(existingRows, addr, "") {
+		return "", errPeerIPAlreadyUsed
+	}
+
+	return hostCIDR(addr), nil
+}
+
+func parsePeerIPInput(value string) (netip.Addr, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return netip.Addr{}, errPeerIPInvalid
+	}
+
+	if strings.Contains(value, "/") {
+		prefix, err := netip.ParsePrefix(value)
+		if err != nil {
+			return netip.Addr{}, err
+		}
+
+		addr := prefix.Addr()
+		if prefix.Bits() != addr.BitLen() {
+			return netip.Addr{}, errPeerIPInvalid
+		}
+
+		return addr, nil
+	}
+
+	return netip.ParseAddr(value)
+}
+
+func peerIPInUse(rows []peer, addr netip.Addr, excludePublicKey string) bool {
+	excludePublicKey = strings.TrimSpace(excludePublicKey)
+
+	for _, row := range rows {
+		if excludePublicKey != "" && strings.TrimSpace(row.PublicKey) == excludePublicKey {
+			continue
+		}
+
+		value := normaliseAllowedIP(row.IP)
+		if value == "" {
+			continue
+		}
+
+		existingAddr, err := parsePeerIPInput(value)
+		if err != nil {
+			continue
+		}
+
+		if existingAddr == addr {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hostCIDR(addr netip.Addr) string {
+	return fmt.Sprintf("%s/%d", addr.String(), addr.BitLen())
 }

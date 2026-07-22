@@ -12,11 +12,11 @@
       {{ template "partials/navbar" . }}
 
       <main class="page-container flex-1">
-        <section class="peers-shell">
+        <section class="peers-shell w-full">
           <div class="peers-page-header">
             <div>
-              <div class="peers-eyebrow">Peer Configuration</div>
-              <h1>Edit Peer</h1>
+              <div class="page-eyebrow">Peer Configuration</div>
+              <h1 class="page-title">Edit Peer</h1>
             </div>
 
             <a href="/peers" class="peers-secondary-action">Back to Peers</a>
@@ -32,7 +32,7 @@
             <div class="peers-table-header">
               <div>
                 <div class="peers-section-label">Configuration</div>
-                <h2>Peer Settings</h2>
+                <h2 class="section-title">Peer Settings</h2>
               </div>
             </div>
 
@@ -40,7 +40,7 @@
               The public key cannot be changed. To use a different key, delete this peer and create a new one.
             </div>
 
-            <form method="post" action="/peers/edit" class="peers-form-grid">
+            <form method="post" action="/peers/edit" class="peers-form-grid peers-edit-form-grid">
               <input type="hidden" name="pubkey_original" value="{{ .peer.PublicKey }}" />
 
               <label class="peers-field peers-field-wide">
@@ -66,7 +66,7 @@
                 <small>Interval for keepalive packets. Use 0 to disable.</small>
               </label>
 
-              <div class="peers-current-stats">
+              <div class="peers-current-stats peers-edit-wide">
                 <div>
                   <span>Rx</span>
                   <strong>{{ humanBytes .peer.RxBytes }}</strong>

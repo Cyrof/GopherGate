@@ -20,8 +20,8 @@ func (p *Peers) listPeerRows(ctx context.Context) ([]peer, error) {
 
 	rows := make([]peer, 0, len(resp.Peers))
 	for _, peerStatus := range resp.Peers {
-		ip := ""
-		if len(peerStatus.AllowedIps) > 0 {
+		ip := normaliseAllowedIP(peerStatus.IpAddress)
+		if ip == "" && len(peerStatus.AllowedIps) > 0 {
 			ip = peerStatus.AllowedIps[0]
 		}
 
@@ -52,9 +52,15 @@ func (p *Peers) List(c *gin.Context) {
 	rows, err := p.listPeerRows(ctx)
 	if err != nil {
 		p.log.Errorw("peer.list.grpc_error", "err", err)
-		c.HTML(http.StatusInternalServerError, "peers.tmpl", peerPageData("Peers", []peer{}, "Failed to fetch peers from backend"))
+		c.HTML(http.StatusInternalServerError, "peers.tmpl", peerPageData(
+			"Peers",
+			[]peer{},
+			"Failed to fetch peers from backend",
+			ipPoolStatus{},
+		))
 		return
 	}
 
-	c.HTML(http.StatusOK, "peers.tmpl", peerPageData("Peers", rows, ""))
+	pool := p.loadIPPoolStatus(ctx)
+	c.HTML(http.StatusOK, "peers.tmpl", peerPageData("Peers", rows, "", pool))
 }

@@ -32,8 +32,14 @@ func (p *Peers) Edit(c *gin.Context) {
 
 	if err := validateAllowedCIDR(ip); err != nil {
 		p.log.Warnw("peer.update.invalid_allowed_ip", "value", ip, "err", err)
-		p.renderPeerEditPage(c, http.StatusBadRequest, rec, "Invalid Allowed IP. Please enter a valid CIDR value, for example 10.13.13.2/32.")
+		p.renderPeerEditPage(c, http.StatusBadRequest, rec, "Invalid Allowed IP. Please enter a host IP or CIDR, for example 10.13.13.2 or 10.13.13.2/32.")
 		return
+	}
+
+	if normaliseAllowedIP(ip) != "" {
+		addr, _ := parsePeerIPInput(ip)
+		ip = hostCIDR(addr)
+		rec.IP = ip
 	}
 
 	if err := validateEndpoint(endpoint); err != nil {
