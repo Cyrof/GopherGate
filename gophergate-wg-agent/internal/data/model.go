@@ -59,3 +59,8 @@ type PeerTrafficPoint struct {
 	TXBytes    uint64
 	TotalBytes uint64
 }
+
+type PeerMetadata struct {
+	Name      string
+	IPAddress net.IP
+}

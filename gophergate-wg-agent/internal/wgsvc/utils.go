@@ -1,10 +1,13 @@
 package wgsvc
 
-import "net"
+import (
+	"net"
+	"strings"
+)
 
 func pickPrimaryIP(cidrs []string) net.IP {
 	for _, c := range cidrs {
-		ip, ipNet, err := net.ParseCIDR(c)
+		ip, ipNet, err := net.ParseCIDR(strings.TrimSpace(c))
 		if err != nil {
 			continue
 		}

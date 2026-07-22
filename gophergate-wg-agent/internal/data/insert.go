@@ -3,10 +3,20 @@ package data
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
+type rowQuerier interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}
+
 func (r *Repository) Insert(ctx context.Context, p Peer) (string, error) {
-	const q = `
+	return insertPeer(ctx, r.db, p)
+}
+
+func insertPeer(ctx context.Context, q rowQuerier, p Peer) (string, error) {
+	const stmt = `
 		insert into peers (name, public_key, ip_address, allowed_ips, endpoint, persistent_keepalive)	
 		values ($1, $2, $3, $4::inet[], $5, $6)
 		returning id::text;
@@ -23,7 +33,7 @@ func (r *Repository) Insert(ctx context.Context, p Peer) (string, error) {
 	}
 
 	var id string
-	if err := r.db.QueryRow(ctx, q,
+	if err := q.QueryRow(ctx, stmt,
 		p.Name,
 		p.PublicKey,
 		ipStr,

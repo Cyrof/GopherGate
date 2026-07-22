@@ -51,6 +51,8 @@ type DashboardPeer struct {
 	Latency       string
 	State         string
 	StateReason   string
+	IPAddress     string
+	Managed       bool
 }
 
 type DashboardAlert struct {
@@ -81,22 +83,28 @@ func (s *DashboardService) Build(ctx context.Context, iface string) (*DashboardR
 		publicKeys = append(publicKeys, p.PublicKey)
 	}
 
-	nameMap := map[string]string{}
+	metadataMap := map[string]data.PeerMetadata{}
 	if s.repo != nil {
-		names, err := s.repo.NamesByPublicKeys(ctx, publicKeys)
+		metadata, err := s.repo.MetadataByPublicKeys(ctx, publicKeys)
 		if err != nil {
-			return nil, fmt.Errorf("load peer names: %w", err)
+			return nil, fmt.Errorf("load peer metadata: %w", err)
 		}
-		nameMap = names
+		metadataMap = metadata
 	}
 
 	peers := make([]DashboardPeer, 0, len(runtimePeers))
 	for _, rp := range runtimePeers {
 		state, reason := derivePeerState(rp.Handshake)
 
-		name := nameMap[rp.PublicKey]
+		metadata, managed := metadataMap[rp.PublicKey]
+		name := metadata.Name
 		if name == "" {
 			name = shortenKey(rp.PublicKey)
+		}
+
+		ipAddress := ""
+		if metadata.IPAddress != nil {
+			ipAddress = metadata.IPAddress.String()
 		}
 
 		peers = append(peers, DashboardPeer{
@@ -110,6 +118,8 @@ func (s *DashboardService) Build(ctx context.Context, iface string) (*DashboardR
 			Latency:       "-",
 			State:         state,
 			StateReason:   reason,
+			IPAddress:     ipAddress,
+			Managed:       managed,
 		})
 	}
 
