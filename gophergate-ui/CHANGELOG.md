@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.9.2] - 2026-07-22
+
+### Added
+- Added backend-managed automatic IP assignment to the Add Peer flow
+- Added IP pool availability and next-address preview through the v2 `GetIPPool` RPC
+- Added stored peer IP display using the v2 `ip_address` response field
+
+### Changed
+- Updated the `gophergate-core` dependency to `v0.7.0`
+- Changed blank Allowed IP submission to send `auto_assign_ip: true` to `gophergate-wg-agent`
+- Removed frontend-side IP pool configuration and address allocation logic
+
+### Fixed
+- Avoided frontend allocation races by leaving final address selection to the agent transaction
+
+### Removed
+- No removals in this release
+
 ## [v0.9.0] - 2026-04-30
 
 ### Added
