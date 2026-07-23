@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [v0.7.0] - 2026-07-22
+
+### Added
+- Added configurable IPv4 pool allocation through `WG_IP_POOL_*` environment variables
+- Added transactional lowest-free-address allocation for CLI and gRPC peer creation
+- Added the v2 `GetIPPool` gRPC handler, completed `GetPeersPage`, and returned assigned address fields in create/read responses
+- Added `--auto-ip` support to the create CLI command
+
+### Changed
+- Persist the final `allowed_ips` set during peer creation
+
+### Fixed
+- Prevented concurrent automatic peer creation from assigning the same IP address
+
+### Removed
+- No removals in this release
+
 ## [v0.6.2] - 2026-04-30
 
 ### Added
